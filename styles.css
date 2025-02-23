@@ -1,0 +1,11 @@
+html, body {
+    height: 100%;
+    margin: 0;
+    display: flex;
+    justify-content: center; /* Centers horizontally */
+    align-items: center; /* Centers vertically */
+}
+
+svg {
+    border: 1px solid #ccc; /* Optional, just to visualize */
+}
