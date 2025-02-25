@@ -2,7 +2,7 @@ import { computeOptionPrice } from './functions.js';
 import { load_local_price, load_local_config, update_remote_config, fetch_configuration, fetch_price } from './async.js';
 import { Configuration } from './configuration.js';
 
-let use_local = true;
+let use_local = false;
 
 let cfg;
 let svg;
@@ -193,7 +193,7 @@ async function setup_volatility_sliders() {
     use_legs_volatility_checkbox = document.getElementById('ivCheckbox');
     const sliders_container = document.getElementById('sliders_container');
     cfg = new Configuration(use_local ? await load_local_config() : await fetch_configuration());
-    
+
     const combo = cfg.get_combo_params();
 
     // Clear existing sliders
@@ -532,7 +532,59 @@ function display_local_status() {
         .attr("class", use_local ? "red-dot" : "green-dot");
 }
 
+function add_crosshair(graph, cfg, window, x_scale, y_scale) {
 
+    const crosshair = graph.append("g")
+        .style("display", "none"); // Initially hidden
+
+    // Add vertical line
+    crosshair.append("line")
+        .attr("class", "crosshair-line")
+        .attr("id", "crosshair-x")
+        .attr("y1", window.margin.top)
+        .attr("y2", window.height-window.margin.bottom)
+        .attr("stroke", "green")
+        .attr("stroke-width", 1)
+        .attr("stroke-dasharray", "4,4");
+
+    // Add horizontal line
+    crosshair.append("line")
+        .attr("class", "crosshair-line")
+        .attr("id", "crosshair-y")
+        .attr("x1", window.margin.left)
+        .attr("x2", window.width-window.margin.right)
+        .attr("stroke", "green")
+        .attr("stroke-width", 1)
+        .attr("stroke-dasharray", "4,4");
+
+        graph.on("mousemove", function (event) {
+            const [x, y] = d3.pointer(event, this); // Get mouse coordinates
+            if (y < window.margin.top || y > window.height - window.margin.bottom) {
+                crosshair.style("display", "none");
+                return;
+            }
+            if(x < window.margin.left || x > window.width - window.margin.right) {
+                crosshair.style("display", "none");
+                return;
+            }
+            // Show crosshair
+            crosshair.style("display", null);
+        
+            // Update position of the crosshair lines
+            crosshair.select("#crosshair-x")
+                .attr("x1", x)
+                .attr("x2", x);
+        
+            crosshair.select("#crosshair-y")
+                .attr("y1", y)
+                .attr("y2", y);
+        })
+        .on("mouseleave", function () {
+            // Hide crosshair when mouse leaves
+            crosshair.style("display", "none");
+        });
+        
+}
 async function draw_graph() {
 
     if (!cfg) {
@@ -654,7 +706,7 @@ async function draw_graph() {
     add_strike_lines(svg, cfg);
     create_strike_buttons(p_and_l_graph, cfg);
     create_underlying_current_price_buttons(svg, cfg);
-
+    add_crosshair(svg, cfg, window, x_scale, scale_p_and_l);
 }
 
 setup_volatility_type();
