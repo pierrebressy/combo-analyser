@@ -1,8 +1,8 @@
 import { computeOptionPrice } from './functions.js';
-import { load_local_price, load_local_config, update_remote_config, fetch_configuration, fetch_price } from './async.js';
+import { is_mode_local, load_local_price, load_local_config, update_remote_config, fetch_configuration, fetch_price } from './async.js';
 import { Configuration } from './configuration.js';
 
-let use_local = true;
+let use_local = false;
 
 let cfg;
 let svg;
@@ -531,11 +531,14 @@ function display_local_status() {
         .append("div")
         .attr("class", use_local ? "red-dot" : "green-dot");
 }
-
+let  priceLabelGroup;
 function add_crosshair(graph, cfg, window, x_scale, y_scale) {
 
     const crosshair = graph.append("g")
         .style("display", "none"); // Initially hidden
+
+    priceLabelGroup = graph.append("g")
+        .style("display", "none");
 
     // Add vertical line
     crosshair.append("line")
@@ -557,6 +560,24 @@ function add_crosshair(graph, cfg, window, x_scale, y_scale) {
         .attr("stroke-width", 1)
         .attr("stroke-dasharray", "4,4");
 
+    // Add blue rectangle for price label
+    priceLabelGroup.append("rect")
+        .attr("id", "price-label-bg")
+        .attr("width", 50)
+        .attr("height", 20)
+        .attr("fill", "blue")
+        .attr("rx", 5)
+        .attr("ry", 5);
+
+    // Add white text inside the rectangle
+    priceLabelGroup.append("text")
+        .attr("id", "price-label-text")
+        .attr("fill", "white")
+        .attr("text-anchor", "middle")
+        .attr("dy", "1em")
+        .style("font-size", "12px")
+        .style("font-weight", "bold");
+
     graph.on("mousemove", function (event) {
         const [x, y] = d3.pointer(event, this); // Get mouse coordinates
         if (y < window.margin.top || y > window.height - window.margin.bottom) {
@@ -569,6 +590,7 @@ function add_crosshair(graph, cfg, window, x_scale, y_scale) {
         }
         // Show crosshair
         crosshair.style("display", null);
+        priceLabelGroup.style("display", null);
 
         // Update position of the crosshair lines
         crosshair.select("#crosshair-x")
@@ -578,11 +600,30 @@ function add_crosshair(graph, cfg, window, x_scale, y_scale) {
         crosshair.select("#crosshair-y")
             .attr("y1", y)
             .attr("y2", y);
+
+
+        // Update position of price label
+        priceLabelGroup.attr("transform", `translate(${x - 25}, ${window.height - window.margin.bottom+4})`);
+
+        // Update text
+        window=cfg.get_window_params();
+        const price = x_scale.invert(x-window.margin.left);
+        const formattedPrice = price.toFixed(2); // Format as %.1f
+        console.log("price=", price, "formattedPrice=", formattedPrice);
+        priceLabelGroup.select("#price-label-text")
+            .attr("x", 25)
+            .text(formattedPrice+" $");
+
     })
         .on("mouseleave", function () {
             // Hide crosshair when mouse leaves
             crosshair.style("display", "none");
+            priceLabelGroup.style("display", "none");
         });
+
+
+
+
 
 }
 async function draw_graph() {
@@ -709,6 +750,8 @@ async function draw_graph() {
     add_crosshair(svg, cfg, window, x_scale, scale_p_and_l);
 }
 
+use_local = await is_mode_local(); // Auto-detect local/remote mode
+console.log("use_local=", use_local);
 setup_volatility_type();
 draw_graph();
 display_local_status();

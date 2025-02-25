@@ -1,6 +1,20 @@
 const local_prices_file = "local_config/prices.json";
 const local_config_file = "local_config/config.json";
 
+export async function is_mode_local() {
+    try {
+        const response = await fetch(`http://127.0.0.1:5000/ping`, { method: "GET" });
+        if (response.ok) {
+            return false;
+        }
+        return true;
+
+    } catch (error) {
+        console.warn("Remote server not available, switching to local mode.");
+        return true;
+    }
+}
+
 export async function load_local_price(ticker) {
     try {
         const response = await fetch(local_prices_file); // Fetch the config file
