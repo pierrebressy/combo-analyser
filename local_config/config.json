@@ -1,5 +1,291 @@
 {
     "combos": {
+        "BUY CALL": {
+            "legs": [
+                {
+                    "expiration_offset": 0,
+                    "qty": 1,
+                    "strike": 230,
+                    "type": "call",
+                    "volatility": 0.4
+                }
+            ],
+            "name": "Single CALL",
+            "simulation": {
+                "expiration_offset": 0,
+                "interest_rate": 0,
+                "max_price": 300,
+                "min_price": 200,
+                "step": 1,
+                "time_for_simulation": 15,
+                "time_to_expiry": 35,
+                "volatility": 0.4
+            },
+            "ticker": "AAPL"
+        },
+        "BUY PUT": {
+            "legs": [
+                {
+                    "expiration_offset": 0,
+                    "qty": 1,
+                    "strike": 240,
+                    "type": "put",
+                    "volatility": 0.4
+                }
+            ],
+            "name": "Single PUT",
+            "simulation": {
+                "expiration_offset": 0,
+                "interest_rate": 0,
+                "max_price": 300,
+                "min_price": 200,
+                "step": 1,
+                "time_for_simulation": 15,
+                "time_to_expiry": 35,
+                "volatility": 0.4
+            },
+            "ticker": "AAPL"
+        },
+        "Credit Call Spread": {
+            "legs": [
+                {
+                    "expiration_offset": 0,
+                    "qty": -1,
+                    "strike": 235,
+                    "type": "call",
+                    "volatility": 0.4
+                },
+                {
+                    "expiration_offset": 0,
+                    "qty": 1,
+                    "strike": 250,
+                    "type": "call",
+                    "volatility": 0.4
+                }
+            ],
+            "name": "Credit Call Spread",
+            "simulation": {
+                "expiration_offset": 0,
+                "interest_rate": 0,
+                "max_price": 300,
+                "min_price": 200,
+                "step": 1,
+                "time_for_simulation": 15,
+                "time_to_expiry": 35,
+                "volatility": 0.4
+            },
+            "ticker": "AAPL"
+        },
+        "Credit Put Spread": {
+            "legs": [
+                {
+                    "expiration_offset": 0,
+                    "qty": -1,
+                    "strike": 250,
+                    "type": "put",
+                    "volatility": 0.4
+                },
+                {
+                    "expiration_offset": 0,
+                    "qty": 1,
+                    "strike": 235,
+                    "type": "put",
+                    "volatility": 0.4
+                }
+            ],
+            "name": "Credit Put Spread",
+            "simulation": {
+                "expiration_offset": 0,
+                "interest_rate": 0,
+                "max_price": 300,
+                "min_price": 200,
+                "step": 1,
+                "time_for_simulation": 15,
+                "time_to_expiry": 35,
+                "volatility": 0.4
+            },
+            "ticker": "AAPL"
+        },
+        "Debit Call Spread": {
+            "legs": [
+                {
+                    "expiration_offset": 0,
+                    "qty": 1,
+                    "strike": 235,
+                    "type": "call",
+                    "volatility": 0.4
+                },
+                {
+                    "expiration_offset": 0,
+                    "qty": -1,
+                    "strike": 250,
+                    "type": "call",
+                    "volatility": 0.4
+                }
+            ],
+            "name": "Debit Call Spread",
+            "simulation": {
+                "expiration_offset": 0,
+                "interest_rate": 0,
+                "max_price": 300,
+                "min_price": 200,
+                "step": 1,
+                "time_for_simulation": 15,
+                "time_to_expiry": 35,
+                "volatility": 0.4
+            },
+            "ticker": "AAPL"
+        },
+        "Debit Put Spread": {
+            "legs": [
+                {
+                    "expiration_offset": 0,
+                    "qty": 1,
+                    "strike": 250,
+                    "type": "put",
+                    "volatility": 0.4
+                },
+                {
+                    "expiration_offset": 0,
+                    "qty": -1,
+                    "strike": 235,
+                    "type": "put",
+                    "volatility": 0.4
+                }
+            ],
+            "name": "Debit Put Spread",
+            "simulation": {
+                "expiration_offset": 0,
+                "interest_rate": 0,
+                "max_price": 300,
+                "min_price": 200,
+                "step": 1,
+                "time_for_simulation": 15,
+                "time_to_expiry": 35,
+                "volatility": 0.4
+            },
+            "ticker": "AAPL"
+        },
+        "SELL CALL": {
+            "legs": [
+                {
+                    "expiration_offset": 0,
+                    "qty": -1,
+                    "strike": 230,
+                    "type": "call",
+                    "volatility": 0.4
+                }
+            ],
+            "name": "Single CALL",
+            "simulation": {
+                "expiration_offset": 0,
+                "interest_rate": 0,
+                "max_price": 300,
+                "min_price": 200,
+                "step": 1,
+                "time_for_simulation": 15,
+                "time_to_expiry": 35,
+                "volatility": 0.4
+            },
+            "ticker": "AAPL"
+        },
+        "SELL PUT": {
+            "legs": [
+                {
+                    "expiration_offset": 0,
+                    "qty": -1,
+                    "strike": 240,
+                    "type": "put",
+                    "volatility": 0.4
+                }
+            ],
+            "name": "Single PUT",
+            "simulation": {
+                "expiration_offset": 0,
+                "interest_rate": 0,
+                "max_price": 300,
+                "min_price": 200,
+                "step": 1,
+                "time_for_simulation": 15,
+                "time_to_expiry": 35,
+                "volatility": 0.4
+            },
+            "ticker": "AAPL"
+        },
+        "TANK MSTR MAR14'25": {
+            "legs": [
+                {
+                    "expiration_offset": 0,
+                    "qty": 1,
+                    "strike": 255,
+                    "type": "put",
+                    "volatility": 0.817
+                },
+                {
+                    "expiration_offset": 0,
+                    "qty": -1,
+                    "strike": 250,
+                    "type": "put",
+                    "volatility": 0.828
+                },
+                {
+                    "expiration_offset": 0,
+                    "qty": -1,
+                    "strike": 225,
+                    "type": "put",
+                    "volatility": 0.917
+                }
+            ],
+            "name": "TANK MSTR MAR14'25",
+            "simulation": {
+                "expiration_offset": 0,
+                "interest_rate": 0,
+                "max_price": 310,
+                "min_price": 200,
+                "step": 1,
+                "time_for_simulation": 10,
+                "time_to_expiry": 17,
+                "volatility": 0.8
+            },
+            "ticker": "MSTR"
+        },
+        "TANK PLTR MAR14'25": {
+            "legs": [
+                {
+                    "expiration_offset": 0,
+                    "qty": 1,
+                    "strike": 85,
+                    "type": "put",
+                    "volatility": 0.774
+                },
+                {
+                    "expiration_offset": 0,
+                    "qty": -1,
+                    "strike": 84,
+                    "type": "put",
+                    "volatility": 0.791
+                },
+                {
+                    "expiration_offset": 0,
+                    "qty": -1,
+                    "strike": 76,
+                    "type": "put",
+                    "volatility": 0.821
+                }
+            ],
+            "name": "TANK PLTR MAR14'25",
+            "simulation": {
+                "expiration_offset": 0,
+                "interest_rate": 0,
+                "max_price": 105,
+                "min_price": 70,
+                "step": 0.1,
+                "time_for_simulation": 10,
+                "time_to_expiry": 17,
+                "volatility": 0.8
+            },
+            "ticker": "MSTR"
+        },
         "TANK TSLA MAY2025": {
             "legs": [
                 {
@@ -115,102 +401,10 @@
                 "volatility": 0.106
             },
             "ticker": "^SPX"
-        },
-        "BUY CALL": {
-            "legs": [
-                {
-                    "expiration_offset": 0,
-                    "qty": 1,
-                    "strike": 230,
-                    "type": "call",
-                    "volatility": 0.4
-                }
-            ],
-            "name": "Single CALL",
-            "simulation": {
-                "expiration_offset": 0,
-                "interest_rate": 0,
-                "max_price": 300,
-                "min_price": 200,
-                "step": 1,
-                "time_for_simulation": 15,
-                "time_to_expiry": 35,
-                "volatility": 0.4
-            },
-            "ticker": "AAPL"
-        },
-        "BUY PUT": {
-            "legs": [
-                {
-                    "expiration_offset": 0,
-                    "qty": 1,
-                    "strike": 240,
-                    "type": "put",
-                    "volatility": 0.4
-                }
-            ],
-            "name": "Single PUT",
-            "simulation": {
-                "expiration_offset": 0,
-                "interest_rate": 0,
-                "max_price": 300,
-                "min_price": 200,
-                "step": 1,
-                "time_for_simulation": 15,
-                "time_to_expiry": 35,
-                "volatility": 0.4
-            },
-            "ticker": "AAPL"
-        },
-        "SELL CALL": {
-            "legs": [
-                {
-                    "expiration_offset": 0,
-                    "qty": -1,
-                    "strike": 230,
-                    "type": "call",
-                    "volatility": 0.4
-                }
-            ],
-            "name": "Single CALL",
-            "simulation": {
-                "expiration_offset": 0,
-                "interest_rate": 0,
-                "max_price": 300,
-                "min_price": 200,
-                "step": 1,
-                "time_for_simulation": 15,
-                "time_to_expiry": 35,
-                "volatility": 0.4
-            },
-            "ticker": "AAPL"
-        },
-        "SELL PUT": {
-            "legs": [
-                {
-                    "expiration_offset": 0,
-                    "qty": -1,
-                    "strike": 240,
-                    "type": "put",
-                    "volatility": 0.4
-                }
-            ],
-            "name": "Single PUT",
-            "simulation": {
-                "expiration_offset": 0,
-                "interest_rate": 0,
-                "max_price": 300,
-                "min_price": 200,
-                "step": 1,
-                "time_for_simulation": 15,
-                "time_to_expiry": 35,
-                "volatility": 0.4
-            },
-            "ticker": "AAPL"
         }
     },
     "config": {
-        "combo": "TANK TSLA MAY2025"
+        "combo": "Credit Call Spread"
     },
     "graph": {
         "greeks": {
@@ -230,7 +424,7 @@
             ]
         }
     },
-    "underlying_current_price": 5983.25,
+    "underlying_current_price": 282.760009765625,
     "window": {
         "button": {
             "height": 25,
@@ -248,6 +442,6 @@
             "vspacer": 20
         },
         "p_and_l_ratio": 0.5,
-        "width": 1339.2734375
+        "width": 1359.2734375
     }
 }
