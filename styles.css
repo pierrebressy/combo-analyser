@@ -1,11 +1,49 @@
-html, body {
-    height: 100%;
-    margin: 0;
+/* Set the container to use Flexbox */
+#two-column-container {
     display: flex;
-    justify-content: center; /* Centers horizontally */
-    align-items: center; /* Centers vertically */
+    /* Optional: add some gap between columns */
+    gap: 10px;
+    /* Optional: set a width or max-width for the container */
+    width: 100%;
+    margin: 0 auto;
+    height: 100%;
 }
 
-svg {
-    border: 1px solid #ccc; /* Optional, just to visualize */
+/* Style for the left column (20% width) */
+.control-container {
+    width: 20%;
+    height: 100%;
+    padding: 10px;
+    /* Optional: add background color for clarity */
+    background-color: #f0f0f0;
+}
+
+/* Style for the right column (80% width) */
+.graph-container {
+    width: 80%;
+    padding: 10px;
+    height: 100vh; /* Full viewport height */
+    /* Optional: add background color for clarity */
+    background-color: #fffff4;
+    box-sizing: border-box; /* Ensures padding doesn't affect height */
+}
+
+.red-dot {
+    width: 15px;
+    height: 15px;
+    background-color: red;
+    border-radius: 50%;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
+
+.green-dot {
+    width: 15px;
+    height: 15px;
+    background-color: green;
+    border-radius: 50%;
+    position: absolute;
+    top: 30px;
+    right: 10px;
 }

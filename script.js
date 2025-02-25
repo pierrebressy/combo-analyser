@@ -1,156 +1,19 @@
 import { computeOptionPrice } from './functions.js';
+import { load_local_price, load_local_config, update_remote_config, fetch_configuration, fetch_price } from './async.js';
+import { Configuration } from './configuration.js';
 
-class Configuration {
-
-    constructor(config) {
-        // Attributes (properties)
-        this.config = config;
-        this.combo = this.get_combo();
-        this.simulation = this.get_simulation();
-    }
-    get_window() {
-        return this.config.window;
-    }
-    get_combo() {
-        return this.config.combos[this.config.config.combo];
-    }
-    get_simulation() {
-        return this.combo.simulation;
-    }
-    set_underlying_current_price(price) {
-        this.config.underlying_current_price = price;
-    }
-    get_underlying_current_price() {
-        return this.config.underlying_current_price;
-    }
-    get_ticker() {
-        return this.combo.ticker;
-    }
-    get_time_to_expiry() {
-        return this.combo.simulation.time_to_expiry;
-    }
-    get_time_for_simulation() {
-        return this.combo.simulation.time_for_simulation;
-    }
-    set_time_for_simulation(time) {
-        this.combo.simulation.time_for_simulation = time;
-    }
-    get_max_price() {
-        return this.combo.simulation.max_price;
-    }
-    get_min_price() {
-        return this.combo.simulation.min_price;
-    }
-    get_step() {
-        return this.combo.simulation.step;
-    }
-    get_volatility() {
-        return this.combo.simulation.volatility;
-    }
-    set_volatility(volatility) {
-        this.combo.simulation.volatility = volatility;
-    }
-    get_interest_rate() {
-        return this.combo.simulation.interest_rate;
-    }
-}
 let use_local = true;
+
 let cfg;
 let svg;
 let x_scale;
+let use_legs_volatility_checkbox;
 
-let local_config= {    
-    "underlying_current_price": 335,
-    "config": {
-        "combo": "001"
-    },
-    "combos": {
-        "001": {
-            "ticker": "TSLA",
-            "legs": [
-                {
-                    "qty": 1,
-                    "type": "put",
-                    "strike": 315,
-                    "volatility": 0.4
-                },
-                {
-                    "qty": -1,
-                    "type": "put",
-                    "strike": 300,
-                    "volatility": 0.4
-                },
-                {
-                    "qty": -1,
-                    "type": "put",
-                    "strike": 265,
-                    "volatility": 0.41
-                }
-            ],
-            "simulation": {
-                "min_price": 240,
-                "max_price": 340,
-                "step": 1,
-                "volatility": 0.4,
-                "interest_rate": 0.0,
-                "time_to_expiry": 35,
-                "time_for_simulation": 15
-            }
-        }
-    },
-    "window": {
-        "width": 1600,
-        "height": 800,
-        "p_and_l_ratio": 0.5,
-        "margin": {
-            "top": 40,
-            "right": 20,
-            "bottom": 40,
-            "left": 80,
-            "vspacer": 20,
-            "greeks_vspacer": 20,
-            "price_axis": 17
-        },
-        "button": {
-            "width": 85,
-            "height": 25,
-            "text_vpos": 15
-        }
-    },
-    "graph": {
-        "greeks": {
-            "labels": [
-                "Premium",
-                "Delta",
-                "Gamma",
-                "Theta",
-                "Vega",
-                "Rho"
-            ],
-            "ids": [
-                1,
-                2,
-                3,
-                4
-            ]
-        }
-    }
-}
-
-async function fetch_configuration() {
-    const response = await fetch("http://127.0.0.1:5000/config");
-    return response.json();
-}
-
-async function fetch_price(ticker) {
-    const response = await fetch("http://127.0.0.1:5000/price/" + ticker);
-    return response.json();
-}
 
 function add_strike_lines(svg, cfg) {
 
-    const window = cfg.get_window();
-    const combo = cfg.get_combo();
+    const window = cfg.get_window_params();
+    const combo = cfg.get_combo_params();
 
     combo.legs.forEach(option => {
         const strike_value = x_scale(option.strike);
@@ -168,7 +31,7 @@ function add_strike_lines(svg, cfg) {
 
 function add_grid(graph, cfg, y_scale) {
 
-    const window = cfg.get_window();
+    const window = cfg.get_window_params();
     const x_axis_grid = d3.axisBottom(x_scale)
         .tickSize(-window.height)  // Extend grid lines downward
         .tickFormat("");  // Hide tick labels
@@ -199,8 +62,8 @@ function add_grid(graph, cfg, y_scale) {
 
 function create_strike_buttons(graph, cfg) {
 
-    const window = cfg.get_window();
-    const combo = cfg.get_combo();
+    const window = cfg.get_window_params();
+    const combo = cfg.get_combo_params();
 
     // Add draggable buttons for call & put
     graph.selectAll(".strike-button").remove();
@@ -241,10 +104,9 @@ function create_strike_buttons(graph, cfg) {
 
 function create_underlying_current_price_buttons(graph, cfg) {
 
-    const window = cfg.get_window();
+    const window = cfg.get_window_params();
 
     // Add draggable buttons for call & put
-    let p_and_l_graph = d3.select("p_and_l_graph");
     let button_width = window.button.width;
     graph.append("rect")
         .attr("width", button_width)
@@ -257,39 +119,44 @@ function create_underlying_current_price_buttons(graph, cfg) {
         .attr("stroke", "black") // Border color
         .attr("stroke-width", 2); // Border thickness
 
-    graph.append("text")
-        .attr("x", window.margin.left + x_scale(cfg.get_underlying_current_price()) + 4 - button_width / 2)
+    let text_element = graph.append("text")
+        .attr("x", window.margin.left + x_scale(cfg.get_underlying_current_price()))
         .attr("y", window.button.text_vpos)
         .attr("fill", "white")
         .attr("class", "draggable-button")
         .attr("cursor", "pointer")
-        .text(`${cfg.get_underlying_current_price()}`)
-        .call(d3.drag()
-            .on("drag", function (event) {
-                let newX = Math.max(0, Math.min(window.width, (event.x - window.margin.left)));
-                d3.select(this).attr("x", newX - 15);
-                let newStrike = x_scale.invert(newX);
-                cfg.set_underlying_current_price(Math.round(newStrike));
-                draw_graph();
-            })
-        );
+        .text(`${cfg.get_underlying_current_price().toFixed(2)}`);
+    const textWidth = text_element.node().getBBox().width;
+    text_element.attr("x", window.margin.left + x_scale(cfg.get_underlying_current_price()) - textWidth / 2);
+
+    const price_value = x_scale(cfg.get_underlying_current_price());
+
+    console.log(cfg.get_underlying_current_price());
+    svg.append("line")
+        .attr("x1", window.margin.left + price_value)
+        .attr("y1", window.margin.top)  // Start at the top of pl_graph
+        .attr("x2", window.margin.left + price_value)
+        .attr("y2", window.height)  // Extend to cover both graphs
+        .attr("stroke", "blue")
+        .attr("stroke-width", 1)
+        .attr("stroke-dasharray", "5,5"); // Dotted line pattern
 
 }
 
 function compute_p_and_l_data(cfg, use_legs_volatility, num_days_left) {
 
-    const combo = cfg.get_combo();
-    const simulation = cfg.get_simulation();
+    const combo = cfg.get_combo_params();
+    const simulation = cfg.get_simulation_params();
 
     let p_and_l_data = [];
 
-    for (let price = cfg.get_min_price(); price <= cfg.get_max_price(); price += cfg.get_step()) {
+    for (let price = cfg.get_simul_min_price_of_combo(); price <= cfg.get_simul_max_price_of_combo(); price += cfg.get_simul_step_price_of_combo()) {
         let p_and_l_profile = 0;
         combo.legs.forEach(option => {
             let v = use_legs_volatility ? option.volatility : simulation.volatility;
-            let option_price = computeOptionPrice(cfg.get_underlying_current_price(), option.strike, cfg.get_interest_rate(), v, simulation.time_to_expiry, option.type);
+            let option_price = computeOptionPrice(cfg.get_underlying_current_price(), option.strike, cfg.get_interest_rate_of_combo(), v, simulation.time_to_expiry + option.expiration_offset, option.type);
             let premium = option_price[0];
-            let greeks = computeOptionPrice(price, option.strike, cfg.get_interest_rate(), v, num_days_left, option.type);
+            let greeks = computeOptionPrice(price, option.strike, cfg.get_interest_rate_of_combo(), v, num_days_left + option.expiration_offset, option.type);
             p_and_l_profile = p_and_l_profile + option.qty * 100 * (greeks[0] - premium);
         });
         p_and_l_data.push({ x: price, y: p_and_l_profile });
@@ -299,11 +166,11 @@ function compute_p_and_l_data(cfg, use_legs_volatility, num_days_left) {
 
 function compute_greeks_data(cfg, use_legs_volatility) {
 
-    const simulation = cfg.get_simulation();
-    const combo = cfg.get_combo();
+    const simulation = cfg.get_simulation_params();
+    const combo = cfg.get_combo_params();
     let greeks_data = [[], [], [], [], [], []];
 
-    for (let price = cfg.get_min_price(); price <= cfg.get_max_price(); price += cfg.get_step()) {
+    for (let price = cfg.get_simul_min_price_of_combo(); price <= cfg.get_simul_max_price_of_combo(); price += cfg.get_simul_step_price_of_combo()) {
 
         const num_greeks = 6;
         let greek_index = 0;
@@ -311,8 +178,8 @@ function compute_greeks_data(cfg, use_legs_volatility) {
         for (greek_index = 0; greek_index < num_greeks; greek_index++) {
             let greek = 0;
             combo.legs.forEach(option => {
-                let v = use_legs_volatility ? option.volatility : cfg.get_volatility();
-                let greeks = computeOptionPrice(price, option.strike, cfg.get_interest_rate(), v, cfg.get_time_for_simulation(), option.type);
+                let v = use_legs_volatility ? option.volatility : cfg.get_volatility_of_combo();
+                let greeks = computeOptionPrice(price, option.strike, cfg.get_interest_rate_of_combo(), v, cfg.get_time_for_simulation_of_combo() + option.expiration_offset, option.type);
                 greek = greek + option.qty * greeks[greek_index] * greek_scaler[greek_index];
             });
             greeks_data[greek_index].push({ x: price, y: greek });
@@ -321,13 +188,13 @@ function compute_greeks_data(cfg, use_legs_volatility) {
     return greeks_data;
 }
 
-async function update_volatility_sliders() {
+async function setup_volatility_sliders() {
 
-    const use_legs_volatility_checkbox = document.getElementById('use_legs_volatility_checkbox');
+    use_legs_volatility_checkbox = document.getElementById('ivCheckbox');
     const sliders_container = document.getElementById('sliders_container');
-    cfg = new Configuration(use_local ? local_config : await fetch_configuration());
-    local_config
-    const combo = cfg.get_combo();
+    cfg = new Configuration(use_local ? await load_local_config() : await fetch_configuration());
+    
+    const combo = cfg.get_combo_params();
 
     // Clear existing sliders
     sliders_container.innerHTML = '';
@@ -338,11 +205,12 @@ async function update_volatility_sliders() {
         combo.legs.forEach((option, index) => {
             const slider_container = document.createElement('div');
             const label = document.createElement('label');
-            label.textContent = `${option.type} - Strike: ${option.strike} IV`;
+            label.textContent = `${option.type} ${option.strike} IV`;
 
             const slider = document.createElement('input');
             slider.type = 'range';
-            slider.min = 0;
+            slider.style.width = '100px';
+            slider.min = 0.01;
             slider.max = 1;  // You can adjust this range as needed
             slider.step = 0.01;
             slider.value = option.volatility;// || 0.2;  // Assuming you store IV in each option's volatility
@@ -367,21 +235,22 @@ async function update_volatility_sliders() {
         // Single slider for mean IV
         const slider_container = document.createElement('div');
         const label = document.createElement('label');
-        label.textContent = 'Mean volatility';
+        label.textContent = 'Vol.';
         //console.log(config);
         const slider = document.createElement('input');
         slider.type = 'range';
-        slider.min = 0;
+        slider.style.width = '100px';
+        slider.min = 0.01;
         slider.max = 1;  // Adjust this range as needed
         slider.step = 0.01;
-        slider.value = cfg.get_volatility();
+        slider.value = cfg.get_volatility_of_combo();
 
         // Display the IV value next to the slider
         const value_display = document.createElement('span');
         value_display.textContent = ` ${slider.value}`;
         slider.addEventListener('input', () => {
             value_display.textContent = ` ${slider.value}`;
-            cfg.set_volatility(parseFloat(slider.value));
+            cfg.set_volatility_of_combo(parseFloat(slider.value));
             //console.log("config.volatility="+config.volatility);
             draw_graph();
         });
@@ -394,9 +263,9 @@ async function update_volatility_sliders() {
     }
 }
 
-async function update_time_slider() {
+async function setup_days_left_slider() {
     // Fetch the config each time the slider needs to be updated
-    cfg = new Configuration(use_local ? local_config : await fetch_configuration());
+    cfg = new Configuration(use_local ? await load_local_config() : await fetch_configuration());
 
     // Get the container for the time slider
     const time_slider_container = document.getElementById('timeSliderContainer');
@@ -407,20 +276,21 @@ async function update_time_slider() {
     // Create the time slider
     const slider_container = document.createElement('div');
     const label = document.createElement('label');
-    label.textContent = 'Days left';
+    label.textContent = 'Days';
 
     const slider = document.createElement('input');
     slider.type = 'range';
-    slider.min = 0;
-    slider.max = cfg.get_time_to_expiry();  // You can set this to a maximum value from config
-    slider.step = 1;
-    slider.value = cfg.get_time_for_simulation();  // Set the default value from config
+    slider.style.width = '100px';
+    slider.min = .1;
+    slider.max = cfg.get_time_to_expiry_of_combo();  // You can set this to a maximum value from config
+    slider.step = .1;
+    slider.value = cfg.get_time_for_simulation_of_combo();  // Set the default value from config
 
     // Display the time value next to the slider
     const value_display = document.createElement('span');
-    value_display.textContent = ` ${slider.value}`;
+    value_display.textContent = ` ${slider.value}/${cfg.get_time_to_expiry_of_combo()}`;
     slider.addEventListener('input', () => {
-        value_display.textContent = ` ${slider.value}`;
+        value_display.textContent = ` ${slider.value}/${cfg.get_time_to_expiry_of_combo()}`;
         cfg.set_time_for_simulation(parseInt(slider.value));
         draw_graph();
     });
@@ -432,48 +302,99 @@ async function update_time_slider() {
     time_slider_container.appendChild(slider_container);
 }
 
+async function setup_volatility_type() {
+    d3.select("#ivCheckboxContainer")
+        .append("input")
+        .attr("type", "checkbox")
+        .attr("id", "ivCheckbox")
+        .attr("name", "ivCheckbox");
+
+    // Append a label for the checkbox
+    d3.select("#ivCheckboxContainer")
+        .append("label")
+        .attr("for", "ivCheckbox")
+        .text("Set Vol. per leg");
+
+    // Event listener to detect changes
+    d3.select("#ivCheckbox").on("change", function () {
+        console.log("IV Checkbox checked:", this.checked);
+        setup_volatility_sliders();
+    });
+    use_legs_volatility_checkbox = document.getElementById('ivCheckbox');
+}
+
+async function setup_combos_list() {
+    cfg = new Configuration(use_local ? await load_local_config() : await fetch_configuration());
+
+    // Select the container where the drop-down will be placed
+
+    const titleContainer = d3.select("#title_container");
+    titleContainer.insert("label", "#comboName")
+        .text(cfg.get_combo_params().name);
+
+    const comboContainer = d3.select("#combo_container");
+    const dropdown = comboContainer.append("select")
+        .attr("id", "comboBox")
+        .on("change", function () {
+            console.log("Selected:", this.value); // Handle selection change
+            cfg.config.config.combo = this.value;
+            update_remote_config(cfg.config);
+            cfg = 0
+            location.reload();
+        });
+    dropdown.selectAll("option")
+        .data(cfg.get_combos())
+        .enter()
+        .append("option")
+        .text(d => d)
+        .attr("value", d => d)
+        .attr("selected", d => d === cfg.config.config.combo ? "selected" : null);
+    comboContainer.insert("label", "#comboBox")
+        .text("Choose combo: ");
+
+}
 
 function draw_p_and_l(graph, scale, pl_at_expiration_data, pl_at_initial_data, pl_at_sim_date_data) {
     // Create SVG definitions for gradients
     const defs = graph.append("defs");
 
     // Green gradient for positive areas
-    const greenGradient = defs.append("linearGradient")
+    const green_gradient = defs.append("linearGradient")
         .attr("id", "greenGradient")
         .attr("x1", "0%").attr("y1", "100%")  // Start at bottom
         .attr("x2", "0%").attr("y2", "0%");   // End at top
 
-    greenGradient.append("stop")
+    green_gradient.append("stop")
         .attr("offset", "0%")
         .attr("stop-color", "white");
 
-    greenGradient.append("stop")
+    green_gradient.append("stop")
         .attr("offset", "100%")
         .attr("stop-color", "green");
 
     // Red gradient for negative areas
-    const redGradient = defs.append("linearGradient")
+    const red_gradient = defs.append("linearGradient")
         .attr("id", "redGradient")
         .attr("x1", "0%").attr("y1", "0%")   // Start at top
         .attr("x2", "0%").attr("y2", "100%"); // End at bottom
 
-    redGradient.append("stop")
+    red_gradient.append("stop")
         .attr("offset", "0%")
         .attr("stop-color", "white");
 
-    redGradient.append("stop")
+    red_gradient.append("stop")
         .attr("offset", "100%")
         .attr("stop-color", "red");
 
     // Define the area generator for positive values (above zero)
-    const areaBelow = d3.area()
+    const area_below = d3.area()
         .x(d => x_scale(d.x))
         .y0(scale(0))  // Fill down to y=0
         .y1(d => Math.max(scale(d.y), scale(0))) // Only fill above zero
         .curve(d3.curveBasis); // Optional smoothing
 
     // Define the area generator for negative values (below zero)
-    const areaAbove = d3.area()
+    const area_above = d3.area()
         .x(d => x_scale(d.x))
         .y0(scale(0))  // Fill up to y=0
         .y1(d => Math.min(scale(d.y), scale(0))) // Only fill below zero
@@ -484,14 +405,14 @@ function draw_p_and_l(graph, scale, pl_at_expiration_data, pl_at_initial_data, p
         .datum(pl_at_expiration_data)
         .attr("fill", "url(#greenGradient)") // Apply green gradient
         .attr("opacity", 0.6)
-        .attr("d", areaAbove);
+        .attr("d", area_above);
 
     // Append the negative (red) gradient area
     graph.append("path")
         .datum(pl_at_expiration_data)
         .attr("fill", "url(#redGradient)") // Apply red gradient
         .attr("opacity", 0.6)
-        .attr("d", areaBelow);
+        .attr("d", area_below);
 
     // Append the line on top
     graph.append("path")
@@ -536,42 +457,42 @@ function draw_greek(graph, scale, data) {
     const defs = graph.append("defs");
 
     // Green gradient for positive areas
-    const greenGradient = defs.append("linearGradient")
+    const green_gradient = defs.append("linearGradient")
         .attr("id", "greenGradient")
         .attr("x1", "0%").attr("y1", "100%")  // Start at bottom
         .attr("x2", "0%").attr("y2", "0%");   // End at top
 
-    greenGradient.append("stop")
+    green_gradient.append("stop")
         .attr("offset", "0%")
         .attr("stop-color", "white");
 
-    greenGradient.append("stop")
+    green_gradient.append("stop")
         .attr("offset", "100%")
         .attr("stop-color", "green");
 
     // Red gradient for negative areas
-    const redGradient = defs.append("linearGradient")
+    const red_gradient = defs.append("linearGradient")
         .attr("id", "redGradient")
         .attr("x1", "0%").attr("y1", "0%")   // Start at top
         .attr("x2", "0%").attr("y2", "100%"); // End at bottom
 
-    redGradient.append("stop")
+    red_gradient.append("stop")
         .attr("offset", "0%")
         .attr("stop-color", "white");
 
-    redGradient.append("stop")
+    red_gradient.append("stop")
         .attr("offset", "100%")
         .attr("stop-color", "red");
 
     // Define the area generator for positive values (above zero)
-    const areaBelow = d3.area()
+    const area_below = d3.area()
         .x(d => x_scale(d.x))
         .y0(scale(0))  // Fill down to y=0
         .y1(d => Math.max(scale(d.y), scale(0))) // Only fill above zero
         .curve(d3.curveBasis); // Optional smoothing
 
     // Define the area generator for negative values (below zero)
-    const areaAbove = d3.area()
+    const area_above = d3.area()
         .x(d => x_scale(d.x))
         .y0(scale(0))  // Fill up to y=0
         .y1(d => Math.min(scale(d.y), scale(0))) // Only fill below zero
@@ -582,14 +503,14 @@ function draw_greek(graph, scale, data) {
         .datum(data)
         .attr("fill", "url(#greenGradient)") // Apply green gradient
         .attr("opacity", 0.6)
-        .attr("d", areaAbove);
+        .attr("d", area_above);
 
     // Append the negative (red) gradient area
     graph.append("path")
         .datum(data)
         .attr("fill", "url(#redGradient)") // Apply red gradient
         .attr("opacity", 0.6)
-        .attr("d", areaBelow);
+        .attr("d", area_below);
 
     // Append the line on top
     graph.append("path")
@@ -605,23 +526,32 @@ function draw_greek(graph, scale, data) {
 
 }
 
+function display_local_status() {
+    d3.select("#graph-container")
+        .append("div")
+        .attr("class", use_local ? "red-dot" : "green-dot");
+}
+
+
 async function draw_graph() {
 
-    //if (!config) config = await fetch_configuration();
-    if (!cfg) cfg = new Configuration(use_local ? local_config : await fetch_configuration());
+    if (!cfg) {
+        cfg = new Configuration(use_local ? await load_local_config() : await fetch_configuration());
+    }
+    const window = cfg.get_window_params();
 
-    const window = cfg.get_window();
+    let ticker = cfg.get_ticker_of_combo()
 
-    let ticker = cfg.get_ticker()
-    let r = use_local ? 0 : await fetch_price(ticker);
-    if(!use_local)
-        cfg.set_underlying_current_price(use_local ? cfg.underlying_current_price : r.price);
-    console.log(ticker, r.price)
+    let r = use_local ? await load_local_price(ticker) : await fetch_price(ticker);
+    if (1) {
+        cfg.set_underlying_current_price(r.price);
+    }
+    console.log(ticker, cfg.get_underlying_current_price())
 
     // get the data
     let pl_at_expiration_data = compute_p_and_l_data(cfg, use_legs_volatility_checkbox.checked, 0);
-    let pl_at_initial_data = compute_p_and_l_data(cfg, use_legs_volatility_checkbox.checked, cfg.get_time_to_expiry());
-    let pl_at_sim_date_data = compute_p_and_l_data(cfg, use_legs_volatility_checkbox.checked, cfg.get_time_for_simulation());
+    let pl_at_initial_data = compute_p_and_l_data(cfg, use_legs_volatility_checkbox.checked, cfg.get_time_to_expiry_of_combo());
+    let pl_at_sim_date_data = compute_p_and_l_data(cfg, use_legs_volatility_checkbox.checked, cfg.get_time_for_simulation_of_combo());
     let greeks_data = compute_greeks_data(cfg, use_legs_volatility_checkbox.checked);
 
     // prepare the graph area
@@ -633,9 +563,10 @@ async function draw_graph() {
     }
     svg.selectAll("*").remove();
 
+
     // X scale for the price axis ; set at the bottom of the graph window
     const graph_width = window.width - window.margin.left - window.margin.right;
-    x_scale = d3.scaleLinear().domain([cfg.get_min_price(), cfg.get_max_price()]).range([0, graph_width]);
+    x_scale = d3.scaleLinear().domain([cfg.get_simul_min_price_of_combo(), cfg.get_simul_max_price_of_combo()]).range([0, graph_width]);
     let y_offset = window.margin.top + window.height + window.margin.vspacer;
     y_offset = window.height - window.margin.price_axis;
     svg.append("g").attr("transform", `translate(${window.margin.left},${y_offset})`).call(d3.axisBottom(x_scale));
@@ -644,8 +575,6 @@ async function draw_graph() {
     // P&L and Greeks graph areas
     const p_and_l_graph_height = window.p_and_l_ratio * (window.height - window.margin.top - window.margin.bottom - window.margin.vspacer);
     const greeks_graphs_height = window.height - p_and_l_graph_height - window.margin.top - window.margin.bottom - window.margin.vspacer;
-    //console.log("p_and_l_graph_height", p_and_l_graph_height);
-    //console.log("greeks_graphs_height", greeks_graphs_height);
 
     let p_and_l_graph_area = svg
         .append("g")
@@ -658,8 +587,10 @@ async function draw_graph() {
         .attr("height", greeks_graphs_height);
 
     // P&L graph
-    const min_p_and_l = d3.min(pl_at_expiration_data, d => d.y);
-    const max_p_and_l = d3.max(pl_at_expiration_data, d => d.y);
+    const datasets = [pl_at_expiration_data, pl_at_initial_data, pl_at_sim_date_data];
+    const min_p_and_l = d3.min(datasets.flat(), d => d.y);
+    const max_p_and_l = d3.max(datasets.flat(), d => d.y);
+
     const padding_p_and_l = (max_p_and_l - min_p_and_l) * 0.1;
     const scale_p_and_l = d3.scaleLinear()
         .domain([min_p_and_l - padding_p_and_l, max_p_and_l + padding_p_and_l])
@@ -670,6 +601,7 @@ async function draw_graph() {
     p_and_l_graph.attr("width", window.width - window.margin.left);
     p_and_l_graph.append("g").call(d3.axisLeft(scale_p_and_l));
     p_and_l_graph.append("g").attr("transform", `translate(0,${scale_p_and_l(0)})`).call(d3.axisBottom(x_scale)).selectAll(".tick text").remove();
+    p_and_l_graph.attr("clip-path", "url(#clipBox)");
 
     add_grid(p_and_l_graph, cfg, scale_p_and_l)
 
@@ -717,8 +649,6 @@ async function draw_graph() {
 
         draw_greek(greek_graph, scale_greek, greeks_data[greek_index]);
 
-        //const line1 = d3.line().x(d => x_scale(d.x)).y(d => scale_greek(d.y));
-        //greek_graph.append("path").datum(greeks_data[greek_index]).attr("fill", "none").attr("stroke", "blue").attr("stroke-width", 2).attr("d", line1);
     }
 
     add_strike_lines(svg, cfg);
@@ -727,7 +657,10 @@ async function draw_graph() {
 
 }
 
+setup_volatility_type();
 draw_graph();
-update_time_slider();
-update_volatility_sliders();
-document.getElementById('use_legs_volatility_checkbox').addEventListener('change', update_volatility_sliders);
+display_local_status();
+setup_combos_list();
+setup_days_left_slider();
+setup_volatility_sliders();
+document.getElementById('ivCheckbox').addEventListener('change', setup_volatility_sliders);

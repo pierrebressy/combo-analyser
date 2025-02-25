@@ -1,0 +1,253 @@
+{
+    "combos": {
+        "001": {
+            "legs": [
+                {
+                    "expiration_offset": 0,
+                    "qty": 1,
+                    "strike": 305,
+                    "type": "put",
+                    "volatility": 0.4
+                },
+                {
+                    "expiration_offset": 0,
+                    "qty": -1,
+                    "strike": 300,
+                    "type": "put",
+                    "volatility": 0.4
+                },
+                {
+                    "expiration_offset": 0,
+                    "qty": -1,
+                    "strike": 265,
+                    "type": "put",
+                    "volatility": 0.4
+                }
+            ],
+            "name": "COMBO TANK TSLA MAY2025",
+            "simulation": {
+                "expiration_offset": 0,
+                "interest_rate": 0,
+                "max_price": 340,
+                "min_price": 240,
+                "step": 1,
+                "time_for_simulation": 15,
+                "time_to_expiry": 35,
+                "volatility": 0.4
+            },
+            "ticker": "TSLA"
+        },
+        "002": {
+            "legs": [
+                {
+                    "expiration_offset": 0,
+                    "qty": 1,
+                    "strike": 5510,
+                    "type": "put",
+                    "volatility": 0.4
+                },
+                {
+                    "expiration_offset": 0,
+                    "qty": -2,
+                    "strike": 5310,
+                    "type": "put",
+                    "volatility": 0.4
+                },
+                {
+                    "expiration_offset": 0,
+                    "qty": 1,
+                    "strike": 4900,
+                    "type": "put",
+                    "volatility": 0.41
+                }
+            ],
+            "name": "COMBO TENTE SPX MAY2025",
+            "simulation": {
+                "interest_rate": 0,
+                "max_price": 6300,
+                "min_price": 4800,
+                "step": 1,
+                "time_for_simulation": 2,
+                "time_to_expiry": 119,
+                "volatility": 0.17
+            },
+            "ticker": "^SPX"
+        },
+        "003": {
+            "legs": [
+                {
+                    "expiration_offset": 7,
+                    "qty": 1,
+                    "strike": 6230,
+                    "type": "call",
+                    "volatility": 0.01
+                },
+                {
+                    "expiration_offset": 7,
+                    "qty": 2,
+                    "strike": 6240,
+                    "type": "call",
+                    "volatility": 0.106
+                },
+                {
+                    "expiration_offset": 0,
+                    "qty": -1,
+                    "strike": 6130,
+                    "type": "call",
+                    "volatility": 0.113
+                },
+                {
+                    "expiration_offset": 0,
+                    "qty": -2,
+                    "strike": 6270,
+                    "type": "call",
+                    "volatility": 0.103
+                }
+            ],
+            "name": "COMBO ZEBRA SPX MAR2025",
+            "simulation": {
+                "interest_rate": 0,
+                "max_price": 6400,
+                "min_price": 5870,
+                "step": 1,
+                "time_for_simulation": 15,
+                "time_to_expiry": 35,
+                "volatility": 0.106
+            },
+            "ticker": "^SPX"
+        },
+        "BUY CALL": {
+            "legs": [
+                {
+                    "expiration_offset": 0,
+                    "qty": 1,
+                    "strike": 230,
+                    "type": "call",
+                    "volatility": 0.4
+                }
+            ],
+            "name": "Single CALL",
+            "simulation": {
+                "expiration_offset": 0,
+                "interest_rate": 0,
+                "max_price": 300,
+                "min_price": 200,
+                "step": 1,
+                "time_for_simulation": 15,
+                "time_to_expiry": 35,
+                "volatility": 0.4
+            },
+            "ticker": "AAPL"
+        },
+        "BUY PUT": {
+            "legs": [
+                {
+                    "expiration_offset": 0,
+                    "qty": 1,
+                    "strike": 240,
+                    "type": "put",
+                    "volatility": 0.4
+                }
+            ],
+            "name": "Single PUT",
+            "simulation": {
+                "expiration_offset": 0,
+                "interest_rate": 0,
+                "max_price": 300,
+                "min_price": 200,
+                "step": 1,
+                "time_for_simulation": 15,
+                "time_to_expiry": 35,
+                "volatility": 0.4
+            },
+            "ticker": "AAPL"
+        },
+        "SELL CALL": {
+            "legs": [
+                {
+                    "expiration_offset": 0,
+                    "qty": -1,
+                    "strike": 230,
+                    "type": "call",
+                    "volatility": 0.4
+                }
+            ],
+            "name": "Single CALL",
+            "simulation": {
+                "expiration_offset": 0,
+                "interest_rate": 0,
+                "max_price": 300,
+                "min_price": 200,
+                "step": 1,
+                "time_for_simulation": 15,
+                "time_to_expiry": 35,
+                "volatility": 0.4
+            },
+            "ticker": "AAPL"
+        },
+        "SELL PUT": {
+            "legs": [
+                {
+                    "expiration_offset": 0,
+                    "qty": -1,
+                    "strike": 240,
+                    "type": "put",
+                    "volatility": 0.4
+                }
+            ],
+            "name": "Single PUT",
+            "simulation": {
+                "expiration_offset": 0,
+                "interest_rate": 0,
+                "max_price": 300,
+                "min_price": 200,
+                "step": 1,
+                "time_for_simulation": 15,
+                "time_to_expiry": 35,
+                "volatility": 0.4
+            },
+            "ticker": "AAPL"
+        }
+    },
+    "config": {
+        "combo": "BUY CALL"
+    },
+    "graph": {
+        "greeks": {
+            "ids": [
+                1,
+                2,
+                3,
+                4
+            ],
+            "labels": [
+                "Premium",
+                "Delta",
+                "Gamma",
+                "Theta",
+                "Vega",
+                "Rho"
+            ]
+        }
+    },
+    "underlying_current_price": 5983.25,
+    "window": {
+        "button": {
+            "height": 25,
+            "text_vpos": 15,
+            "width": 85
+        },
+        "height": 914,
+        "margin": {
+            "bottom": 20,
+            "greeks_vspacer": 40,
+            "left": 80,
+            "price_axis": 17,
+            "right": 40,
+            "top": 40,
+            "vspacer": 20
+        },
+        "p_and_l_ratio": 0.5,
+        "width": 1339.2734375
+    }
+}

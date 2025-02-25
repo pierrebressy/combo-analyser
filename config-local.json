@@ -1,0 +1,77 @@
+{    
+    "underlying_current_price": 0,
+    "config": {
+        "combo": "001"
+    },
+    "combos": {
+        "001": {
+            "ticker": "TSLA",
+            "legs": [
+                {
+                    "qty": 1,
+                    "type": "put",
+                    "strike": 305,
+                    "volatility": 0.4
+                },
+                {
+                    "qty": -1,
+                    "type": "put",
+                    "strike": 300,
+                    "volatility": 0.4
+                },
+                {
+                    "qty": -1,
+                    "type": "put",
+                    "strike": 265,
+                    "volatility": 0.41
+                }
+            ],
+            "simulation": {
+                "min_price": 240,
+                "max_price": 340,
+                "step": 1,
+                "volatility": 0.4,
+                "interest_rate": 0.0,
+                "time_to_expiry": 35,
+                "time_for_simulation": 15
+            }
+        }
+    },
+    "window": {
+        "width": 1600,
+        "height": 800,
+        "p_and_l_ratio": 0.5,
+        "margin": {
+            "top": 40,
+            "right": 20,
+            "bottom": 40,
+            "left": 80,
+            "vspacer": 20,
+            "greeks_vspacer": 20,
+            "price_axis": 17
+        },
+        "button": {
+            "width": 85,
+            "height": 25,
+            "text_vpos": 15
+        }
+    },
+    "graph": {
+        "greeks": {
+            "labels": [
+                "Premium",
+                "Delta",
+                "Gamma",
+                "Theta",
+                "Vega",
+                "Rho"
+            ],
+            "ids": [
+                1,
+                2,
+                3,
+                4
+            ]
+        }
+    }
+}
