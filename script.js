@@ -2,7 +2,7 @@ import { computeOptionPrice } from './functions.js';
 import { load_local_price, load_local_config, update_remote_config, fetch_configuration, fetch_price } from './async.js';
 import { Configuration } from './configuration.js';
 
-let use_local = false;
+let use_local = true;
 
 let cfg;
 let svg;
@@ -542,7 +542,7 @@ function add_crosshair(graph, cfg, window, x_scale, y_scale) {
         .attr("class", "crosshair-line")
         .attr("id", "crosshair-x")
         .attr("y1", window.margin.top)
-        .attr("y2", window.height-window.margin.bottom)
+        .attr("y2", window.height - window.margin.bottom)
         .attr("stroke", "green")
         .attr("stroke-width", 1)
         .attr("stroke-dasharray", "4,4");
@@ -552,38 +552,38 @@ function add_crosshair(graph, cfg, window, x_scale, y_scale) {
         .attr("class", "crosshair-line")
         .attr("id", "crosshair-y")
         .attr("x1", window.margin.left)
-        .attr("x2", window.width-window.margin.right)
+        .attr("x2", window.width - window.margin.right)
         .attr("stroke", "green")
         .attr("stroke-width", 1)
         .attr("stroke-dasharray", "4,4");
 
-        graph.on("mousemove", function (event) {
-            const [x, y] = d3.pointer(event, this); // Get mouse coordinates
-            if (y < window.margin.top || y > window.height - window.margin.bottom) {
-                crosshair.style("display", "none");
-                return;
-            }
-            if(x < window.margin.left || x > window.width - window.margin.right) {
-                crosshair.style("display", "none");
-                return;
-            }
-            // Show crosshair
-            crosshair.style("display", null);
-        
-            // Update position of the crosshair lines
-            crosshair.select("#crosshair-x")
-                .attr("x1", x)
-                .attr("x2", x);
-        
-            crosshair.select("#crosshair-y")
-                .attr("y1", y)
-                .attr("y2", y);
-        })
+    graph.on("mousemove", function (event) {
+        const [x, y] = d3.pointer(event, this); // Get mouse coordinates
+        if (y < window.margin.top || y > window.height - window.margin.bottom) {
+            crosshair.style("display", "none");
+            return;
+        }
+        if (x < window.margin.left || x > window.width - window.margin.right) {
+            crosshair.style("display", "none");
+            return;
+        }
+        // Show crosshair
+        crosshair.style("display", null);
+
+        // Update position of the crosshair lines
+        crosshair.select("#crosshair-x")
+            .attr("x1", x)
+            .attr("x2", x);
+
+        crosshair.select("#crosshair-y")
+            .attr("y1", y)
+            .attr("y2", y);
+    })
         .on("mouseleave", function () {
             // Hide crosshair when mouse leaves
             crosshair.style("display", "none");
         });
-        
+
 }
 async function draw_graph() {
 
