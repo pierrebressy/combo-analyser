@@ -26,12 +26,12 @@ export class Configuration {
         for (let key in this.config.combos) {
             combos.push(key);
         }
-        console.log(combos);
+        //console.log(combos);
         return combos;
     }
     set_underlying_current_price(price) {
         this.config.underlying_current_price = price;
-        console.log("=> new underlying_current_price=" + this.config.underlying_current_price);
+        //console.log("=> new underlying_current_price=" + this.config.underlying_current_price);
     }
     get_underlying_current_price() {
         return this.config.underlying_current_price;

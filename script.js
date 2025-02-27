@@ -131,7 +131,7 @@ function create_underlying_current_price_buttons(graph, cfg) {
 
     const price_value = x_scale(cfg.get_underlying_current_price());
 
-    console.log(cfg.get_underlying_current_price());
+    //console.log(cfg.get_underlying_current_price());
     svg.append("line")
         .attr("x1", window.margin.left + price_value)
         .attr("y1", window.margin.top)  // Start at the top of pl_graph
@@ -221,7 +221,7 @@ async function setup_volatility_sliders() {
             slider.addEventListener('input', () => {
                 value_display.textContent = ` ${slider.value}`;
                 option.volatility = parseFloat(slider.value);
-                //console.log("=> new option.volatility("+index+")="+option.volatility);
+                ////console.log("=> new option.volatility("+index+")="+option.volatility);
                 draw_graph();
             });
 
@@ -236,7 +236,7 @@ async function setup_volatility_sliders() {
         const slider_container = document.createElement('div');
         const label = document.createElement('label');
         label.textContent = 'Vol.';
-        //console.log(config);
+        ////console.log(config);
         const slider = document.createElement('input');
         slider.type = 'range';
         slider.style.width = '100px';
@@ -251,7 +251,7 @@ async function setup_volatility_sliders() {
         slider.addEventListener('input', () => {
             value_display.textContent = ` ${slider.value}`;
             cfg.set_volatility_of_combo(parseFloat(slider.value));
-            //console.log("config.volatility="+config.volatility);
+            ////console.log("config.volatility="+config.volatility);
             draw_graph();
         });
 
@@ -317,7 +317,7 @@ async function setup_volatility_type() {
 
     // Event listener to detect changes
     d3.select("#ivCheckbox").on("change", function () {
-        console.log("IV Checkbox checked:", this.checked);
+        //console.log("IV Checkbox checked:", this.checked);
         setup_volatility_sliders();
     });
     use_legs_volatility_checkbox = document.getElementById('ivCheckbox');
@@ -336,7 +336,7 @@ async function setup_combos_list() {
     const dropdown = comboContainer.append("select")
         .attr("id", "comboBox")
         .on("change", function () {
-            console.log("Selected:", this.value); // Handle selection change
+            //console.log("Selected:", this.value); // Handle selection change
             cfg.config.config.combo = this.value;
             update_remote_config(cfg.config);
             cfg = 0
@@ -609,7 +609,6 @@ function add_crosshair(graph, cfg, window, x_scale, y_scale) {
         window=cfg.get_window_params();
         const price = x_scale.invert(x-window.margin.left);
         const formattedPrice = price.toFixed(2); // Format as %.1f
-        console.log("price=", price, "formattedPrice=", formattedPrice);
         priceLabelGroup.select("#price-label-text")
             .attr("x", 25)
             .text(formattedPrice+" $");
@@ -639,7 +638,7 @@ async function draw_graph() {
     if (1) {
         cfg.set_underlying_current_price(r.price);
     }
-    console.log(ticker, cfg.get_underlying_current_price())
+    ////console.log(ticker, cfg.get_underlying_current_price())
 
     // get the data
     let pl_at_expiration_data = compute_p_and_l_data(cfg, use_legs_volatility_checkbox.checked, 0);
@@ -751,7 +750,7 @@ async function draw_graph() {
 }
 
 use_local = await is_mode_local(); // Auto-detect local/remote mode
-console.log("use_local=", use_local);
+//console.log("use_local=", use_local);
 setup_volatility_type();
 draw_graph();
 display_local_status();
