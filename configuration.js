@@ -36,7 +36,7 @@ export class Configuration {
             selected_combo = getCookie("selected_combo");
         }
         catch (error) {
-            setCookie("selected_combo", "BUY CALL", 365);
+            setCookie("selected_combo", "TANK MSTR MAR14'25", 365);
         }
         console.log("Configuration: selected_combo", getCookie("selected_combo"));
         this.config.config.combo = getCookie("selected_combo");
