@@ -147,8 +147,9 @@ function create_underlying_current_price_buttons(graph, cfg) {
 function compute_p_and_l_data(cfg, use_legs_volatility, num_days_left) {
 
     const combo = cfg.get_combo_params();
+    console.log("combo",combo);
     const simulation = cfg.get_simulation_params();
-
+console.log("simulation",simulation);
     let p_and_l_data = [];
 
     for (let price = cfg.get_simul_min_price_of_combo(); price <= cfg.get_simul_max_price_of_combo(); price += cfg.get_simul_step_price_of_combo()) {
