@@ -32,8 +32,10 @@ export class Configuration {
         const container = d3.select("#graph-container").node();
         this.config.window.width = container.getBoundingClientRect().width;
         this.config.window.height = container.getBoundingClientRect().height - 50;
-        selected_combo = getCookie("selected_combo");
-        if (selected_combo == null) {
+        try {
+            selected_combo = getCookie("selected_combo");
+        }
+        catch (error) {
             setCookie("selected_combo", "BUY CALL", 365);
         }
         console.log("Configuration: selected_combo", getCookie("selected_combo"));
