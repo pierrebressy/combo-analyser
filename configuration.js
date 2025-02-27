@@ -27,14 +27,14 @@ export class Configuration {
 
         // Attributes (properties)
         this.config = config;
+        this.combo = this.get_combo_params();
+        this.simulation = this.get_simulation_params();
 
         const container = d3.select("#graph-container").node();
         this.config.window.width = container.getBoundingClientRect().width;
         this.config.window.height = container.getBoundingClientRect().height - 50;
         console.log("Configuration: selected_combo",getCookie("selected_combo"));
-        this.combo = this.get_combo_params();
         this.config.config.combo=getCookie("selected_combo");
-        this.simulation = this.get_simulation_params();
 
     }
     get_window_params() {
