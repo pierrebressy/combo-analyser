@@ -194,7 +194,7 @@ async function setup_volatility_sliders() {
 
     use_legs_volatility_checkbox = document.getElementById('ivCheckbox');
     const sliders_container = document.getElementById('sliders_container');
-    cfg = new Configuration(use_local ? await load_local_config() : await fetch_configuration());
+    //cfg = new Configuration(use_local ? await load_local_config() : await fetch_configuration());
 
     const combo = cfg.get_combo_params();
 
@@ -267,8 +267,8 @@ async function setup_volatility_sliders() {
 
 async function setup_days_left_slider() {
     // Fetch the config each time the slider needs to be updated
-    cfg = new Configuration(use_local ? await load_local_config() : await fetch_configuration());
-
+    //cfg = new Configuration(use_local ? await load_local_config() : await fetch_configuration());
+    console.log("setup_days_left_slider : cfg",cfg);
     // Get the container for the time slider
     const time_slider_container = document.getElementById('timeSliderContainer');
 
@@ -325,11 +325,19 @@ async function setup_volatility_type() {
     use_legs_volatility_checkbox = document.getElementById('ivCheckbox');
 }
 
+function reloadWithParam(key, value) {
+    const url = new URL(window.location);
+    url.searchParams.set(key, value); // Add or update the parameter
+    window.location.href = url.toString(); // Navigate to the new URL
+}
+
+// Example: Reload and set `mode=local`
+
 async function setup_combos_list() {
-    cfg = new Configuration(use_local ? await load_local_config() : await fetch_configuration());
+    //cfg = new Configuration(use_local ? await load_local_config() : await fetch_configuration());
 
     // Select the container where the drop-down will be placed
-
+    console.log("setup_combos_list : cfg",cfg);
     const titleContainer = d3.select("#title_container");
     titleContainer.insert("label", "#comboName")
         .text(cfg.get_combo_params().name);
@@ -340,12 +348,14 @@ async function setup_combos_list() {
         .on("change", function () {
             console.log("Selected:", this.value); // Handle selection change
             cfg.config.config.combo = this.value;
-            setCookie("selected_combo", this.value, 365);   // Save
 
-            update_remote_config(cfg.config);
-            cfg = 0
+            if (!use_local) {
+                update_remote_config(cfg.config);
+                cfg = 0
+            }
             location.reload();
-            console.log("-->", getCookie("selected_combo") );  // Read¨
+            reloadWithParam("combo", this.value);
+
         });
     dropdown.selectAll("option")
         .data(cfg.get_combos())
@@ -758,7 +768,7 @@ async function draw_graph() {
 use_local = true; //await is_mode_local(); // Auto-detect local/remote mode
 console.log("use_local=", use_local);
 setup_volatility_type();
-draw_graph();
+await draw_graph();
 display_local_status();
 setup_combos_list();
 setup_days_left_slider();

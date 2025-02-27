@@ -18,30 +18,40 @@ export function setCookie(name, value, days) {
     document.cookie = name + "=" + encodeURIComponent(value) + expires + "; path=/";
 }
 
+function getURLParam(name) {
+    return new URLSearchParams(window.location.search).get(name);
+}
 
 
 export class Configuration {
 
     constructor(config) {
 
+        let combo = "";
 
+        try {
+            combo = getURLParam("combo");
+            if (combo.length == 0) {
+                combo="BUY CALL";
+            }
+        }
+        catch (error) {
+            console.error("Error reading parameter combo from URL.");
+            combo="BUY CALL";
+        }
+        console.log("combo : ", combo);
+        config.config.combo = combo;
+        console.log("config : ", config);
+
+        // check length of combo
         // Attributes (properties)
         this.config = config;
-        this.combo = this.get_combo_params();
-
         const container = d3.select("#graph-container").node();
         this.config.window.width = container.getBoundingClientRect().width;
         this.config.window.height = container.getBoundingClientRect().height - 50;
-        try {
-            selected_combo = getCookie("selected_combo");
-        }
-        catch (error) {
-            setCookie("selected_combo", "TANK MSTR MAR14'25", 365);
-        }
-        console.log("Configuration: selected_combo", getCookie("selected_combo"));
-        this.config.config.combo = getCookie("selected_combo");
         this.combo = this.get_combo_params();
         this.simulation = this.get_simulation_params();
+        console.log("this.combo", this.combo);
 
     }
     get_window_params() {
