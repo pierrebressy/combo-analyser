@@ -39,9 +39,7 @@ export class Configuration {
             console.error("Error reading parameter combo from URL.");
             combo="BUY CALL";
         }
-        console.log("combo : ", combo);
         config.config.combo = combo;
-        console.log("config : ", config);
 
         // check length of combo
         // Attributes (properties)
@@ -51,7 +49,6 @@ export class Configuration {
         this.config.window.height = container.getBoundingClientRect().height - 50;
         this.combo = this.get_combo_params();
         this.simulation = this.get_simulation_params();
-        console.log("this.combo", this.combo);
 
     }
     get_window_params() {

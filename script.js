@@ -147,9 +147,7 @@ function create_underlying_current_price_buttons(graph, cfg) {
 function compute_p_and_l_data(cfg, use_legs_volatility, num_days_left) {
 
     const combo = cfg.get_combo_params();
-    console.log("combo",combo);
     const simulation = cfg.get_simulation_params();
-console.log("simulation",simulation);
     let p_and_l_data = [];
 
     for (let price = cfg.get_simul_min_price_of_combo(); price <= cfg.get_simul_max_price_of_combo(); price += cfg.get_simul_step_price_of_combo()) {
@@ -194,7 +192,6 @@ async function setup_volatility_sliders() {
 
     use_legs_volatility_checkbox = document.getElementById('ivCheckbox');
     const sliders_container = document.getElementById('sliders_container');
-    //cfg = new Configuration(use_local ? await load_local_config() : await fetch_configuration());
 
     const combo = cfg.get_combo_params();
 
@@ -267,8 +264,6 @@ async function setup_volatility_sliders() {
 
 async function setup_days_left_slider() {
     // Fetch the config each time the slider needs to be updated
-    //cfg = new Configuration(use_local ? await load_local_config() : await fetch_configuration());
-    console.log("setup_days_left_slider : cfg",cfg);
     // Get the container for the time slider
     const time_slider_container = document.getElementById('timeSliderContainer');
 
@@ -334,10 +329,8 @@ function reloadWithParam(key, value) {
 // Example: Reload and set `mode=local`
 
 async function setup_combos_list() {
-    //cfg = new Configuration(use_local ? await load_local_config() : await fetch_configuration());
 
     // Select the container where the drop-down will be placed
-    console.log("setup_combos_list : cfg",cfg);
     const titleContainer = d3.select("#title_container");
     titleContainer.insert("label", "#comboName")
         .text(cfg.get_combo_params().name);
