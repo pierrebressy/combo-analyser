@@ -21,7 +21,7 @@ export async function load_local_price(ticker) {
         if (!response.ok) throw new Error("Failed to load ",local_prices_file);
 
         let local_prices = await response.json(); // Parse JSON and store in local_config
-        console.log("Prices loaded:", local_prices[ticker]);
+        //console.log("Prices loaded:", local_prices[ticker]);
         return local_prices[ticker];
     } catch (error) {
         console.error("Error loading prices:", error);
@@ -34,7 +34,7 @@ export async function load_local_config() {
         if (!response.ok) throw new Error("Failed to load ",local_config_file);
 
         let local_config = await response.json(); // Parse JSON and store in local_config
-        console.log("Config loaded:", local_config);
+        //console.log("Config loaded:", local_config);
         return local_config;
     } catch (error) {
         console.error("Error loading config:", error);

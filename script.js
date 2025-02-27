@@ -1,6 +1,6 @@
 import { computeOptionPrice } from './functions.js';
 import { is_mode_local, load_local_price, load_local_config, update_remote_config, fetch_configuration, fetch_price } from './async.js';
-import { Configuration } from './configuration.js';
+import { Configuration, getCookie, setCookie } from './configuration.js';
 
 let use_local = false;
 
@@ -8,6 +8,7 @@ let cfg;
 let svg;
 let x_scale;
 let use_legs_volatility_checkbox;
+let  priceLabelGroup;
 
 
 function add_strike_lines(svg, cfg) {
@@ -336,11 +337,14 @@ async function setup_combos_list() {
     const dropdown = comboContainer.append("select")
         .attr("id", "comboBox")
         .on("change", function () {
-            //console.log("Selected:", this.value); // Handle selection change
+            console.log("Selected:", this.value); // Handle selection change
             cfg.config.config.combo = this.value;
+            setCookie("selected_combo", this.value, 365);   // Save
+
             update_remote_config(cfg.config);
             cfg = 0
             location.reload();
+            console.log("-->", getCookie("selected_combo") );  // Read¨
         });
     dropdown.selectAll("option")
         .data(cfg.get_combos())
@@ -531,7 +535,7 @@ function display_local_status() {
         .append("div")
         .attr("class", use_local ? "red-dot" : "green-dot");
 }
-let  priceLabelGroup;
+
 function add_crosshair(graph, cfg, window, x_scale, y_scale) {
 
     const crosshair = graph.append("g")
@@ -625,6 +629,7 @@ function add_crosshair(graph, cfg, window, x_scale, y_scale) {
 
 
 }
+
 async function draw_graph() {
 
     if (!cfg) {
@@ -749,8 +754,8 @@ async function draw_graph() {
     add_crosshair(svg, cfg, window, x_scale, scale_p_and_l);
 }
 
-use_local = await is_mode_local(); // Auto-detect local/remote mode
-//console.log("use_local=", use_local);
+use_local = true; //await is_mode_local(); // Auto-detect local/remote mode
+console.log("use_local=", use_local);
 setup_volatility_type();
 draw_graph();
 display_local_status();

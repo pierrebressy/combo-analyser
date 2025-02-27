@@ -1,3 +1,25 @@
+export function getCookie(name) {
+    const cookies = document.cookie.split("; ");
+    for (let i = 0; i < cookies.length; i++) {
+        const [cookieName, cookieValue] = cookies[i].split("=");
+        if (cookieName === name) {
+            return decodeURIComponent(cookieValue);
+        }
+    }
+    return null;
+}
+export function setCookie(name, value, days) {
+    let expires = "";
+    if (days) {
+        const date = new Date();
+        date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
+        expires = "; expires=" + date.toUTCString();
+    }
+    document.cookie = name + "=" + encodeURIComponent(value) + expires + "; path=/";
+}
+
+
+
 export class Configuration {
 
     constructor(config) {
@@ -5,12 +27,15 @@ export class Configuration {
 
         // Attributes (properties)
         this.config = config;
-        this.combo = this.get_combo_params();
-        this.simulation = this.get_simulation_params();
 
         const container = d3.select("#graph-container").node();
         this.config.window.width = container.getBoundingClientRect().width;
         this.config.window.height = container.getBoundingClientRect().height - 50;
+        console.log("Configuration: selected_combo",getCookie("selected_combo"));
+        this.combo = this.get_combo_params();
+        this.config.config.combo=getCookie("selected_combo");
+        this.simulation = this.get_simulation_params();
+
     }
     get_window_params() {
         return this.config.window;
