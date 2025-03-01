@@ -758,7 +758,7 @@ async function draw_graph() {
     add_crosshair(svg, cfg, window, x_scale, scale_p_and_l);
 }
 
-use_local = true; //await is_mode_local(); // Auto-detect local/remote mode
+use_local = await is_mode_local(); // Auto-detect local/remote mode
 console.log("use_local=", use_local);
 setup_volatility_type();
 await draw_graph();
