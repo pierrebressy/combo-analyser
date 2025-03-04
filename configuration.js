@@ -41,6 +41,16 @@ export class Configuration {
         }
         config.config.combo = combo;
 
+        let use_real_values = false;
+        try {
+            use_real_values = getURLParam("use_real_values")==="true";
+        }
+        catch (error) {
+            console.error("Error reading parameter use_real_values from URL.");
+            use_real_values = false;      
+        }
+        config.config.use_real_values = use_real_values;      
+
         // check length of combo
         // Attributes (properties)
         this.config = config;
@@ -50,6 +60,15 @@ export class Configuration {
         this.combo = this.get_combo_params();
         this.simulation = this.get_simulation_params();
 
+    }
+    get_use_real_values() {
+        return this.config.config.use_real_values;
+    }
+    set_use_real_values(use_real_values) {
+        this.config.config.use_real_values = use_real_values;
+    }
+    get_trade_params() {
+        return this.combo.trade;
     }
     get_window_params() {
         return this.config.window;

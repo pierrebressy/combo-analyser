@@ -1,6 +1,8 @@
 import { computeOptionPrice } from './functions.js';
 import { is_mode_local, load_local_price, load_local_config, update_remote_config, fetch_configuration, fetch_price } from './async.js';
-import { Configuration, getCookie, setCookie } from './configuration.js';
+import { Configuration } from './configuration.js';
+
+import {days_difference, days_difference_with_today} from './functions.js';
 
 let use_local = false;
 
@@ -9,7 +11,7 @@ let svg;
 let x_scale;
 let use_legs_volatility_checkbox;
 let  priceLabelGroup;
-
+let display_mode_checkbox;
 
 function add_strike_lines(svg, cfg) {
 
@@ -116,13 +118,13 @@ function create_underlying_current_price_buttons(graph, cfg) {
         .attr("rx", 2)
         .attr("ry", 2)
         .attr("x", window.margin.left + x_scale(cfg.get_underlying_current_price()) - button_width / 2)
-        .attr("y", 0)
+        .attr("y", window.button.underlying_price_vpos)
         .attr("stroke", "black") // Border color
         .attr("stroke-width", 2); // Border thickness
 
     let text_element = graph.append("text")
         .attr("x", window.margin.left + x_scale(cfg.get_underlying_current_price()))
-        .attr("y", window.button.text_vpos)
+        .attr("y",15+window.button.underlying_price_vpos)
         .attr("fill", "white")
         .attr("class", "draggable-button")
         .attr("cursor", "pointer")
@@ -148,12 +150,15 @@ function compute_p_and_l_data(cfg, use_legs_volatility, num_days_left) {
 
     const combo = cfg.get_combo_params();
     const simulation = cfg.get_simulation_params();
+    const trade = cfg.get_trade_params();
     let p_and_l_data = [];
 
     for (let price = cfg.get_simul_min_price_of_combo(); price <= cfg.get_simul_max_price_of_combo(); price += cfg.get_simul_step_price_of_combo()) {
         let p_and_l_profile = 0;
         combo.legs.forEach(option => {
-            let v = use_legs_volatility ? option.volatility : simulation.volatility;
+            let v = use_legs_volatility ? option.volatility : 
+            cfg.get_use_real_values() ? trade.volatility : simulation.volatility;
+            console.log('v=',v);
             let option_price = computeOptionPrice(cfg.get_underlying_current_price(), option.strike, cfg.get_interest_rate_of_combo(), v, simulation.time_to_expiry + option.expiration_offset, option.type);
             let premium = option_price[0];
             let greeks = computeOptionPrice(price, option.strike, cfg.get_interest_rate_of_combo(), v, num_days_left + option.expiration_offset, option.type);
@@ -299,6 +304,48 @@ async function setup_days_left_slider() {
     time_slider_container.appendChild(slider_container);
 }
 
+function update_display_mode() {
+    const trade = cfg.get_trade_params();
+    display_mode_checkbox = document.getElementById('displayModeCheckbox');
+    cfg.set_use_real_values(display_mode_checkbox.checked)
+    console.log("use_real_values:", cfg.get_use_real_values());
+    if(cfg.get_use_real_values()) {
+        const today = new Date().toISOString().split('T')[0];
+        console.log("today:", today); 
+
+        let current_expiration_date = trade.expiration_date
+        let trade_open_by = trade.trade_open_by
+        let  time_to_expiry = days_difference(current_expiration_date, trade_open_by);
+        console.log("current_expiration_date:", current_expiration_date);
+        console.log("time_to_expiry:", time_to_expiry);
+        console.log("num days:",days_difference_with_today(current_expiration_date)); // Output: 4 (if today is "2025-02-24")
+    }
+    reload_page();
+}
+
+async function setup_display_mode() { // sim or real
+
+    const url = new URL(window.location);
+    let x=url.searchParams.get("use_real_values");
+    console.log("x:",x);
+
+    d3.select("#displayModeCheckboxContainer")
+        .append("input")
+        .attr("type", "checkbox")
+        .attr("id", "displayModeCheckbox")
+        .attr("name", "displayModeCheckbox").property("checked", cfg.get_use_real_values());
+
+    // Append a label for the checkbox
+    d3.select("#displayModeCheckboxContainer")
+        .append("label")
+        .attr("for", "displayModeCheckbox")
+        .text("Use real values");
+    d3.select("#displayModeCheckbox").on("change", function () {
+        update_display_mode();
+    });
+    display_mode_checkbox = document.getElementById('displayModeCheckbox');
+}
+
 async function setup_volatility_type() {
     d3.select("#ivCheckboxContainer")
         .append("input")
@@ -326,6 +373,12 @@ function reloadWithParam(key, value) {
     window.location.href = url.toString(); // Navigate to the new URL
 }
 
+function reload_page() {
+    const url = new URL(window.location);
+    url.searchParams.set("use_real_values", cfg.get_use_real_values()); // Add or update the parameter
+    window.location.href = url.toString(); // Navigate to the new URL
+}
+
 // Example: Reload and set `mode=local`
 
 async function setup_combos_list() {
@@ -344,6 +397,7 @@ async function setup_combos_list() {
 
             if (!use_local) {
                 update_remote_config(cfg.config);
+                console.log("Remote config updated", cfg.config);
                 cfg = 0
             }
             location.reload();
@@ -762,6 +816,7 @@ use_local = await is_mode_local(); // Auto-detect local/remote mode
 console.log("use_local=", use_local);
 setup_volatility_type();
 await draw_graph();
+setup_display_mode();
 display_local_status();
 setup_combos_list();
 setup_days_left_slider();

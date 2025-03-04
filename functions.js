@@ -1,3 +1,25 @@
+export function days_difference(d1,d2) {
+    const given_date_1 = new Date(d1);
+    const given_date_2 = new Date(d2);
+    //console.log("[days_difference]");
+    //console.log("give_date_1:", given_date_1);
+    //console.log("given_date_2:", given_date_2);
+    // Compute difference in milliseconds
+    const diffTime = given_date_2 - given_date_1;
+    
+    // Convert to days
+    let diff_days = -Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    //console.log("diff_days:", diff_days);
+    //console.log("---");
+    return diff_days;
+}
+export function days_difference_with_today(d) {
+    const today = new Date();
+    let diff_days = Math.max(0,days_difference(d,today));
+    return diff_days;
+}
+
+
 export function erf(x) {
     const a1 = 0.254829592, a2 = -0.284496736, a3 = 1.421413741;
     const a4 = -1.453152027, a5 = 1.061405429, p = 0.3275911;

@@ -1,13 +1,14 @@
 {
+    "combo": "SELL CALL",
     "combos": {
         "BUY CALL": {
             "legs": [
                 {
                     "expiration_offset": 0,
                     "qty": 1,
-                    "strike": 230,
+                    "strike": 240,
                     "type": "call",
-                    "volatility": 0.4
+                    "volatility": 0.266
                 }
             ],
             "name": "Single CALL",
@@ -21,7 +22,12 @@
                 "time_to_expiry": 35,
                 "volatility": 0.4
             },
-            "ticker": "AAPL"
+            "ticker": "AAPL",
+            "trade": {
+                "expiration_date": "2025-04-17",
+                "trade_open_by": "2025-03-03",
+                "volatility": 0.15
+            }
         },
         "BUY PUT": {
             "legs": [
@@ -44,7 +50,12 @@
                 "time_to_expiry": 35,
                 "volatility": 0.4
             },
-            "ticker": "AAPL"
+            "ticker": "AAPL",
+            "trade": {
+                "expiration_date": "2025-04-17",
+                "trade_open_by": "2025-03-03",
+                "volatility": 0.15
+            }
         },
         "Credit Call Spread": {
             "legs": [
@@ -74,7 +85,12 @@
                 "time_to_expiry": 35,
                 "volatility": 0.4
             },
-            "ticker": "AAPL"
+            "ticker": "AAPL",
+            "trade": {
+                "expiration_date": "2025-04-17",
+                "trade_open_by": "2025-03-03",
+                "volatility": 0.15
+            }
         },
         "Credit Put Spread": {
             "legs": [
@@ -104,7 +120,12 @@
                 "time_to_expiry": 35,
                 "volatility": 0.4
             },
-            "ticker": "AAPL"
+            "ticker": "AAPL",
+            "trade": {
+                "expiration_date": "2025-04-17",
+                "trade_open_by": "2025-03-03",
+                "volatility": 0.15
+            }
         },
         "Debit Call Spread": {
             "legs": [
@@ -134,7 +155,12 @@
                 "time_to_expiry": 35,
                 "volatility": 0.4
             },
-            "ticker": "AAPL"
+            "ticker": "AAPL",
+            "trade": {
+                "expiration_date": "2025-04-17",
+                "trade_open_by": "2025-03-03",
+                "volatility": 0.15
+            }
         },
         "Debit Put Spread": {
             "legs": [
@@ -164,7 +190,12 @@
                 "time_to_expiry": 35,
                 "volatility": 0.4
             },
-            "ticker": "AAPL"
+            "ticker": "AAPL",
+            "trade": {
+                "expiration_date": "2025-04-17",
+                "trade_open_by": "2025-03-03",
+                "volatility": 0.15
+            }
         },
         "SELL CALL": {
             "legs": [
@@ -187,14 +218,19 @@
                 "time_to_expiry": 35,
                 "volatility": 0.4
             },
-            "ticker": "AAPL"
+            "ticker": "AAPL",
+            "trade": {
+                "expiration_date": "2025-04-17",
+                "trade_open_by": "2025-03-03",
+                "volatility": 0.15
+            }
         },
         "SELL PUT": {
             "legs": [
                 {
                     "expiration_offset": 0,
                     "qty": -1,
-                    "strike": 240,
+                    "strike": 253,
                     "type": "put",
                     "volatility": 0.4
                 }
@@ -208,9 +244,14 @@
                 "step": 1,
                 "time_for_simulation": 15,
                 "time_to_expiry": 35,
-                "volatility": 0.4
+                "volatility": 0.55
             },
-            "ticker": "AAPL"
+            "ticker": "AAPL",
+            "trade": {
+                "expiration_date": "2025-04-17",
+                "trade_open_by": "2025-03-03",
+                "volatility": 0.15
+            }
         },
         "TANK MSTR MAR14'25": {
             "legs": [
@@ -247,7 +288,12 @@
                 "time_to_expiry": 17,
                 "volatility": 0.8
             },
-            "ticker": "MSTR"
+            "ticker": "MSTR",
+            "trade": {
+                "expiration_date": "2025-03-14",
+                "trade_open_by": "2025-02-24",
+                "volatility": 0.7
+            }
         },
         "TANK PLTR MAR14'25": {
             "legs": [
@@ -284,7 +330,12 @@
                 "time_to_expiry": 17,
                 "volatility": 0.8
             },
-            "ticker": "MSTR"
+            "ticker": "PLTR",
+            "trade": {
+                "expiration_date": "2025-03-14",
+                "trade_open_by": "2025-02-24",
+                "volatility": 0.7
+            }
         },
         "TANK TSLA MAY2025": {
             "legs": [
@@ -321,7 +372,12 @@
                 "time_to_expiry": 35,
                 "volatility": 0.4
             },
-            "ticker": "TSLA"
+            "ticker": "TSLA",
+            "trade": {
+                "expiration_date": "2025-05-14",
+                "trade_open_by": "2025-02-24",
+                "volatility": 0.7
+            }
         },
         "TENTE SPX MAY2025": {
             "legs": [
@@ -357,7 +413,12 @@
                 "time_to_expiry": 119,
                 "volatility": 0.17
             },
-            "ticker": "^SPX"
+            "ticker": "^SPX",
+            "trade": {
+                "expiration_date": "2025-05-14",
+                "trade_open_by": "2025-02-24",
+                "volatility": 0.7
+            }
         },
         "ZEBRA SPX MAR2025": {
             "legs": [
@@ -400,11 +461,17 @@
                 "time_to_expiry": 35,
                 "volatility": 0.106
             },
-            "ticker": "^SPX"
+            "ticker": "^SPX",
+            "trade": {
+                "expiration_date": "2025-03-21",
+                "trade_open_by": "2025-02-24",
+                "volatility": 0.2
+            }
         }
     },
     "config": {
-        "combo": "TANK PLTR MAR14'25"
+        "combo": "Credit Call Spread",
+        "use_real_values": false
     },
     "graph": {
         "greeks": {
@@ -424,11 +491,12 @@
             ]
         }
     },
-    "underlying_current_price": 282.760009765625,
+    "underlying_current_price": 238.02999877929688,
     "window": {
         "button": {
-            "height": 25,
+            "height": 20,
             "text_vpos": 15,
+            "underlying_price_vpos": 25,
             "width": 85
         },
         "height": 914,
@@ -442,6 +510,6 @@
             "vspacer": 20
         },
         "p_and_l_ratio": 0.5,
-        "width": 1359.2734375
+        "width": 1012.09375
     }
 }
