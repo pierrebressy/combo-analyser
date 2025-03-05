@@ -6,6 +6,7 @@
 import { computeOptionPrice } from './functions.js';
 import { is_mode_local, load_local_price, load_local_config, update_remote_config, fetch_configuration, fetch_price } from './async.js';
 import { Environment } from './configuration.js';
+import { Cursor } from './cursor.js';
 
 import { days_difference, days_difference_with_today } from './functions.js';
 
@@ -26,6 +27,10 @@ let pl_at_expiration_data;
 let pl_at_initial_data;
 let pl_at_sim_date_data;
 let scale_p_and_l;
+
+let pl_at_expiration_cursor;
+let pl_at_initial_cursor;
+let pl_at_sim_cursor;
 
 function add_strike_lines() {
 
@@ -592,14 +597,6 @@ function add_crosshair() {
     priceLabelGroup = svg.append("g")
         .style("display", "none");
 
-    PL_init_LabelGroup = svg.append("g")
-        .style("display", "none");
-
-    PL_exp_LabelGroup = svg.append("g")
-        .style("display", "none");
-
-    PL_sim_LabelGroup = svg.append("g")
-        .style("display", "none");
 
     // Add vertical line
     crosshair.append("line")
@@ -621,77 +618,16 @@ function add_crosshair() {
         .attr("stroke-width", 1)
         .attr("stroke-dasharray", "4,4");
 
-    // Add blue rectangle for price label
-    priceLabelGroup.append("rect")
-        .attr("id", "price-label-bg")
-        .attr("width", 50)
-        .attr("height", 20)
-        .attr("fill", "blue")
-        .attr("rx", 5)
-        .attr("ry", 5);
-
-    // Add white text inside the rectangle
-    priceLabelGroup.append("text")
-        .attr("id", "price-label-text")
-        .attr("fill", "white")
-        .attr("text-anchor", "middle")
-        .attr("dy", "1em")
-        .style("font-size", "12px")
-        .style("font-weight", "bold");
-
-    PL_exp_LabelGroup.append("rect")
-        .attr("id", "pl-exp-label-bg")
-        .attr("width", 50)
-        .attr("height", 20)
-        .attr("fill", "black")
-        .attr("rx", 5)
-        .attr("ry", 5);
-
-    PL_exp_LabelGroup.append("text")
-        .attr("id", "pl-exp-label-text")
-        .attr("fill", "white")
-        .attr("text-anchor", "middle")
-        .attr("dy", "1em")
-        .style("font-size", "12px")
-        .style("font-weight", "bold");
-
-    PL_init_LabelGroup.append("rect")
-        .attr("id", "pl-init-label-bg")
-        .attr("width", 50)
-        .attr("height", 20)
-        .attr("fill", "orange")
-        .attr("rx", 5)
-        .attr("ry", 5);
-
-    PL_init_LabelGroup.append("text")
-        .attr("id", "pl-init-label-text")
-        .attr("fill", "white")
-        .attr("text-anchor", "middle")
-        .attr("dy", "1em")
-        .style("font-size", "12px")
-        .style("font-weight", "bold");
-
-    PL_sim_LabelGroup.append("rect")
-        .attr("id", "pl-sim-label-bg")
-        .attr("width", 50)
-        .attr("height", 20)
-        .attr("fill", "green")
-        .attr("rx", 5)
-        .attr("ry", 5);
-
-    PL_sim_LabelGroup.append("text")
-        .attr("id", "pl-sim-label-text")
-        .attr("fill", "white")
-        .attr("text-anchor", "middle")
-        .attr("dy", "1em")
-        .style("font-size", "12px")
-        .style("font-weight", "bold");
-
-
-
-    //let pl_at_initial_data;
-    //let pl_at_sim_date_data;
-
+    pl_at_expiration_cursor = new Cursor(svg, pl_at_expiration_data, x_scale, scale_p_and_l, "pl-exp", "black");
+    pl_at_initial_cursor = new Cursor(svg, pl_at_initial_data, x_scale, scale_p_and_l, "pl-init", "orange");
+    pl_at_sim_cursor = new Cursor(svg, pl_at_sim_date_data, x_scale, scale_p_and_l, "pl-sim", "green");
+    
+    // add event listener for mouse out event
+    svg.on("mouseleave", function () {
+        pl_at_expiration_cursor.hide()
+        pl_at_initial_cursor.hide()
+        pl_at_sim_cursor.hide()
+    });
 
     svg.on("mousemove", function (event) {
         const [x, y] = d3.pointer(event, this); // Get mouse coordinates
@@ -704,11 +640,10 @@ function add_crosshair() {
             return;
         }
         // Show crosshair
-        crosshair.style("display", null);
-        priceLabelGroup.style("display", null);
-        PL_init_LabelGroup.style("display", null);
-        PL_exp_LabelGroup.style("display", null);
-        PL_sim_LabelGroup.style("display", null);
+        crosshair.style("visibility", "visible");
+        pl_at_expiration_cursor.show()
+        pl_at_initial_cursor.show()
+        pl_at_sim_cursor.show()
 
         // Update position of the crosshair lines
         crosshair.select("#crosshair-x")
@@ -720,121 +655,17 @@ function add_crosshair() {
             .attr("y2", y);
 
 
-        // Update position of price label
-        priceLabelGroup.attr("transform", `translate(${x - 25}, ${env.get_window_height() - env.get_window_bottom_margin() + 4})`);
-
-        // Update text
         const price = x_scale.invert(x - env.get_window_left_margin());
         const formattedPrice = price.toFixed(2); // Format as %.1f
         priceLabelGroup.select("#price-label-text")
             .attr("x", 25)
             .text(formattedPrice + " $");
 
+        pl_at_expiration_cursor.update(env, price);
+        pl_at_initial_cursor.update(env, price);
+        pl_at_sim_cursor.update(env, price);
 
-        function getNearestYValue(data, xValue) {
-            const nearestPoint = data.reduce((prev, curr) =>
-                Math.abs(curr.x - xValue) < Math.abs(prev.x - xValue) ? curr : prev
-            );
-            return nearestPoint;
-        }
-
-
-        // Update P&L expiration label position
-        let nearestPoint = getNearestYValue(pl_at_expiration_data, price);
-
-        let p_and_l_value = nearestPoint.y; // Get P&L value
-        PL_exp_LabelGroup.attr("transform", `translate(${env.get_window_left_margin() - 50}, ${env.get_window_top_margin() + scale_p_and_l(p_and_l_value)})`);
-        PL_exp_LabelGroup.select("#pl-exp-label-bg")
-            .attr("x", 0)
-            .attr("y", -10);
-        PL_exp_LabelGroup.select("#pl-exp-label-text")
-            .attr("x", 25)
-            .attr("y", -10)
-            .text(p_and_l_value.toFixed(0) + " $");
-
-        PL_exp_LabelGroup.select("#pl-exp-y").remove();
-        PL_exp_LabelGroup.append("line")
-            .attr("class", "crosshair-line")
-            .attr("id", "pl-exp-y")
-            .attr("x1", 50)
-            .attr("x2", 50 + x_scale(price))
-            .attr("y1", 0)
-            .attr("y2", 0)
-            .attr("stroke", "black")
-            .attr("stroke-width", 2)
-            .attr("stroke-dasharray", "4,4");
-        PL_exp_LabelGroup.select("#dot-exp-y").remove();
-        PL_exp_LabelGroup.append("circle")
-                .attr("id", "dot-exp-y")
-                .attr("cx", x_scale(price)+50)
-                .attr("cy", 0)
-                .attr("r", 4) // Radius 4
-                .attr("fill", "black");
-    
-        // Update P&L init label position
-        nearestPoint = getNearestYValue(pl_at_initial_data, price);
-
-        p_and_l_value = nearestPoint.y; // Get P&L value
-        PL_init_LabelGroup.attr("transform", `translate(${env.get_window_left_margin() - 50}, ${env.get_window_top_margin() + scale_p_and_l(p_and_l_value)})`);
-        PL_init_LabelGroup.select("#pl-init-label-bg")
-            .attr("x", 0)
-            .attr("y", -10);
-        PL_init_LabelGroup.select("#pl-init-label-text")
-            .attr("x", 25)
-            .attr("y", -10)
-            .text(p_and_l_value.toFixed(0) + " $");
-
-        PL_init_LabelGroup.select("#pl-init-y").remove();
-        PL_init_LabelGroup.append("line")
-            .attr("class", "crosshair-line")
-            .attr("id", "pl-init-y")
-            .attr("x1", 50)
-            .attr("x2", 50 + x_scale(price))
-            .attr("y1", 0)
-            .attr("y2", 0)
-            .attr("stroke", "orange")
-            .attr("stroke-width", 2)
-            .attr("stroke-dasharray", "4,4");
-        PL_init_LabelGroup.select("#dot-init-y").remove();
-        PL_init_LabelGroup.append("circle")
-            .attr("id", "dot-init-y")
-            .attr("cx", x_scale(price)+50)
-            .attr("cy", 0)
-            .attr("r", 4) // Radius 4
-            .attr("fill", "orange");
-
-        // Update P&L sim label position
-        nearestPoint = getNearestYValue(pl_at_sim_date_data, price);
-
-        p_and_l_value = nearestPoint.y; // Get P&L value
-        PL_sim_LabelGroup.attr("transform", `translate(${env.get_window_left_margin() - 50}, ${env.get_window_top_margin() + scale_p_and_l(p_and_l_value)})`);
-        PL_sim_LabelGroup.select("#pl-sim-label-bg")
-            .attr("x", 0)
-            .attr("y", -10);
-        PL_sim_LabelGroup.select("#pl-sim-label-text")
-            .attr("x", 25)
-            .attr("y", -10)
-            .text(p_and_l_value.toFixed(0) + " $");
-
-        PL_sim_LabelGroup.select("#pl-sim-y").remove();
-        PL_sim_LabelGroup.append("line")
-            .attr("class", "crosshair-line")
-            .attr("id", "pl-sim-y")
-            .attr("x1", 50)
-            .attr("x2", 50 + x_scale(price))
-            .attr("y1", 0)
-            .attr("y2", 0)
-            .attr("stroke", "green")
-            .attr("stroke-width", 2)
-            .attr("stroke-dasharray", "4,4");
-
-        PL_sim_LabelGroup.select("#dot-sim-y").remove();
-        PL_sim_LabelGroup.append("circle")
-            .attr("id", "dot-sim-y")
-            .attr("cx", x_scale(price)+50)
-            .attr("cy", 0)
-            .attr("r", 4) // Radius 4
-            .attr("fill", "green");
+       
     });
 
 }
