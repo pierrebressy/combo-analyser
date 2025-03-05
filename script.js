@@ -16,16 +16,9 @@ let ticker;
 let env;
 let svg;
 
-let x_scale;
 let use_legs_volatility_checkbox;
 let priceLabelGroup;
-let PL_init_LabelGroup;
-let PL_exp_LabelGroup;
-let PL_sim_LabelGroup;
 let display_mode_checkbox;
-let pl_at_expiration_data;
-let pl_at_initial_data;
-let pl_at_sim_date_data;
 let scale_p_and_l;
 
 let pl_at_expiration_cursor;
@@ -36,7 +29,7 @@ function add_strike_lines() {
 
     env.get_combo_params().legs.forEach(option => {
 
-        const strike_value = x_scale(option.strike);
+        const strike_value = env.get_x_scale()(option.strike);
 
         svg.append("line")
             .attr("x1", env.get_window_left_margin() + strike_value)
@@ -51,7 +44,7 @@ function add_strike_lines() {
 
 function add_grid(graph, y_scale) {
 
-    const x_axis_grid = d3.axisBottom(x_scale)
+    const x_axis_grid = d3.axisBottom(env.get_x_scale())
         .tickSize(-env.get_window_height())
         .tickFormat("");  // Hide tick labels
 
@@ -90,13 +83,13 @@ function create_strike_buttons(graph) {
             .attr("fill", option.type === "call" ? "red" : "green")
             .attr("rx", 2)
             .attr("ry", 2)
-            .attr("x", env.get_window_left_margin() + x_scale(option.strike) - env.get_button_default_width() / 2)
+            .attr("x", env.get_window_left_margin() + env.get_x_scale()(option.strike) - env.get_button_default_width() / 2)
             .attr("y", 0)
             .attr("stroke", "black")
             .attr("stroke-width", 2);
 
         svg.append("text")
-            .attr("x", env.get_window_left_margin() + x_scale(option.strike) + 4 - env.get_button_default_width() / 2)
+            .attr("x", env.get_window_left_margin() + env.get_x_scale()(option.strike) + 4 - env.get_button_default_width() / 2)
             .attr("y", env.get_button_default_text_vpos())
             .attr("fill", "white")
             .attr("class", "draggable-button")
@@ -106,7 +99,7 @@ function create_strike_buttons(graph) {
                 .on("drag", function (event) {
                     let newX = Math.max(0, Math.min(env.get_window_width(), (event.x - env.get_window_left_margin())));
                     d3.select(this).attr("x", newX - 15);
-                    let newStrike = x_scale.invert(newX);
+                    let newStrike = env.get_x_scale().invert(newX);
                     option.strike = Math.round(newStrike);
                     draw_graph();
                 })
@@ -123,22 +116,22 @@ function create_underlying_current_price_buttons() {
         .attr("fill", "lightblue")
         .attr("rx", 2)
         .attr("ry", 2)
-        .attr("x", env.get_window_left_margin() + x_scale(env.get_underlying_current_price()) - env.get_button_default_width() / 2)
+        .attr("x", env.get_window_left_margin() + env.get_x_scale()(env.get_underlying_current_price()) - env.get_button_default_width() / 2)
         .attr("y", env.get_button_underlying_text_vpos())
         .attr("stroke", "black")
         .attr("stroke-width", 2);
 
     let text_element = svg.append("text")
-        .attr("x", env.get_window_left_margin() + x_scale(env.get_underlying_current_price()))
+        .attr("x", env.get_window_left_margin() + env.get_x_scale()(env.get_underlying_current_price()))
         .attr("y", 15 + env.get_button_underlying_text_vpos())
         .attr("fill", "white")
         .attr("class", "draggable-button")
         .attr("cursor", "pointer")
         .text(`${env.get_underlying_current_price().toFixed(2)}`);
     const textWidth = text_element.node().getBBox().width;
-    text_element.attr("x", env.get_window_left_margin() + x_scale(env.get_underlying_current_price()) - textWidth / 2);
+    text_element.attr("x", env.get_window_left_margin() + env.get_x_scale()(env.get_underlying_current_price()) - textWidth / 2);
 
-    const price_value = x_scale(env.get_underlying_current_price());
+    const price_value = env.get_x_scale()(env.get_underlying_current_price());
 
     svg.append("line")
         .attr("x1", env.get_window_left_margin() + price_value)
@@ -410,7 +403,7 @@ async function setup_combos_list() {
 
 }
 
-function draw_p_and_l(graph, scale, pl_at_expiration_data, pl_at_initial_data, pl_at_sim_date_data) {
+function draw_p_and_l(graph, scale) {
 
     // Create SVG definitions for gradients
     const defs = graph.append("defs");
@@ -445,64 +438,64 @@ function draw_p_and_l(graph, scale, pl_at_expiration_data, pl_at_initial_data, p
 
     // Define the area generator for positive values (above zero)
     const area_below = d3.area()
-        .x(d => x_scale(d.x))
+        .x(d => env.get_x_scale()(d.x))
         .y0(scale(0))  // Fill down to y=0
         .y1(d => Math.max(scale(d.y), scale(0))) // Only fill above zero
         .curve(d3.curveBasis); // Optional smoothing
 
     // Define the area generator for negative values (below zero)
     const area_above = d3.area()
-        .x(d => x_scale(d.x))
+        .x(d => env.get_x_scale()(d.x))
         .y0(scale(0))  // Fill up to y=0
         .y1(d => Math.min(scale(d.y), scale(0))) // Only fill below zero
         .curve(d3.curveBasis);
 
     // Append the positive (green) gradient area
     graph.append("path")
-        .datum(pl_at_expiration_data)
+        .datum(env.get_pl_at_exp_data())
         .attr("fill", "url(#greenGradient)") // Apply green gradient
         .attr("opacity", 0.6)
         .attr("d", area_above);
 
     // Append the negative (red) gradient area
     graph.append("path")
-        .datum(pl_at_expiration_data)
+        .datum(env.get_pl_at_exp_data())
         .attr("fill", "url(#redGradient)") // Apply red gradient
         .attr("opacity", 0.6)
         .attr("d", area_below);
 
     // Append the line on top
     graph.append("path")
-        .datum(pl_at_expiration_data)
+        .datum(env.get_pl_at_exp_data())
         .attr("fill", "none")
         .attr("stroke", "black")
         .attr("stroke-width", 2)
         .attr("d", d3.line()
-            .x(d => x_scale(d.x))
+            .x(d => env.get_x_scale()(d.x))
             .y(d => scale(d.y))
             .curve(d3.curveBasis) // Optional smoothing
         );
 
     // Append the line on top
     graph.append("path")
-        .datum(pl_at_sim_date_data)
+        .datum(env.get_pl_at_sim_data())
         .attr("fill", "none")
         .attr("stroke", "green")
         .attr("stroke-width", 2)
         .attr("d", d3.line()
-            .x(d => x_scale(d.x))
+            .x(d => env.get_x_scale()(d.x))
             .y(d => scale(d.y))
             .curve(d3.curveBasis) // Optional smoothing
         );
 
     // Append the line on top
     graph.append("path")
-        .datum(pl_at_initial_data)
+        .datum(env.get_pl_at_init_data())
         .attr("fill", "none")
         .attr("stroke", "orange")
         .attr("stroke-width", 2)
         .attr("d", d3.line()
-            .x(d => x_scale(d.x))
+            .x(d => env.get_x_scale()(d.x))
             .y(d => scale(d.y))
             .curve(d3.curveBasis) // Optional smoothing
         );
@@ -543,14 +536,14 @@ function draw_greek(graph, scale, data) {
 
     // Define the area generator for positive values (above zero)
     const area_below = d3.area()
-        .x(d => x_scale(d.x))
+        .x(d => env.get_x_scale()(d.x))
         .y0(scale(0))  // Fill down to y=0
         .y1(d => Math.max(scale(d.y), scale(0))) // Only fill above zero
         .curve(d3.curveBasis); // Optional smoothing
 
     // Define the area generator for negative values (below zero)
     const area_above = d3.area()
-        .x(d => x_scale(d.x))
+        .x(d => env.get_x_scale()(d.x))
         .y0(scale(0))  // Fill up to y=0
         .y1(d => Math.min(scale(d.y), scale(0))) // Only fill below zero
         .curve(d3.curveBasis);
@@ -576,7 +569,7 @@ function draw_greek(graph, scale, data) {
         .attr("stroke", "black")
         .attr("stroke-width", 2)
         .attr("d", d3.line()
-            .x(d => x_scale(d.x))
+            .x(d => env.get_x_scale()(d.x))
             .y(d => scale(d.y))
             .curve(d3.curveBasis) // Optional smoothing
         );
@@ -591,11 +584,8 @@ function display_local_status() {
 
 function add_crosshair() {
 
-    const crosshair = svg.append("g")
-        .style("display", "none"); // Initially hidden
-
-    priceLabelGroup = svg.append("g")
-        .style("display", "none");
+    const crosshair = svg.append("g");
+    priceLabelGroup = svg.append("g");
 
 
     // Add vertical line
@@ -618,29 +608,49 @@ function add_crosshair() {
         .attr("stroke-width", 1)
         .attr("stroke-dasharray", "4,4");
 
-    pl_at_expiration_cursor = new Cursor(svg, pl_at_expiration_data, x_scale, scale_p_and_l, "pl-exp", "black");
-    pl_at_initial_cursor = new Cursor(svg, pl_at_initial_data, x_scale, scale_p_and_l, "pl-init", "orange");
-    pl_at_sim_cursor = new Cursor(svg, pl_at_sim_date_data, x_scale, scale_p_and_l, "pl-sim", "green");
-    
+    priceLabelGroup.append("rect")
+        .attr("id", "price-label-bg")
+        .attr("width", 50)
+        .attr("height", 20)
+        .attr("fill", "blue")
+        .attr("rx", 5)
+        .attr("ry", 5);
+
+    // Add white text inside the rectangle
+    priceLabelGroup.append("text")
+        .attr("id", "price-label-text")
+        .attr("fill", "white")
+        .attr("text-anchor", "middle")
+        .attr("dy", "1em")
+        .style("font-size", "12px")
+        .style("font-weight", "bold");
+
+
+    pl_at_expiration_cursor = new Cursor(svg, env.get_pl_at_exp_data(), scale_p_and_l, "pl-exp", "black");
+    pl_at_initial_cursor = new Cursor(svg, env.get_pl_at_init_data(), scale_p_and_l, "pl-init", "orange");
+    pl_at_sim_cursor = new Cursor(svg, env.get_pl_at_sim_data(), scale_p_and_l, "pl-sim", "green");
+
     // add event listener for mouse out event
     svg.on("mouseleave", function () {
         pl_at_expiration_cursor.hide()
         pl_at_initial_cursor.hide()
         pl_at_sim_cursor.hide()
+        priceLabelGroup.style("visibility", "hidden");
     });
 
     svg.on("mousemove", function (event) {
         const [x, y] = d3.pointer(event, this); // Get mouse coordinates
         if (y < env.get_window_top_margin() || y > env.get_window_height() - env.get_window_bottom_margin()) {
-            crosshair.style("display", "none");
+            crosshair.style("visibility", "hidden");
             return;
         }
         if (x < env.get_window_left_margin() || x > env.get_window_width() - env.get_window_right_margin()) {
-            crosshair.style("display", "none");
+            crosshair.style("visibility", "hidden");
             return;
         }
         // Show crosshair
         crosshair.style("visibility", "visible");
+        priceLabelGroup.style("visibility", "visible");
         pl_at_expiration_cursor.show()
         pl_at_initial_cursor.show()
         pl_at_sim_cursor.show()
@@ -654,8 +664,9 @@ function add_crosshair() {
             .attr("y1", y)
             .attr("y2", y);
 
+        priceLabelGroup.attr("transform", `translate(${x - 25}, ${env.get_window_height() - env.get_window_bottom_margin() + 4})`);
 
-        const price = x_scale.invert(x - env.get_window_left_margin());
+        const price = env.get_x_scale().invert(x - env.get_window_left_margin());
         const formattedPrice = price.toFixed(2); // Format as %.1f
         priceLabelGroup.select("#price-label-text")
             .attr("x", 25)
@@ -665,7 +676,7 @@ function add_crosshair() {
         pl_at_initial_cursor.update(env, price);
         pl_at_sim_cursor.update(env, price);
 
-       
+
     });
 
 }
@@ -673,13 +684,10 @@ function add_crosshair() {
 function draw_graph() {
 
     // get the data
-    console.log("compute pl_at_expiration_data", use_legs_volatility_checkbox.checked, 0);
-    pl_at_expiration_data = compute_p_and_l_data(use_legs_volatility_checkbox.checked, 0);
-    console.log("compute pl_at_initial_data", use_legs_volatility_checkbox.checked, env.get_time_to_expiry_of_combo());
-    pl_at_initial_data = compute_p_and_l_data(use_legs_volatility_checkbox.checked, env.get_time_to_expiry_of_combo());
-    console.log("compute pl_at_sim_date_data", use_legs_volatility_checkbox.checked, env.get_time_for_simulation_of_combo());
-    pl_at_sim_date_data = compute_p_and_l_data(use_legs_volatility_checkbox.checked, env.get_time_for_simulation_of_combo());
-    console.log("compute greeks_data");
+    env.set_pl_at_exp_data(compute_p_and_l_data(use_legs_volatility_checkbox.checked, 0));
+    env.set_pl_at_init_data(compute_p_and_l_data(use_legs_volatility_checkbox.checked, env.get_time_to_expiry_of_combo()));
+    env.set_pl_at_sim_data(compute_p_and_l_data(use_legs_volatility_checkbox.checked, env.get_time_for_simulation_of_combo()));
+
     let greeks_data = compute_greeks_data(use_legs_volatility_checkbox.checked);
 
     // prepare the graph area
@@ -694,10 +702,10 @@ function draw_graph() {
 
     // X scale for the price axis ; set at the bottom of the graph window
     const graph_width = env.get_window_width() - env.get_window_left_margin() - env.get_window_right_margin();
-    x_scale = d3.scaleLinear().domain([env.get_simul_min_price_of_combo(), env.get_simul_max_price_of_combo()]).range([0, graph_width]);
+    env.set_x_scale(d3.scaleLinear().domain([env.get_simul_min_price_of_combo(), env.get_simul_max_price_of_combo()]).range([0, graph_width]));
     let y_offset = env.get_window_top_margin() + env.get_window_height() + env.get_window_vspacer_margin();
     y_offset = env.get_window_height() - env.get_window_vspacer_price_axis();
-    svg.append("g").attr("transform", `translate(${env.get_window_left_margin()},${y_offset})`).call(d3.axisBottom(x_scale));
+    svg.append("g").attr("transform", `translate(${env.get_window_left_margin()},${y_offset})`).call(d3.axisBottom(env.get_x_scale()));
 
 
     // P&L and Greeks graph areas
@@ -715,10 +723,11 @@ function draw_graph() {
         .attr("height", greeks_graphs_height);
 
     // P&L graph
-    const datasets = [pl_at_expiration_data, pl_at_initial_data, pl_at_sim_date_data];
-    const min_p_and_l = d3.min(datasets.flat(), d => d.y);
-    const max_p_and_l = d3.max(datasets.flat(), d => d.y);
-
+    //const datasets = [pl_at_expiration_data, pl_at_initial_data, pl_at_sim_date_data];
+    //const min_p_and_l = d3.min(datasets.flat(), d => d.y);
+    //const max_p_and_l = d3.max(datasets.flat(), d => d.y);
+    const min_p_and_l = env.get_min_of_dataset();
+    const max_p_and_l = env.get_max_of_dataset();
     const padding_p_and_l = (max_p_and_l - min_p_and_l) * 0.1;
     scale_p_and_l = d3.scaleLinear()
         .domain([min_p_and_l - padding_p_and_l, max_p_and_l + padding_p_and_l])
@@ -728,13 +737,13 @@ function draw_graph() {
     p_and_l_graph.attr("transform", `translate(${env.get_window_left_margin()}, ${env.get_window_top_margin()})`);
     p_and_l_graph.attr("width", env.get_window_width() - env.get_window_left_margin());
     p_and_l_graph.append("g").call(d3.axisLeft(scale_p_and_l));
-    p_and_l_graph.append("g").attr("transform", `translate(0,${scale_p_and_l(0)})`).call(d3.axisBottom(x_scale)).selectAll(".tick text").remove();
+    p_and_l_graph.append("g").attr("transform", `translate(0,${scale_p_and_l(0)})`).call(d3.axisBottom(env.get_x_scale())).selectAll(".tick text").remove();
     p_and_l_graph.attr("clip-path", "url(#clipBox)");
 
     add_grid(p_and_l_graph, scale_p_and_l)
 
 
-    draw_p_and_l(p_and_l_graph, scale_p_and_l, pl_at_expiration_data, pl_at_initial_data, pl_at_sim_date_data);
+    draw_p_and_l(p_and_l_graph, scale_p_and_l);
 
     // Add Y-axis label
     p_and_l_graph.append("text")
@@ -750,26 +759,26 @@ function draw_graph() {
     let sigma = env.get_underlying_current_price() * env.get_mean_volatility_of_combo(env.get_use_real_values()) * Math.sqrt(env.get_time_for_simulation_of_combo() / 365);
     let sigma_text = `σ = ${sigma.toFixed(2)}`;
     svg.append("text")
-        .attr("x", env.get_window_left_margin() + x_scale(env.get_underlying_current_price()) - 30)
+        .attr("x", env.get_window_left_margin() + env.get_x_scale()(env.get_underlying_current_price()) - 30)
         .attr("y", env.get_window_top_margin() + 20)
         .attr("fill", "black")
         .text(sigma_text);
 
     svg.append("text")
-        .attr("x", env.get_window_left_margin() + x_scale(env.get_underlying_current_price() - sigma) - 15)
+        .attr("x", env.get_window_left_margin() + env.get_x_scale()(env.get_underlying_current_price() - sigma) - 15)
         .attr("y", env.get_window_top_margin() + 15)
         .attr("fill", "black")
         .text(`-1σ`);
     svg.append("text")
-        .attr("x", env.get_window_left_margin() + x_scale(env.get_underlying_current_price() + sigma) - 15)
+        .attr("x", env.get_window_left_margin() + env.get_x_scale()(env.get_underlying_current_price() + sigma) - 15)
         .attr("y", env.get_window_top_margin() + 15)
         .attr("fill", "black")
         .text(`+1σ`);
 
     svg.append("rect")
-        .attr("x", env.get_window_left_margin() + x_scale(env.get_underlying_current_price() - sigma))
+        .attr("x", env.get_window_left_margin() + env.get_x_scale()(env.get_underlying_current_price() - sigma))
         .attr("y", env.get_window_top_margin())
-        .attr("width", x_scale(env.get_underlying_current_price() + sigma) - x_scale(env.get_underlying_current_price() - sigma))
+        .attr("width", env.get_x_scale()(env.get_underlying_current_price() + sigma) - env.get_x_scale()(env.get_underlying_current_price() - sigma))
         .attr("height", p_and_l_graph_height)
         .attr("fill", "blue")
         .attr("opacity", 0.07);
@@ -801,7 +810,7 @@ function draw_graph() {
         greek_graph.attr("transform", `translate(${env.get_window_left_margin()}, ${top_position})`);
         greek_graph.attr("width", env.get_window_width() - env.get_window_left_margin());
         greek_graph.append("g").call(d3.axisLeft(scale_greek).ticks(5));
-        greek_graph.append("g").attr("transform", `translate(0,${scale_greek(0)})`).call(d3.axisBottom(x_scale)).selectAll(".tick text").remove();
+        greek_graph.append("g").attr("transform", `translate(0,${scale_greek(0)})`).call(d3.axisBottom(env.get_x_scale())).selectAll(".tick text").remove();
 
         greek_graph.append("text")
             .attr("transform", "rotate(-90)")  // Rotate text for Y-axis

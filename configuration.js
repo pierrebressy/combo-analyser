@@ -63,7 +63,44 @@ export class Environment {
 
     }
 
+    set_x_scale(scale) {
+        this.xscale = scale;
+    }
+    get_x_scale() {
+        return this.xscale;
+    }
 
+    set_pl_at_exp_data(data) {
+        this.pl_at_exp_data = data;
+    }
+    get_pl_at_exp_data() {
+        return this.pl_at_exp_data;
+    }
+    set_pl_at_init_data(data) {
+        this.pl_at_init_data = data;
+    }
+    get_pl_at_init_data() {
+        return this.pl_at_init_data;
+    }
+    set_pl_at_sim_data(data) {
+        this.pl_at_sim_data = data;
+    }
+    get_pl_at_sim_data() {
+        return this.pl_at_sim_data;
+    }
+    get_min_of_dataset() {
+        const datasets = [this.pl_at_exp_data, this.pl_at_init_data, this.pl_at_sim_data];
+        return d3.min(datasets.flat(), d => d.y);
+    }
+    get_max_of_dataset() {
+        const datasets = [this.pl_at_exp_data, this.pl_at_init_data, this.pl_at_sim_data];
+        return d3.max(datasets.flat(), d => d.y);
+    }
+
+
+    get_combo() {
+        return this.combo;
+    }
     get_window_height() {
         return this.config.window.height;
     }

@@ -7,13 +7,13 @@ function getNearestYValue(data, xValue) {
 
 export class Cursor {
 
-    constructor(svg, data, xscale, yscale, name, fill) {
+    constructor(svg, data, yscale, name, fill) {
         this.data = data;
         this.name = name;
-        this.xscale = xscale;
         this.yscale = yscale;
         this.fill = fill;
-        this.group = svg.append("g").style("display", "null");
+
+        this.group = svg.append("g");
         this.group.append("rect")
             .attr("id", this.name + "-label-bg")
             .attr("width", 50)
@@ -31,6 +31,8 @@ export class Cursor {
     }
 
     update(env, price) {
+
+        this.xscale = env.get_x_scale();
 
         let nearestPoint = getNearestYValue(this.data, price);
         let p_and_l_value = nearestPoint.y;
