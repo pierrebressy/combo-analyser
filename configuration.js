@@ -38,6 +38,7 @@ export class Environment {
         }
         catch (error) {
             console.log("No parameter combo from URL, using default value.");
+            combo = "BUY CALL";
         }
         config.config.combo = combo;
 
