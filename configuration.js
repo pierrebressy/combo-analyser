@@ -34,12 +34,12 @@ export class Environment {
             if (combo.length == 0) {
                 console.log("No parameter combo from URL, using default value BUY CALL.");
                 combo = "BUY CALL";
-                config.config.combo = combo;
             }
         }
         catch (error) {
             console.log("No parameter combo from URL, using default value.");
         }
+        config.config.combo = combo;
 
         let use_real_values = false;
         try {

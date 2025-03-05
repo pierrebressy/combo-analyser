@@ -999,6 +999,7 @@ async function setup_global_env(e) {
 
 // prepare the environment
 use_local = await is_mode_local(); // Auto-detect local/remote mode
+//use_local = true;
 env = await setup_global_env(env);
 ticker = env.get_ticker_of_combo();
 underlying = use_local ? await load_local_price(ticker) : await fetch_price(ticker);
