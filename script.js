@@ -93,13 +93,16 @@ function create_strike_buttons(graph) {
             .attr("stroke", "black")
             .attr("stroke-width", 2);
 
+        let ot=option.type === "call" ? "C" : "P";
         svg.append("text")
             .attr("x", env.get_window_left_margin() + env.get_x_scale()(option.strike) + 4 - env.get_button_default_width() / 2)
             .attr("y", env.get_button_default_text_vpos())
             .attr("fill", "white")
             .attr("class", "draggable-button")
+            .attr("font-family", "Menlo, monospace")  // Set font to Menlo
+            .attr("font-size", "12px")
             .attr("cursor", "pointer")
-            .text(` ${option.qty}x ${option.type} ${option.strike}`)
+            .text(` ${option.qty}x ${ot} ${option.strike}`)
             .call(d3.drag()
                 .on("drag", function (event) {
                     let newX = Math.max(0, Math.min(env.get_window_width(), (event.x - env.get_window_left_margin())));
@@ -408,6 +411,28 @@ async function setup_combos_list() {
 
 }
 
+function find_zero_crossings(data) {
+    let crossings = [];
+    
+    for (let i = 1; i < data.length; i++) {
+        let y1 = data[i - 1].y;
+        let y2 = data[i].y;
+        
+        if (y1 * y2 < 0) { // Sign change detected
+            let x1 = data[i - 1].x;
+            let x2 = data[i].x;
+            
+            // Linear interpolation to estimate x where y = 0
+            let xCross = x1 - y1 * (x2 - x1) / (y2 - y1);
+            crossings.push(xCross);
+        }
+    }
+
+    return crossings;
+}
+
+
+
 function draw_p_and_l(graph, scale) {
 
     // Create SVG definitions for gradients
@@ -480,6 +505,50 @@ function draw_p_and_l(graph, scale) {
             .y(d => scale(d.y))
             .curve(d3.curveBasis) // Optional smoothing
         );
+
+
+    let plData = env.get_pl_at_exp_data();  // Get P/L data
+    let zeroCrossings = find_zero_crossings(plData); // Find x-values where P/L crosses zero
+    
+    // Draw vertical lines at zero crossings
+    zeroCrossings.forEach(x => {
+        graph.append("line")
+            .attr("x1", env.get_x_scale()(x))
+            .attr("x2", env.get_x_scale()(x))
+            .attr("y1", scale.range()[0])  // Bottom of graph
+            .attr("y2", scale.range()[1])          // y = 0 line
+            .attr("stroke", "blue")
+            .attr("stroke-dasharray", "4,4")  // Dashed line
+            .attr("stroke-width", 1);
+
+        let xScaled = env.get_x_scale()(x);
+        let yZero = scale(0); // y position for P/L=0 line
+        let rectWidth = 50, rectHeight = 20;
+        let textOffsetX = -rectWidth / 2, textOffsetY = -rectHeight +5; // Positioning above the line
+    
+        graph.append("rect")
+            .attr("x", xScaled + textOffsetX)
+            .attr("y", scale.range()[0] + textOffsetY)
+            .attr("width", rectWidth)
+            .attr("height", rectHeight)
+            .attr("fill", "blue")
+            .attr("rx", 5)  // Rounded corners
+            .attr("ry", 5);
+    
+        // Add white text inside the rectangle
+        graph.append("text")
+            .attr("x", xScaled)
+            .attr("y", scale.range()[0] + textOffsetY + rectHeight / 1.5) // Centered in rectangle
+            .attr("fill", "white")
+            .attr("font-size", "12px")
+            .attr("font-family", "Menlo, monospace")  // Set font to Menlo
+            .attr("text-anchor", "middle")
+            .text(x.toFixed(0)); // Display x value with 2 decimals
+        
+
+    });
+        
+
 
     // Append the line on top
     graph.append("path")
@@ -628,6 +697,7 @@ function add_crosshair() {
         .attr("text-anchor", "middle")
         .attr("dy", "1em")
         .style("font-size", "12px")
+        .attr("font-family", "Menlo, monospace")  // Set font to Menlo
         .style("font-weight", "bold");
 
 
@@ -756,35 +826,56 @@ function draw_graph() {
         .attr("x", -p_and_l_graph_height / 2)            // Center the label
         .attr("y", -env.get_window_left_margin() + 15)      // Position left of Y-axis
         .attr("dy", "1em")                 // Fine-tune vertical alignment
+        .attr("font-family", "Menlo, monospace")  // Set font to Menlo
         .style("text-anchor", "middle")    // Center alignment
         .text("Profit / Loss ($)");        // Change this to your label
 
 
 
     let sigma = env.get_underlying_current_price() * env.get_mean_volatility_of_combo(env.get_use_real_values()) * Math.sqrt(env.get_time_for_simulation_of_combo() / 365);
-    let sigma_text = `σ = ${sigma.toFixed(2)}`;
+    let sigma_text = `σ = ${sigma.toFixed(0)}`;
+    let price_less_sigma = env.get_underlying_current_price() - sigma;
+    let price_plus_sigma = env.get_underlying_current_price() + sigma;
+    let price_less_sigma_text = `${price_less_sigma.toFixed(0)}`;
+    let price_plus_sigma_text = `${price_plus_sigma.toFixed(0)}`;
     svg.append("text")
         .attr("x", env.get_window_left_margin() + env.get_x_scale()(env.get_underlying_current_price()) - 30)
         .attr("y", env.get_window_top_margin() + 20)
+        .attr("font-family", "Menlo, monospace")  // Set font to Menlo
         .attr("fill", "black")
         .text(sigma_text);
 
-    svg.append("text")
+        svg.append("text")
         .attr("x", env.get_window_left_margin() + env.get_x_scale()(env.get_underlying_current_price() - sigma) - 15)
         .attr("y", env.get_window_top_margin() + 15)
+        .attr("font-family", "Menlo, monospace")  // Set font to Menlo
         .attr("fill", "black")
         .text(`-1σ`);
-    svg.append("text")
+        svg.append("text")
+        .attr("x", env.get_window_left_margin() + env.get_x_scale()(env.get_underlying_current_price() - sigma) - 15)
+        .attr("y", env.get_window_top_margin() + 30)
+        .attr("font-family", "Menlo, monospace")  // Set font to Menlo
+        .attr("fill", "black")
+        .text(price_less_sigma_text);
+        svg.append("text")
         .attr("x", env.get_window_left_margin() + env.get_x_scale()(env.get_underlying_current_price() + sigma) - 15)
         .attr("y", env.get_window_top_margin() + 15)
+        .attr("font-family", "Menlo, monospace")  // Set font to Menlo
         .attr("fill", "black")
         .text(`+1σ`);
+    svg.append("text")
+        .attr("x", env.get_window_left_margin() + env.get_x_scale()(env.get_underlying_current_price() + sigma) - 15)
+        .attr("y", env.get_window_top_margin() + 30)
+        .attr("font-family", "Menlo, monospace")  // Set font to Menlo
+        .attr("fill", "black")
+        .text(price_plus_sigma_text);
 
     svg.append("rect")
         .attr("x", env.get_window_left_margin() + env.get_x_scale()(env.get_underlying_current_price() - sigma))
         .attr("y", env.get_window_top_margin())
         .attr("width", env.get_x_scale()(env.get_underlying_current_price() + sigma) - env.get_x_scale()(env.get_underlying_current_price() - sigma))
         .attr("height", p_and_l_graph_height)
+        .attr("font-family", "Menlo, monospace")  // Set font to Menlo
         .attr("fill", "blue")
         .attr("opacity", 0.07);
 
@@ -822,6 +913,7 @@ function draw_graph() {
             .attr("x", -greek_graph_height / 2)            // Center the label
             .attr("y", -env.get_window_left_margin() + 15)      // Position left of Y-axis
             .attr("dy", "1em")                 // Fine-tune vertical alignment
+            .attr("font-family", "Menlo, monospace")  // Set font to Menlo
             .style("text-anchor", "middle")    // Center alignment
             .text(env.config.graph.greeks.labels[greek_index]);        // Change this to your label
 
