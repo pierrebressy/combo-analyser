@@ -1,8 +1,3 @@
-// TODO: whene Use real values checkbox is in use, the orange P/L graph takes the volatiliy of the trade. I should be the volatility at the moment of the trade opening => add a param in the "trade" section of the config
-// TODO: update the sliders Day and Vol. regardgin the real values checkbox
-
-
-
 import { computeOptionPrice } from './functions.js';
 import { is_mode_local, load_local_price, load_local_config, update_remote_config, fetch_configuration, fetch_price } from './async.js';
 import { Environment } from './configuration.js';
@@ -26,19 +21,29 @@ let pl_at_initial_cursor;
 let pl_at_sim_cursor;
 
 function add_strike_lines() {
-
+    //
+    // Add vertical lines for each strike on the full height graph
+    //
+    // Parameters:
+    // None.
+    //
+    // Returns:
+    // Nothing.
+    //
     env.get_combo_params().legs.forEach(option => {
 
         const strike_value = env.get_x_scale()(option.strike);
 
         svg.append("line")
-            .attr("x1", env.get_window_left_margin() + strike_value)
-            .attr("y1", env.get_window_top_margin())
-            .attr("x2", env.get_window_left_margin() + strike_value)
-            .attr("y2", env.get_window_height())
+            .attr("x1", strike_value)
+            .attr("y1", 0)
+            .attr("x2", strike_value)
+            .attr("y2", env.get_full_graph_height())
             .attr("stroke", "red")
             .attr("stroke-width", 1)
-            .attr("stroke-dasharray", "5,5");
+            .attr("stroke-dasharray", "5,5")
+            .attr("transform",`translate(${env.get_window_left_margin()},${env.get_window_top_margin()})`);
+            
     });
 }
 
@@ -688,7 +693,7 @@ function draw_graph() {
     env.set_pl_at_init_data(compute_p_and_l_data(use_legs_volatility_checkbox.checked, env.get_time_to_expiry_of_combo()));
     env.set_pl_at_sim_data(compute_p_and_l_data(use_legs_volatility_checkbox.checked, env.get_time_for_simulation_of_combo()));
 
-    let greeks_data = compute_greeks_data(use_legs_volatility_checkbox.checked);
+    env.set_greeks_data(compute_greeks_data(use_legs_volatility_checkbox.checked));
 
     // prepare the graph area
     if (!svg) {
@@ -798,8 +803,8 @@ function draw_graph() {
 
     for (let index = 0; index < num_greeks_to_display; index++) {
         let greek_index = env.config.graph.greeks.ids[index];
-        const min_greek = d3.min(greeks_data[greek_index], d => d.y);
-        const max_greek = d3.max(greeks_data[greek_index], d => d.y);
+        const min_greek = d3.min(env.get_greeks_data()[greek_index], d => d.y);
+        const max_greek = d3.max(env.get_greeks_data()[greek_index], d => d.y);
         const padding_greek = (max_greek - min_greek) * 0.1;
         const scale_greek = d3.scaleLinear()
             .domain([min_greek - padding_greek, max_greek + padding_greek])
@@ -820,7 +825,7 @@ function draw_graph() {
             .style("text-anchor", "middle")    // Center alignment
             .text(env.config.graph.greeks.labels[greek_index]);        // Change this to your label
 
-        draw_greek(greek_graph, scale_greek, greeks_data[greek_index]);
+        draw_greek(greek_graph, scale_greek, env.get_greeks_data()[greek_index]);
 
     }
 

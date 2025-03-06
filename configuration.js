@@ -69,6 +69,12 @@ export class Environment {
     get_x_scale() {
         return this.xscale;
     }
+    set_greeks_data(data) {
+        this.greeks_data = data;
+    }
+    get_greeks_data() {
+        return this.greeks_data;
+    }
 
     set_pl_at_exp_data(data) {
         this.pl_at_exp_data = data;
@@ -130,6 +136,9 @@ export class Environment {
     }
     get_window_p_and_l_ratio() {
         return this.config.window.p_and_l_ratio;
+    }
+    get_full_graph_height() {
+        return this.get_window_height()-this.get_window_top_margin();
     }
 
     get_button_default_height() {
