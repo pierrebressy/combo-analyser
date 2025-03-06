@@ -121,7 +121,7 @@ function create_underlying_current_price_buttons() {
     svg.append("rect")
         .attr("width", env.get_button_default_width())
         .attr("height", env.get_button_default_height())
-        .attr("fill", "lightblue")
+        .attr("fill","#0080FF")
         .attr("rx", 2)
         .attr("ry", 2)
         .attr("x", env.get_window_left_margin() + env.get_x_scale()(env.get_underlying_current_price()) - env.get_button_default_width() / 2)
@@ -134,6 +134,7 @@ function create_underlying_current_price_buttons() {
         .attr("y", 15 + env.get_button_underlying_text_vpos())
         .attr("fill", "white")
         .attr("class", "draggable-button")
+        .attr("font-family", "Menlo, monospace")  // Set font to Menlo
         .attr("cursor", "pointer")
         .text(`${env.get_underlying_current_price().toFixed(2)}`);
     const textWidth = text_element.node().getBBox().width;
@@ -742,10 +743,10 @@ function add_crosshair() {
         priceLabelGroup.attr("transform", `translate(${x - 25}, ${env.get_window_height() - env.get_window_bottom_margin() + 4})`);
 
         const price = env.get_x_scale().invert(x - env.get_window_left_margin());
-        const formattedPrice = price.toFixed(2); // Format as %.1f
+        const formattedPrice = price.toFixed(0); // Format as %.1f
         priceLabelGroup.select("#price-label-text")
             .attr("x", 25)
-            .text(formattedPrice + " $");
+            .text(formattedPrice);
 
         pl_at_expiration_cursor.update(env, price);
         pl_at_initial_cursor.update(env, price);

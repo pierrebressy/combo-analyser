@@ -27,6 +27,7 @@ export class Cursor {
             .attr("text-anchor", "middle")
             .attr("dy", "1em")
             .style("font-size", "12px")
+            .attr("font-family", "Menlo, monospace")  // Set font to Menlo
             .style("font-weight", "bold");
     }
 
@@ -46,7 +47,7 @@ export class Cursor {
         this.group.select("#"+ this.name + "-label-text")
             .attr("x", 25)
             .attr("y", -10)
-            .text(p_and_l_value.toFixed(0) + " $");
+            .text(p_and_l_value.toFixed(0));
 
         this.group.select("#"+ this.name + "-hline").remove();
         this.group.append("line")
