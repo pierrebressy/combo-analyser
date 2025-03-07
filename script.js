@@ -42,8 +42,8 @@ function add_strike_lines() {
             .attr("stroke", "red")
             .attr("stroke-width", 1)
             .attr("stroke-dasharray", "5,5")
-            .attr("transform",`translate(${env.get_window_left_margin()},${env.get_window_top_margin()})`);
-            
+            .attr("transform", `translate(${env.get_window_left_margin()},${env.get_window_top_margin()})`);
+
     });
 }
 
@@ -76,12 +76,12 @@ function add_grid(graph, y_scale) {
         .attr("stroke-opacity", 0.7)
         .attr("stroke-dasharray", "4,4");
 }
-
 function create_strike_buttons(graph) {
 
     graph.selectAll(".strike-button").remove();
+    let index = 0;
     env.get_combo_params().legs.forEach(option => {
-
+        index++;
         svg.append("rect")
             .attr("width", env.get_button_default_width())
             .attr("height", env.get_button_default_height())
@@ -91,9 +91,21 @@ function create_strike_buttons(graph) {
             .attr("x", env.get_window_left_margin() + env.get_x_scale()(option.strike) - env.get_button_default_width() / 2)
             .attr("y", 0)
             .attr("stroke", "black")
-            .attr("stroke-width", 2);
+            .attr("stroke-width", 2)
 
-        let ot=option.type === "call" ? "C" : "P";
+        let floatingWindow;
+        if (d3.select("#floating-window" + index).empty()) {
+            floatingWindow = d3.select("body")
+                .append("div")
+                .attr("class", "floating-window")
+                .attr("id", "floating-window" + index)
+                .attr("index", index);
+        }
+        else {
+            floatingWindow = d3.select("#floating-window" + index);
+        }
+
+        let ot = option.type === "call" ? "C" : "P";
         svg.append("text")
             .attr("x", env.get_window_left_margin() + env.get_x_scale()(option.strike) + 4 - env.get_button_default_width() / 2)
             .attr("y", env.get_button_default_text_vpos())
@@ -111,7 +123,93 @@ function create_strike_buttons(graph) {
                     option.strike = Math.round(newStrike);
                     draw_graph();
                 })
-            );
+            )
+            .on("contextmenu", function (event) {
+                event.preventDefault(); // Prevent default right-click menu
+
+                // Clear window content and position it
+                floatingWindow.html("")
+                    .style("display", "block")
+                    .style("left", `${event.pageX}px`)
+                    .style("top", `${event.pageY}px`);
+
+                // read the index
+                let current_index = parseInt(floatingWindow.attr("index"));
+                let qty_label;
+
+                // Create a div container for the buttons (side by side)
+                let buttonContainer = floatingWindow.append("div").attr("class", "button-container");
+
+                // Add "-" button
+                buttonContainer.append("button")
+                    .text("-")
+                    .on("click", function () {
+                        //alert("Minus button clicked!");
+                        let option = env.get_combo_params().legs[current_index - 1];
+                        option.qty -= 1;
+                        qty_label.text("Qty " + option.qty); // Update title text
+                        draw_graph();
+                    });
+
+                qty_label = buttonContainer.append("text").text("Qty " + option.qty);
+
+                // Add "+" button
+                buttonContainer.append("button")
+                    .text("+")
+                    .on("click", function () {
+                        //alert("Plus button clicked!");
+                        let option = env.get_combo_params().legs[current_index - 1];
+                        option.qty += 1;
+                        qty_label.text("Qty " + option.qty); // Update title text
+                        draw_graph();
+                    });
+
+
+
+                let exp_offset_label;
+
+                // Create a div container for the buttons (side by side)
+                let buttonContainer2 = floatingWindow.append("div").attr("class", "button-container");
+                // Add "-" button
+                buttonContainer2.append("button")
+                    .text("-")
+                    .on("click", function () {
+                        //alert("Minus button clicked!");
+                        let option = env.get_combo_params().legs[current_index - 1];
+                        option.expiration_offset -= 1;
+                        exp_offset_label.text(option.expiration_offset+"d"); // Update title text
+                        draw_graph();
+                    });
+
+
+                exp_offset_label = buttonContainer2.append("text").text(option.expiration_offset+"d");
+
+
+                // Add "+" button
+                buttonContainer2.append("button")
+                    .text("+")
+                    .on("click", function () {
+                        //alert("Plus button clicked!");
+                        let option = env.get_combo_params().legs[current_index - 1];
+                        option.expiration_offset += 1;
+                        exp_offset_label.text(option.expiration_offset+"d"); // Update title text
+                        draw_graph();
+                    });
+
+
+
+
+                d3.select("body").on("click", (event) => {
+                    if (!floatingWindow.node().contains(event.target) && event.target.id !== "myButton") {
+                        floatingWindow.style("display", "none");
+                    }
+                });
+
+            });
+
+
+
+
     });
 
 }
@@ -121,7 +219,7 @@ function create_underlying_current_price_buttons() {
     svg.append("rect")
         .attr("width", env.get_button_default_width())
         .attr("height", env.get_button_default_height())
-        .attr("fill","#0080FF")
+        .attr("fill", "#0080FF")
         .attr("rx", 2)
         .attr("ry", 2)
         .attr("x", env.get_window_left_margin() + env.get_x_scale()(env.get_underlying_current_price()) - env.get_button_default_width() / 2)
@@ -414,15 +512,15 @@ async function setup_combos_list() {
 
 function find_zero_crossings(data) {
     let crossings = [];
-    
+
     for (let i = 1; i < data.length; i++) {
         let y1 = data[i - 1].y;
         let y2 = data[i].y;
-        
+
         if (y1 * y2 < 0) { // Sign change detected
             let x1 = data[i - 1].x;
             let x2 = data[i].x;
-            
+
             // Linear interpolation to estimate x where y = 0
             let xCross = x1 - y1 * (x2 - x1) / (y2 - y1);
             crossings.push(xCross);
@@ -510,7 +608,7 @@ function draw_p_and_l(graph, scale) {
 
     let plData = env.get_pl_at_exp_data();  // Get P/L data
     let zeroCrossings = find_zero_crossings(plData); // Find x-values where P/L crosses zero
-    
+
     // Draw vertical lines at zero crossings
     zeroCrossings.forEach(x => {
         graph.append("line")
@@ -525,8 +623,8 @@ function draw_p_and_l(graph, scale) {
         let xScaled = env.get_x_scale()(x);
         let yZero = scale(0); // y position for P/L=0 line
         let rectWidth = 50, rectHeight = 20;
-        let textOffsetX = -rectWidth / 2, textOffsetY = -rectHeight +5; // Positioning above the line
-    
+        let textOffsetX = -rectWidth / 2, textOffsetY = -rectHeight + 5; // Positioning above the line
+
         graph.append("rect")
             .attr("x", xScaled + textOffsetX)
             .attr("y", scale.range()[0] + textOffsetY)
@@ -535,7 +633,7 @@ function draw_p_and_l(graph, scale) {
             .attr("fill", "blue")
             .attr("rx", 5)  // Rounded corners
             .attr("ry", 5);
-    
+
         // Add white text inside the rectangle
         graph.append("text")
             .attr("x", xScaled)
@@ -545,10 +643,10 @@ function draw_p_and_l(graph, scale) {
             .attr("font-family", "Menlo, monospace")  // Set font to Menlo
             .attr("text-anchor", "middle")
             .text(x.toFixed(0)); // Display x value with 2 decimals
-        
+
 
     });
-        
+
 
 
     // Append the line on top
@@ -846,19 +944,19 @@ function draw_graph() {
         .attr("fill", "black")
         .text(sigma_text);
 
-        svg.append("text")
+    svg.append("text")
         .attr("x", env.get_window_left_margin() + env.get_x_scale()(env.get_underlying_current_price() - sigma) - 15)
         .attr("y", env.get_window_top_margin() + 15)
         .attr("font-family", "Menlo, monospace")  // Set font to Menlo
         .attr("fill", "black")
         .text(`-1σ`);
-        svg.append("text")
+    svg.append("text")
         .attr("x", env.get_window_left_margin() + env.get_x_scale()(env.get_underlying_current_price() - sigma) - 15)
         .attr("y", env.get_window_top_margin() + 30)
         .attr("font-family", "Menlo, monospace")  // Set font to Menlo
         .attr("fill", "black")
         .text(price_less_sigma_text);
-        svg.append("text")
+    svg.append("text")
         .attr("x", env.get_window_left_margin() + env.get_x_scale()(env.get_underlying_current_price() + sigma) - 15)
         .attr("y", env.get_window_top_margin() + 15)
         .attr("font-family", "Menlo, monospace")  // Set font to Menlo
@@ -951,3 +1049,4 @@ setup_combos_list();
 setup_days_left_slider();
 setup_volatility_sliders();
 draw_graph();
+
