@@ -11,17 +11,27 @@
     <div id="two-column-container">
       <!-- Left Column (80%) -->
       <div class="control-container" id="control-container">
-        <div id="title_container"></div>
-        <div><hr></div>
-        <div id="combo_container"></div>
-        <div id="displayModeCheckboxContainer"></div>
-        <div id="ivCheckboxContainer"></div>
-        <div><hr></div>
-        <div id="timeSliderContainer"></div>
-        <div><hr></div>
-        <div id="sliders_container"></div>
-        <button id="myButton">Right Click Me</button>
-
+        <div class="context-container" id="context-container">
+          <div id="title_container"></div>
+          <div><hr></div>
+          <div id="combo_container"></div>
+          <div id="displayModeCheckboxContainer"></div>
+          <div id="ivCheckboxContainer"></div>
+          <div><hr></div>
+          <div id="timeSliderContainer"></div>
+          <div><hr></div>
+          <div id="sliders_container"></div>
+        </div>
+        <br>
+        <div class="combo-templates-container" id="combo-tpl-container">
+          <div id="combo_tpl_container"></div><br>
+          <div id="underlying_list_container"></div><br>
+          <label for="comboName">Name of the combo:</label>
+          <textarea id="comboName" rows="1"  placeholder="Como Undelying Exp"></textarea>
+          <br>
+          <button id="button_view_combo">View combo</button>
+          <button id="button_create_combo">Create combo</button>
+        </div>
       </div>
       <!-- Right Column (20%) -->
       <div class="graph-container" id="graph-container">

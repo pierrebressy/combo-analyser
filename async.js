@@ -65,4 +65,9 @@ export async function fetch_price(ticker) {
     return response.json();
 }
 
+export async function fetch_combo_templates() {
+    const response = await fetch("http://127.0.0.1:5000/get-combo-templates");
+    return response.json();
+}
+
 

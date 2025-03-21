@@ -19,7 +19,6 @@ export function days_difference_with_today(d) {
     return diff_days;
 }
 
-
 export function erf(x) {
     const a1 = 0.254829592, a2 = -0.284496736, a3 = 1.421413741;
     const a4 = -1.453152027, a5 = 1.061405429, p = 0.3275911;
@@ -53,7 +52,6 @@ export function erf2    (x) {
 export function normalCDF(x) {
     return 0.5 * (1 + erf(x / Math.sqrt(2)));
 }
-
 
 export function normalCDF2(x) {
     //return (1.0 + Math.erf(x / Math.sqrt(2))) / 2.0;

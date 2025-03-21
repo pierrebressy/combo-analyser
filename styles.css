@@ -18,6 +18,20 @@
     background-color: #f0f0f0;
 }
 
+.context-container {
+    height: 100%;
+    padding: 10px;
+    /* Optional: add background color for clarity */
+    background-color: #b8ffe7;
+}
+
+.combo-templates-container {
+    height: 100%;
+    padding: 10px;
+    /* Optional: add background color for clarity */
+    background-color: #ffc593;
+}
+
 /* Style for the right column (80% width) */
 .graph-container {
     width: 80%;
@@ -95,3 +109,21 @@
 .floating-window button:hover {
     background: #0056b3;
 }
+
+
+
+
+
+.blinking-border {
+    stroke: red;              /* Initial stroke color */
+    stroke-width: 3px;        /* Border thickness */
+    animation: blinkStroke 1s infinite;
+  }
+  
+  @keyframes blinkStroke {
+    0%   { stroke: red; }
+    50%  { stroke: yellow; }
+    100% { stroke: red; }
+  }
+
+  

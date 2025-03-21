@@ -1,3 +1,5 @@
+import { fetch_combo_templates } from './async.js';
+
 export function getCookie(name) {
     const cookies = document.cookie.split("; ");
     for (let i = 0; i < cookies.length; i++) {
@@ -61,6 +63,10 @@ export class Environment {
         this.combo = this.get_combo_params();
         this.simulation = this.get_simulation_params();
 
+    }
+
+    set_combo_to_tmp(){
+        this.config.config.combo = "TMP";
     }
 
     set_x_scale(scale) {
@@ -253,6 +259,12 @@ export class Environment {
     get_simul_min_price_of_combo() {
         return this.combo.simulation.min_price;
     }
+    set_simul_max_price_of_combo(value) {
+        this.combo.simulation.max_price=value;
+    }
+    set_simul_min_price_of_combo(value) {
+        this.combo.simulation.min_price=value;
+    }
     get_simul_step_price_of_combo() {
         return this.combo.simulation.step;
     }
@@ -261,3 +273,22 @@ export class Environment {
     }
 }
 
+export class ComboTemplater {
+    constructor() {
+        this.combo_templates = {};
+    }
+    async fetch_combo_templates() {
+        const response = await fetch_combo_templates();
+        this.combo_templates = await response;
+        console.log("Combo templates loaded:", this.combo_templates);
+        return this.combo_templates;
+    }   
+    get_combo_templates() {
+        let combos = [];
+        for (let key in this.combo_templates.combos) {
+            combos.push(key);
+        }
+        return combos;
+    }
+    
+}
