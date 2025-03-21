@@ -1,12 +1,12 @@
 {
-    "combo": "SELL CALL",
+    "combo": "VAGUE SPX 29AUG'25",
     "combos": {
         "BUY CALL": {
             "legs": [
                 {
                     "expiration_offset": 0,
-                    "qty": 1,
-                    "sim_volatility": 0.4,
+                    "qty": -1,
+                    "sim_volatility": 0.266,
                     "strike": 240,
                     "trade_volatility": 0.266,
                     "type": "call"
@@ -16,12 +16,12 @@
             "simulation": {
                 "expiration_offset": 0,
                 "interest_rate": 0,
-                "max_price": 300,
-                "mean_volatility": 0.4,
-                "min_price": 200,
+                "max_price": 304.64051801479474,
+                "mean_volatility": 0.266,
+                "min_price": 210.91859366992753,
                 "step": 1,
-                "time_for_simulation": 15,
-                "time_to_expiry": 35
+                "time_for_simulation": 22,
+                "time_to_expiry": 43
             },
             "ticker": "AAPL",
             "trade": {
@@ -243,28 +243,28 @@
                 {
                     "expiration_offset": 0,
                     "qty": -1,
-                    "sim_volatility": 0.4,
-                    "strike": 253,
-                    "trade_volatility": 0.2,
+                    "sim_volatility": 0.228,
+                    "strike": 5568,
+                    "trade_volatility": 0.228,
                     "type": "put"
                 }
             ],
             "name": "Single PUT",
             "simulation": {
                 "expiration_offset": 0,
-                "interest_rate": 0,
-                "max_price": 300,
-                "mean_volatility": 0.55,
-                "min_price": 200,
+                "interest_rate": 0.14,
+                "max_price": 6100,
+                "mean_volatility": 0.228,
+                "min_price": 4900,
                 "step": 1,
-                "time_for_simulation": 15,
-                "time_to_expiry": 35
+                "time_for_simulation": 31,
+                "time_to_expiry": 31
             },
-            "ticker": "AAPL",
+            "ticker": "^SPX",
             "trade": {
-                "expiration_date": "2025-04-17",
-                "mean_volatility": 0.15,
-                "trade_open_by": "2025-03-03"
+                "expiration_date": "2025-04-14",
+                "mean_volatility": 0.164,
+                "trade_open_by": "2025-08-29"
             }
         },
         "TANK MSTR MAR14'25": {
@@ -407,25 +407,25 @@
                 {
                     "expiration_offset": 0,
                     "qty": 1,
-                    "sim_volatility": 0.4,
-                    "strike": 5510,
-                    "trade_volatility": 0.3,
+                    "sim_volatility": 0.08,
+                    "strike": 5498,
+                    "trade_volatility": 0.211,
                     "type": "put"
                 },
                 {
                     "expiration_offset": 0,
                     "qty": -2,
-                    "sim_volatility": 0.4,
-                    "strike": 5310,
-                    "trade_volatility": 0.3,
+                    "sim_volatility": 0.233,
+                    "strike": 5311,
+                    "trade_volatility": 0.233,
                     "type": "put"
                 },
                 {
                     "expiration_offset": 0,
                     "qty": 1,
-                    "sim_volatility": 0.41,
+                    "sim_volatility": 0.282,
                     "strike": 4900,
-                    "trade_volatility": 0.31,
+                    "trade_volatility": 0.282,
                     "type": "put"
                 }
             ],
@@ -433,17 +433,143 @@
             "simulation": {
                 "interest_rate": 0,
                 "max_price": 6300,
-                "mean_volatility": 0.53,
+                "mean_volatility": 0.24,
                 "min_price": 4800,
                 "step": 1,
-                "time_for_simulation": 5,
-                "time_to_expiry": 119
+                "time_for_simulation": 8,
+                "time_to_expiry": 86
             },
             "ticker": "^SPX",
             "trade": {
                 "expiration_date": "2025-05-14",
-                "mean_volatility": 0.53,
+                "mean_volatility": 0.24,
                 "trade_open_by": "2025-02-24"
+            }
+        },
+        "TENTE SPX MAY2026": {
+            "legs": [
+                {
+                    "expiration_offset": -2,
+                    "qty": 1,
+                    "sim_volatility": 0.08,
+                    "strike": 5457,
+                    "trade_volatility": 0.211,
+                    "type": "put"
+                },
+                {
+                    "expiration_offset": 0,
+                    "qty": -2,
+                    "sim_volatility": 0.233,
+                    "strike": 5272,
+                    "trade_volatility": 0.233,
+                    "type": "put"
+                },
+                {
+                    "expiration_offset": 7,
+                    "qty": 1,
+                    "sim_volatility": 0.282,
+                    "strike": 4933,
+                    "trade_volatility": 0.282,
+                    "type": "put"
+                }
+            ],
+            "name": "COMBO TENTE SPX MAY2026",
+            "simulation": {
+                "interest_rate": 0,
+                "max_price": 6300,
+                "mean_volatility": 0.24,
+                "min_price": 4800,
+                "step": 1,
+                "time_for_simulation": 8,
+                "time_to_expiry": 86
+            },
+            "ticker": "^SPX",
+            "trade": {
+                "expiration_date": "2025-05-14",
+                "mean_volatility": 0.24,
+                "trade_open_by": "2025-02-24"
+            }
+        },
+        "TMP": {
+            "legs": [
+                {
+                    "expiration_offset": 0,
+                    "qty": 1,
+                    "sim_volatility": 0.3,
+                    "strike": 240,
+                    "trade_volatility": 0.3,
+                    "type": "call"
+                }
+            ],
+            "name": "Test",
+            "simulation": {
+                "expiration_offset": 0,
+                "interest_rate": 0,
+                "max_price": 300,
+                "mean_volatility": 0.3,
+                "min_price": 200,
+                "step": 1,
+                "time_for_simulation": 15,
+                "time_to_expiry": 37
+            },
+            "ticker": "AAPL",
+            "trade": {
+                "expiration_date": "2025-04-17",
+                "mean_volatility": 0.3,
+                "trade_open_by": "2025-03-03"
+            }
+        },
+        "VAGUE SPX 29AUG'25": {
+            "legs": [
+                {
+                    "expiration_offset": 0,
+                    "qty": -1,
+                    "sim_volatility": 0.81,
+                    "strike": 6275,
+                    "trade_volatility": 0.821,
+                    "type": "put"
+                },
+                {
+                    "expiration_offset": 0,
+                    "qty": 2,
+                    "sim_volatility": 0.62,
+                    "strike": 5910,
+                    "trade_volatility": 0.63,
+                    "type": "put"
+                },
+                {
+                    "expiration_offset": 0,
+                    "qty": -2,
+                    "sim_volatility": 0.35,
+                    "strike": 5300,
+                    "trade_volatility": 0.312,
+                    "type": "put"
+                },
+                {
+                    "expiration_offset": 0,
+                    "qty": 1,
+                    "sim_volatility": 0.23,
+                    "strike": 4900,
+                    "trade_volatility": 0.181,
+                    "type": "put"
+                }
+            ],
+            "name": "VAGUE SPX 29AUG'25",
+            "simulation": {
+                "expiration_offset": 0,
+                "interest_rate": 0,
+                "max_price": 6709.698765309356,
+                "mean_volatility": 0.16,
+                "min_price": 4096.6987653093565,
+                "step": 1,
+                "time_for_simulation": 169,
+                "time_to_expiry": 169
+            },
+            "ticker": "^SPX",
+            "trade": {
+                "expiration_date": "2025-08-29",
+                "mean_volatility": 0.164,
+                "trade_open_by": "2025-03-13"
             }
         },
         "ZEBRA SPX MAR2025": {
@@ -511,19 +637,20 @@
         "num_greeks": 6
     },
     "config": {
-        "combo": "ZEBRA SPX MAR2025",
+        "combo": "BUY CALL",
         "use_real_values": false
     },
     "graph": {
         "greeks": {
             "ids": [
+                0,
                 1,
                 2,
                 3,
                 4
             ],
             "labels": [
-                "Premium",
+                "P/L",
                 "Delta \u2206",
                 "Gamma \ud835\udeaa",
                 "Theta \ud835\udeaf",
@@ -532,7 +659,7 @@
             ]
         }
     },
-    "underlying_current_price": 308.54998779296875,
+    "underlying_current_price": 5649.9599609375,
     "window": {
         "button": {
             "height": 20,
@@ -547,7 +674,7 @@
             "type": "range",
             "width": "100px"
         },
-        "height": 850,
+        "height": 910,
         "iv_slider": {
             "max": 2,
             "min": 0.01,
@@ -560,7 +687,7 @@
             "greeks_vspacer": 40,
             "left": 80,
             "price_axis": 17,
-            "right": 40,
+            "right": 2,
             "top": 40,
             "vspacer": 20
         },
