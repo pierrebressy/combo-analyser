@@ -47,22 +47,24 @@
 .red-dot {
     width: 15px;
     height: 15px;
-    background-color: red;
+    fill: red;
     border-radius: 50%;
     position: absolute;
     top: 10px;
     right: 10px;
 }
 
+
 .green-dot {
     width: 15px;
     height: 15px;
-    background-color: green;
+    fill: green;
     border-radius: 50%;
     position: absolute;
     top: 30px;
     right: 10px;
 }
+
 
 .crosshair-line {
     transition: opacity 0.2s ease-in-out;
@@ -122,8 +124,41 @@
   
   @keyframes blinkStroke {
     0%   { stroke: red; }
-    50%  { stroke: yellow; }
+    50%  { stroke: lightgray; }
     100% { stroke: red; }
   }
 
+  
+  .orange-dot {
+    width: 15px;
+    height: 15px;
+    fill: orange;
+    border-radius: 50%;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
+
+.gray-dot {
+    width: 15px;
+    height: 15px;
+    fill: lightgray;
+    border-radius: 50%;
+    position: absolute;
+    top: 30px;
+    right: 10px;
+}
+
+  .blinking-orange-circle {
+    animation: blinkFill 1s infinite;
+  }
+  
+  @keyframes blinkFill {
+    0%   { fill: red; }
+    33%  { fill: gray; }
+    34%  { fill: gray; }
+    66%  { fill: gray; }
+    67%  { fill: red; }
+    100% { fill: red; }
+  }
   

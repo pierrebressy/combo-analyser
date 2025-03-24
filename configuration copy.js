@@ -34,12 +34,12 @@ export class Environment {
         try {
             combo = get_url_param("combo");
             if (combo.length == 0) {
-                combo = "LONG CALL";
+                combo = "BUY CALL";
                 console.log("Error: Bad value for [combo] in URL, using default value ["+combo+"]");
             }
         }
         catch (error) {
-            combo = "LONG CALL";
+            combo = "BUY CALL";
             console.log("Info: no [combo] in URL, using default value ["+combo+"]");
         }
         config.config.combo = combo;
@@ -61,9 +61,9 @@ export class Environment {
         const container = d3.select("#graph-container").node();
         this.config.window.width = container.getBoundingClientRect().width;
         this.config.window.height = container.getBoundingClientRect().height - 50;
-        
         this.combo = this.get_combo_params();
         console.log("State: env.combo=", this.combo);
+        this.simulation = this.get_simulation_params();
 
     }
 
@@ -238,6 +238,7 @@ export class Environment {
     }
     set_underlying_current_price(price) {
         this.config.underlying_current_price = price;
+        //console.log("=> new underlying_current_price=" + this.config.underlying_current_price);
     }
     get_underlying_current_price() {
         return this.config.underlying_current_price;

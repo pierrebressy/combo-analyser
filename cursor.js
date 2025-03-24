@@ -4,6 +4,29 @@ function getNearestYValue(data, xValue) {
     );
     return nearestPoint;
 }
+export class Line {
+    constructor(svg, env) {
+        this.line=svg.append("line")
+            .attr("x1", 100)
+            .attr("y1", 100)
+            .attr("x2", 200)
+            .attr("y2", 200)
+            .attr("stroke", "red")
+            .attr("stroke-width", 1)
+            .attr("stroke-dasharray", "5,5")
+            .attr("transform", `translate(${env.get_window_left_margin()},${env.get_window_top_margin()})`);
+    }
+    set_position(x1,y1,x2,y2) {
+        this.line
+            .attr("x1", x1)
+            .attr("x2", x2)
+            .attr("y1", y1)
+            .attr("y2", y2);
+    }
+    set_color(color) {
+        this.line.attr("stroke", color);
+    }
+}
 
 export class TextRect {
     constructor(svg, name, fill) {
@@ -50,6 +73,9 @@ export class TextRect {
     set_text_position(x, y) {
         this.text_element.attr("transform", `translate(${x}, ${y})`);
         //this.text_element.attr("x", x).attr("y", y);
+    }
+    set_text_color(color) {
+        this.text_element.attr("fill", color);
     }
     show() {
         this.text_element.style("visibility", "visible");

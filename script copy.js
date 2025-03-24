@@ -4,7 +4,6 @@ import { Environment, ComboTemplater } from './configuration.js';
 import { VerticalCursor, HorizontalCursor, TextRect } from './cursor.js';
 
 import { days_difference, days_difference_with_today } from './functions.js';
-import { not } from 'mathjs';
 
 let use_local = false;
 let underlying;
@@ -21,10 +20,10 @@ let pl_at_expiration_cursor;
 let pl_at_initial_cursor;
 let pl_at_sim_cursor;
 let price_cursor;
+let test_cursor;
 
 let underlying_current_price_drag=false;
-let underlying_current_price_sim_value=0;
-
+let underlying_current_price_display_value=0;
 let x_zoom_factor = 1;
 
 function add_strike_lines() {
@@ -228,10 +227,13 @@ function create_strike_buttons(graph) {
 function create_underlying_current_price_buttons() {
 
     let underlying_price=env.get_underlying_current_price();
-    //if (underlying_current_price_drag==true) {
-    //    underlying_price=underlying_current_price_sim_value;
-    //}
-    
+
+    if(underlying_current_price_drag==true) {
+        underlying_price=underlying_current_price_display_value;
+    }
+    else {
+        underlying_current_price_display_value=underlying_price;
+    }
     let textRect = new TextRect(svg, "underlying-price", "#0080FF");
     textRect.set_width(env.get_button_default_width());
     textRect.set_height(env.get_button_default_height());
@@ -245,22 +247,26 @@ function create_underlying_current_price_buttons() {
         env.get_window_left_margin()+env.get_x_scale()(underlying_price),
         env.get_button_underlying_text_vpos() - 5);
 
+    if(underlying_current_price_drag==true) {
+        //textRect.set_rect_border_color("red");
+        textRect.rect_element
+        .classed('blinking-border', true);  // Apply blinking stroke class
+
+    }
     textRect.show();
 
     textRect.text_element.call(d3.drag()
     .on("drag", function (event) {
-        //if(underlying_current_price_drag==false) {
-        //    underlying_current_price_sim_value=env.get_underlying_current_price();
-        //    console.log("underlying_current_price_sim_value=",underlying_current_price_sim_value);
-        //    underlying_current_price_drag=true;
-        //}
         
-        //let newX = Math.max(0, Math.min(env.get_window_width(), (event.x - env.get_window_left_margin())));
-        //d3.select(this).attr("x", newX - 15);
-        //let newval=event.x - env.get_window_left_margin()
-        let newval = env.get_x_scale().invert(event.x - env.get_window_left_margin());
-        console.log(event.x, newval, env.get_window_left_margin());
+        if(underlying_current_price_drag==false) {
+           underlying_current_price_display_value=env.get_underlying_current_price();
+           console.log("underlying_current_price_display_value=",underlying_current_price_display_value);
+           underlying_current_price_drag=true;
+        }
 
+        let newval = env.get_x_scale().invert(event.x - env.get_window_left_margin());
+
+        underlying_current_price_display_value = newval;
         textRect.set_rect_position(
             env.get_window_left_margin() + env.get_x_scale()(newval) - env.get_button_default_width() / 2,
             env.get_button_underlying_text_vpos() - 5)
@@ -268,13 +274,18 @@ function create_underlying_current_price_buttons() {
             env.get_window_left_margin()+env.get_x_scale()(newval),
             env.get_button_underlying_text_vpos() - 5);
         textRect.set_text(newval.toFixed(2));
-
-
+      
         draw_graph();
     })
     )
+    .on("contextmenu", function (event) {
+        event.preventDefault(); // Prevent default right-click menu
+        underlying_current_price_drag=false;
+        draw_graph();
+    })
 
-    const price_value = env.get_x_scale()(env.get_underlying_current_price());
+
+    const price_value = env.get_x_scale()(underlying_current_price_display_value);
 
     svg.append("line")
         .attr("x1", env.get_window_left_margin() + price_value)
@@ -291,14 +302,14 @@ function compute_p_and_l_data(use_legs_volatility, num_days_left) {
 
     let p_and_l_data = [];
 
+    console.log('compute_p_and_l_data - underlying_current_price_display_value=',underlying_current_price_display_value);
     for (let price = env.get_simul_min_price_of_combo(); price <= env.get_simul_max_price_of_combo(); price += env.get_simul_step_price_of_combo()) {
         let p_and_l_profile = 0;
         env.get_combo_params().legs.forEach(option => {
             let ov = env.get_use_real_values() ?
                 option.trade_volatility : option.sim_volatility;
             let v = use_legs_volatility ? ov : env.get_mean_volatility_of_combo(env.get_use_real_values());
-            //console.log('v=',v);
-            let option_price = computeOptionPrice(env.get_underlying_current_price(), option.strike, env.get_interest_rate_of_combo(), v, env.get_simulation_time_to_expiry() + option.expiration_offset, option.type);
+            let option_price = computeOptionPrice(underlying_current_price_display_value, option.strike, env.get_interest_rate_of_combo(), v, env.get_simulation_time_to_expiry() + option.expiration_offset, option.type);
             let premium = option_price[0];
             let greeks = computeOptionPrice(price, option.strike, env.get_interest_rate_of_combo(), v, num_days_left + option.expiration_offset, option.type);
             p_and_l_profile = p_and_l_profile + option.qty * 100 * (greeks[0] - premium);
@@ -855,11 +866,15 @@ function add_crosshair() {
         .attr("stroke-width", 1)
         .attr("stroke-dasharray", "4,4");
 
-
     pl_at_expiration_cursor = new VerticalCursor(svg, env.get_pl_at_exp_data(), scale_p_and_l, "pl-exp", "black");
     pl_at_initial_cursor = new VerticalCursor(svg, env.get_pl_at_init_data(), scale_p_and_l, "pl-init", "orange");
     pl_at_sim_cursor = new VerticalCursor(svg, env.get_pl_at_sim_data(), scale_p_and_l, "pl-sim", "green");
     price_cursor = new HorizontalCursor(svg, env.get_pl_at_sim_data(), scale_p_and_l, "price", "blue");
+    
+    pl_at_expiration_cursor.set_text_color("white");
+    pl_at_initial_cursor.set_text_color("white");
+    pl_at_sim_cursor.set_text_color("white");
+    price_cursor.set_text_color("white");
 
     // add event listener for mouse out event
     svg.on("mouseleave", function () {
@@ -1078,8 +1093,10 @@ async function setup_global_env(e) {
     }
 
     combo_tpl = new ComboTemplater();
-    await combo_tpl.fetch_combo_templates();
-    console.log('combo_tpl=', combo_tpl.combo_templates);
+    if (!use_local) {
+        await combo_tpl.fetch_combo_templates();
+        console.log('combo_tpl=', combo_tpl.combo_templates);
+    }
     return e
 }
 
@@ -1095,8 +1112,8 @@ function set_combo_to_tmp() {
 }
 
 // prepare the environment
-use_local = await is_mode_local(); // Auto-detect local/remote mode
-//use_local = true;
+//use_local = await is_mode_local(); // Auto-detect local/remote mode
+use_local = true;
 env = await setup_global_env(env);
 ticker = env.get_ticker_of_combo();
 underlying = use_local ? await load_local_price(ticker) : await fetch_price(ticker);
@@ -1113,52 +1130,3 @@ setup_days_left_slider();
 setup_volatility_sliders();
 draw_graph();
 
-document.getElementById("button_view_combo").addEventListener("click", set_combo_to_tmp);
-
-if(0) { // zoom not working
-    const mysvg = d3.select("svg");
-
-    const zoom = d3.zoom()
-        .scaleExtent([1, 10]) // Allow zooming between 1x and 10x
-        .translateExtent([[0, 0], [1000, 1000]]) // Restrict panning
-        .on("zoom", zoomed);
-    
-    mysvg.call(zoom).on("wheel", (event) => {
-        //event.preventDefault(); 
-    });
-}
-
-let memo_k = NaN;
-function zoomed(event) {
-
-    let k = event.transform.k;
-    if (isNaN(memo_k)) {
-        memo_k = k;
-        return;
-    }
-    if (k > memo_k) {
-        x_zoom_factor = 1.005;
-    }
-    else {
-        x_zoom_factor = 1 / 1.005;
-
-    }
-    memo_k = k;
-    const [x, y] = d3.pointer(event, this); // Get mouse coordinates
-    const price = env.get_x_scale().invert(x - env.get_window_left_margin());
-    const formattedPrice = price.toFixed(0); // Format as %.1f
-
-
-    console.log("Zoom Factor:", k.toFixed(3), x_zoom_factor.toFixed(3));
-    let left_diff = price - env.get_simul_min_price_of_combo();
-    let right_diff = env.get_simul_max_price_of_combo() - price;
-    left_diff = left_diff / x_zoom_factor;
-    right_diff = right_diff / x_zoom_factor;
-    let new_min_price = price - left_diff;
-    let new_max_price = price + right_diff;
-    env.set_simul_min_price_of_combo(new_min_price);
-    env.set_simul_max_price_of_combo(new_max_price);
-    draw_graph();
-
-    //gX.call(xAxis.scale(newXScale));
-}
