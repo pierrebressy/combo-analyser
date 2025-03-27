@@ -1,5 +1,523 @@
 {
     "combos": {
+        "LONG CALL": {
+            "legs": [
+                {
+                    "expiration_offset": 0,
+                    "qty": 1,
+                    "sim_volatility": 0.15,
+                    "strike": 225,
+                    "trade_volatility": 0.15,
+                    "type": "call"
+                }
+            ],
+            "name": "Single CALL",
+            "simulation": {
+                "expiration_offset": 0,
+                "interest_rate": 0,
+                "max_price": 235,
+                "mean_volatility": 0.15,
+                "min_price": 210,
+                "step": 0.1,
+                "time_for_simulation": 10,
+                "time_to_expiry": 10
+            },
+            "ticker": "AAPL",
+            "trade": {
+                "expiration_date": "2025-04-17",
+                "mean_volatility": 0.15,
+                "trade_open_by": "2025-03-03"
+            }
+        },
+        "LONG PUT": {
+            "legs": [
+                {
+                    "expiration_offset": 0,
+                    "qty": 1,
+                    "sim_volatility": 0.4,
+                    "strike": 240,
+                    "trade_volatility": 0.266,
+                    "type": "put"
+                }
+            ],
+            "name": "Single PUT",
+            "simulation": {
+                "expiration_offset": 0,
+                "interest_rate": 0,
+                "max_price": 300,
+                "mean_volatility": 0.4,
+                "min_price": 200,
+                "step": 1,
+                "time_for_simulation": 15,
+                "time_to_expiry": 35
+            },
+            "ticker": "AAPL",
+            "trade": {
+                "expiration_date": "2025-04-17",
+                "mean_volatility": 0.15,
+                "trade_open_by": "2025-03-03"
+            }
+        },
+        "Credit Call Spread": {
+            "legs": [
+                {
+                    "expiration_offset": 0,
+                    "mean_volatility": 0.3,
+                    "qty": -1,
+                    "sim_volatility": 0.4,
+                    "strike": 235,
+                    "trade_volatility": 0.3,
+                    "type": "call"
+                },
+                {
+                    "expiration_offset": 0,
+                    "mean_volatility": 0.3,
+                    "qty": 1,
+                    "sim_volatility": 0.35,
+                    "strike": 250,
+                    "trade_volatility": 0.25,
+                    "type": "call"
+                }
+            ],
+            "name": "Credit Call Spread",
+            "simulation": {
+                "expiration_offset": 0,
+                "interest_rate": 0,
+                "max_price": 300,
+                "mean_volatility": 0.4,
+                "min_price": 200,
+                "step": 1,
+                "time_for_simulation": 15,
+                "time_to_expiry": 35
+            },
+            "ticker": "AAPL",
+            "trade": {
+                "expiration_date": "2025-04-17",
+                "mean_volatility": 0.15,
+                "trade_open_by": "2025-03-03"
+            }
+        },
+        "Credit Put Spread": {
+            "legs": [
+                {
+                    "expiration_offset": 0,
+                    "qty": -1,
+                    "sim_volatility": 0.4,
+                    "strike": 250,
+                    "trade_volatility": 0.2,
+                    "type": "put"
+                },
+                {
+                    "expiration_offset": 0,
+                    "qty": 1,
+                    "sim_volatility": 0.4,
+                    "strike": 235,
+                    "trade_volatility": 0.2,
+                    "type": "put"
+                }
+            ],
+            "name": "Credit Put Spread",
+            "simulation": {
+                "expiration_offset": 0,
+                "interest_rate": 0,
+                "max_price": 300,
+                "mean_volatility": 0.4,
+                "min_price": 200,
+                "step": 1,
+                "time_for_simulation": 15,
+                "time_to_expiry": 35
+            },
+            "ticker": "AAPL",
+            "trade": {
+                "expiration_date": "2025-04-17",
+                "mean_volatility": 0.15,
+                "trade_open_by": "2025-03-03"
+            }
+        },
+        "Debit Call Spread": {
+            "legs": [
+                {
+                    "expiration_offset": 0,
+                    "qty": 1,
+                    "sim_volatility": 0.4,
+                    "strike": 235,
+                    "trade_volatility": 0.2,
+                    "type": "call"
+                },
+                {
+                    "expiration_offset": 0,
+                    "qty": -1,
+                    "sim_volatility": 0.4,
+                    "strike": 250,
+                    "trade_volatility": 0.2,
+                    "type": "call"
+                }
+            ],
+            "name": "Debit Call Spread",
+            "simulation": {
+                "expiration_offset": 0,
+                "interest_rate": 0,
+                "max_price": 300,
+                "mean_volatility": 0.4,
+                "min_price": 200,
+                "step": 1,
+                "time_for_simulation": 15,
+                "time_to_expiry": 35
+            },
+            "ticker": "AAPL",
+            "trade": {
+                "expiration_date": "2025-04-17",
+                "mean_volatility": 0.15,
+                "trade_open_by": "2025-03-03"
+            }
+        },
+        "Debit Put Spread": {
+            "legs": [
+                {
+                    "expiration_offset": 0,
+                    "qty": 1,
+                    "sim_volatility": 0.4,
+                    "strike": 250,
+                    "trade_volatility": 0.2,
+                    "type": "put"
+                },
+                {
+                    "expiration_offset": 0,
+                    "qty": -1,
+                    "sim_volatility": 0.4,
+                    "strike": 235,
+                    "trade_volatility": 0.2,
+                    "type": "put"
+                }
+            ],
+            "name": "Debit Put Spread",
+            "simulation": {
+                "expiration_offset": 0,
+                "interest_rate": 0,
+                "max_price": 300,
+                "mean_volatility": 0.4,
+                "min_price": 200,
+                "step": 1,
+                "time_for_simulation": 15,
+                "time_to_expiry": 35
+            },
+            "ticker": "AAPL",
+            "trade": {
+                "expiration_date": "2025-04-17",
+                "mean_volatility": 0.15,
+                "trade_open_by": "2025-03-03"
+            }
+        },
+        "SHORT CALL": {
+            "legs": [
+                {
+                    "expiration_offset": 0,
+                    "qty": -1,
+                    "sim_volatility": 0.4,
+                    "strike": 230,
+                    "trade_volatility": 0.2,
+                    "type": "call"
+                }
+            ],
+            "name": "Single CALL",
+            "simulation": {
+                "expiration_offset": 0,
+                "interest_rate": 0,
+                "max_price": 300,
+                "mean_volatility": 0.67,
+                "min_price": 200,
+                "step": 1,
+                "time_for_simulation": 5,
+                "time_to_expiry": 35
+            },
+            "ticker": "AAPL",
+            "trade": {
+                "expiration_date": "2025-04-17",
+                "mean_volatility": 0.15,
+                "trade_open_by": "2025-03-03"
+            }
+        },
+        "SHORT PUT": {
+            "legs": [
+                {
+                    "expiration_offset": 0,
+                    "qty": -1,
+                    "sim_volatility": 0.228,
+                    "strike": 5568,
+                    "trade_volatility": 0.228,
+                    "type": "put"
+                }
+            ],
+            "name": "Single PUT",
+            "simulation": {
+                "expiration_offset": 0,
+                "interest_rate": 0.14,
+                "max_price": 6100,
+                "mean_volatility": 0.228,
+                "min_price": 4900,
+                "step": 1,
+                "time_for_simulation": 31,
+                "time_to_expiry": 31
+            },
+            "ticker": "^SPX",
+            "trade": {
+                "expiration_date": "2025-04-14",
+                "mean_volatility": 0.164,
+                "trade_open_by": "2025-08-29"
+            }
+        },
+        "TANK MSTR MAR14'25": {
+            "legs": [
+                {
+                    "expiration_offset": 0,
+                    "qty": 1,
+                    "sim_volatility": 0.817,
+                    "strike": 255,
+                    "trade_volatility": 0.817,
+                    "type": "put"
+                },
+                {
+                    "expiration_offset": 0,
+                    "qty": -1,
+                    "sim_volatility": 0.828,
+                    "strike": 250,
+                    "trade_volatility": 0.828,
+                    "type": "put"
+                },
+                {
+                    "expiration_offset": 0,
+                    "qty": -1,
+                    "sim_volatility": 0.917,
+                    "strike": 225,
+                    "trade_volatility": 0.917,
+                    "type": "put"
+                }
+            ],
+            "name": "TANK MSTR MAR14'25",
+            "simulation": {
+                "expiration_offset": 0,
+                "interest_rate": 0,
+                "max_price": 310,
+                "mean_volatility": 0.8,
+                "min_price": 200,
+                "step": 1,
+                "time_for_simulation": 10,
+                "time_to_expiry": 17
+            },
+            "ticker": "MSTR",
+            "trade": {
+                "expiration_date": "2025-03-14",
+                "mean_volatility": 0.7,
+                "trade_open_by": "2025-02-24"
+            }
+        },
+        "TANK PLTR MAR14'25": {
+            "legs": [
+                {
+                    "expiration_offset": 0,
+                    "qty": 1,
+                    "sim_volatility": 0.774,
+                    "strike": 85,
+                    "trade_volatility": 0.774,
+                    "type": "put"
+                },
+                {
+                    "expiration_offset": 0,
+                    "qty": -1,
+                    "sim_volatility": 0.791,
+                    "strike": 84,
+                    "trade_volatility": 0.791,
+                    "type": "put"
+                },
+                {
+                    "expiration_offset": 0,
+                    "qty": -1,
+                    "sim_volatility": 0.821,
+                    "strike": 76,
+                    "trade_volatility": 0.821,
+                    "type": "put"
+                }
+            ],
+            "name": "TANK PLTR MAR14'25",
+            "simulation": {
+                "expiration_offset": 0,
+                "interest_rate": 0,
+                "max_price": 105,
+                "mean_volatility": 0.8,
+                "min_price": 70,
+                "step": 0.1,
+                "time_for_simulation": 10,
+                "time_to_expiry": 17
+            },
+            "ticker": "PLTR",
+            "trade": {
+                "expiration_date": "2025-03-14",
+                "mean_volatility": 0.7,
+                "trade_open_by": "2025-02-24"
+            }
+        },
+        "TANK TSLA MAR2025": {
+            "legs": [
+                {
+                    "expiration_offset": 0,
+                    "qty": 1,
+                    "sim_volatility": 0.68,
+                    "strike": 305,
+                    "trade_volatility": 0.74,
+                    "type": "put"
+                },
+                {
+                    "expiration_offset": 0,
+                    "qty": -1,
+                    "sim_volatility": 0.96,
+                    "strike": 300,
+                    "trade_volatility": 0.7,
+                    "type": "put"
+                },
+                {
+                    "expiration_offset": 0,
+                    "qty": -1,
+                    "sim_volatility": 0.4,
+                    "strike": 265,
+                    "trade_volatility": 0.4,
+                    "type": "put"
+                }
+            ],
+            "name": "COMBO TANK TSLA MAR2025",
+            "simulation": {
+                "expiration_offset": 0,
+                "interest_rate": 0,
+                "max_price": 340,
+                "mean_volatility": 0.44,
+                "min_price": 240,
+                "step": 1,
+                "time_for_simulation": 7,
+                "time_to_expiry": 16
+            },
+            "ticker": "TSLA",
+            "trade": {
+                "expiration_date": "2025-05-14",
+                "mean_volatility": 0.7,
+                "trade_open_by": "2025-02-24"
+            }
+        },
+        "TENTE SPX MAY2025": {
+            "legs": [
+                {
+                    "expiration_offset": 0,
+                    "qty": 1,
+                    "sim_volatility": 0.08,
+                    "strike": 5498,
+                    "trade_volatility": 0.211,
+                    "type": "put"
+                },
+                {
+                    "expiration_offset": 0,
+                    "qty": -2,
+                    "sim_volatility": 0.233,
+                    "strike": 5311,
+                    "trade_volatility": 0.233,
+                    "type": "put"
+                },
+                {
+                    "expiration_offset": 0,
+                    "qty": 1,
+                    "sim_volatility": 0.282,
+                    "strike": 4900,
+                    "trade_volatility": 0.282,
+                    "type": "put"
+                }
+            ],
+            "name": "COMBO TENTE SPX MAY2025",
+            "simulation": {
+                "interest_rate": 0,
+                "max_price": 6300,
+                "mean_volatility": 0.24,
+                "min_price": 4800,
+                "step": 1,
+                "time_for_simulation": 8,
+                "time_to_expiry": 86
+            },
+            "ticker": "^SPX",
+            "trade": {
+                "expiration_date": "2025-05-14",
+                "mean_volatility": 0.24,
+                "trade_open_by": "2025-02-24"
+            }
+        },
+        "TENTE SPX MAY2026": {
+            "legs": [
+                {
+                    "expiration_offset": -2,
+                    "qty": 1,
+                    "sim_volatility": 0.08,
+                    "strike": 5457,
+                    "trade_volatility": 0.211,
+                    "type": "put"
+                },
+                {
+                    "expiration_offset": 0,
+                    "qty": -2,
+                    "sim_volatility": 0.233,
+                    "strike": 5272,
+                    "trade_volatility": 0.233,
+                    "type": "put"
+                },
+                {
+                    "expiration_offset": 0,
+                    "qty": 1,
+                    "sim_volatility": 0.282,
+                    "strike": 4933,
+                    "trade_volatility": 0.282,
+                    "type": "put"
+                }
+            ],
+            "name": "COMBO TENTE SPX MAY2026",
+            "simulation": {
+                "interest_rate": 0,
+                "max_price": 6300,
+                "mean_volatility": 0.24,
+                "min_price": 4800,
+                "step": 1,
+                "time_for_simulation": 8,
+                "time_to_expiry": 86
+            },
+            "ticker": "^SPX",
+            "trade": {
+                "expiration_date": "2025-05-14",
+                "mean_volatility": 0.24,
+                "trade_open_by": "2025-02-24"
+            }
+        },
+        "TMP": {
+            "legs": [
+                {
+                    "expiration_offset": 0,
+                    "qty": 1,
+                    "sim_volatility": 0.3,
+                    "strike": 240,
+                    "trade_volatility": 0.3,
+                    "type": "call"
+                }
+            ],
+            "name": "Test",
+            "simulation": {
+                "expiration_offset": 0,
+                "interest_rate": 0,
+                "max_price": 300,
+                "mean_volatility": 0.3,
+                "min_price": 200,
+                "step": 1,
+                "time_for_simulation": 15,
+                "time_to_expiry": 37
+            },
+            "ticker": "AAPL",
+            "trade": {
+                "expiration_date": "2025-04-17",
+                "mean_volatility": 0.3,
+                "trade_open_by": "2025-03-03"
+            }
+        },
         "VAGUE SPX 29AUG'25": {
             "legs": [
                 {
@@ -53,196 +571,100 @@
                 "trade_open_by": "2025-03-13"
             }
         },
-        "LONG CALL": {
+        "ZEBRA SPX MAR2025": {
             "legs": [
                 {
-                    "expiration_offset": 0,
+                    "expiration_offset": 7,
                     "qty": 1,
-                    "sim_volatility": 0.271,
-                    "strike": 220,
-                    "trade_volatility": 0.271,
+                    "sim_volatility": 0.1,
+                    "strike": 6230,
+                    "trade_volatility": 0.01,
                     "type": "call"
-                }
-            ],
-            "name": "Single CALL",
-            "simulation": {
-                "expiration_offset_XXX": 0,
-                "interest_rate": 0,
-                "max_price": 240,
-                "mean_volatility": 0.271,
-                "min_price": 200,
-                "step": 0.1,
-                "time_for_simulation": 6,
-                "time_to_expiry": 12
-            },
-            "ticker": "AAPL",
-            "trade": {
-                "expiration_date": "2025-04-17",
-                "mean_volatility": 0.271,
-                "trade_open_by": "2025-03-03"
-            }
-        },
-        "LONG PUT": {
-            "legs": [
+                },
                 {
-                    "expiration_offset": 0,
-                    "qty": 1,
-                    "sim_volatility": 0.271,
-                    "strike": 220,
-                    "trade_volatility": 0.271,
-                    "type": "put"
-                }
-            ],
-            "name": "Single PUT",
-            "simulation": {
-                "expiration_offset": 0,
-                "interest_rate": 0,
-                "max_price": 240,
-                "mean_volatility": 0.271,
-                "min_price": 200,
-                "step": 1,
-                "time_for_simulation": 13,
-                "time_to_expiry": 13
-            },
-            "ticker": "AAPL",
-            "trade": {
-                "expiration_date": "2025-04-17",
-                "mean_volatility": 0.15,
-                "trade_open_by": "2025-03-03"
-            }
-        },
-        "SHORT CALL": {
-            "legs": [
-                {
-                    "expiration_offset": 0,
-                    "qty": -1,
-                    "sim_volatility": 0.266,
-                    "strike": 220,
-                    "trade_volatility": 0.266,
-                    "type": "call"
-                }
-            ],
-            "name": "Single CALL",
-            "simulation": {
-                "expiration_offset": 0,
-                "interest_rate": 0,
-                "max_price": 240,
-                "mean_volatility": 0.266,
-                "min_price": 200,
-                "step": 1,
-                "time_for_simulation": 13,
-                "time_to_expiry": 13
-            },
-            "ticker": "AAPL",
-            "trade": {
-                "expiration_date": "2025-04-17",
-                "mean_volatility": 0.15,
-                "trade_open_by": "2025-03-03"
-            }
-        },
-        "SHORT PUT": {
-            "legs": [
-                {
-                    "expiration_offset": 0,
-                    "qty": -1,
-                    "sim_volatility": 0.271,
-                    "strike": 220,
-                    "trade_volatility": 0.271,
-                    "type": "put"
-                }
-            ],
-            "name": "Single PUT",
-            "simulation": {
-                "expiration_offset": 0,
-                "interest_rate": 0.14,
-                "max_price": 240,
-                "mean_volatility": 0.271,
-                "min_price": 200,
-                "step": 1,
-                "time_for_simulation": 13,
-                "time_to_expiry": 13
-            },
-            "ticker": "AAPL",
-            "trade": {
-                "expiration_date": "2025-04-14",
-                "mean_volatility": 0.164,
-                "trade_open_by": "2025-08-29"
-            }
-        },
-        "Credit Call Spread": {
-            "legs": [
-                {
-                    "expiration_offset": 0,
-                    "mean_volatility": 0.3,
-                    "qty": -1,
-                    "sim_volatility": 0.45,
-                    "strike": 235,
-                    "trade_volatility": 0.45,
+                    "expiration_offset": 7,
+                    "qty": 2,
+                    "sim_volatility": 0.11,
+                    "strike": 6240,
+                    "trade_volatility": 0.106,
                     "type": "call"
                 },
                 {
                     "expiration_offset": 0,
-                    "mean_volatility": 0.3,
-                    "qty": 1,
-                    "sim_volatility": 0.35,
-                    "strike": 250,
-                    "trade_volatility": 0.25,
-                    "type": "call"
-                }
-            ],
-            "name": "Credit Call Spread",
-            "simulation": {
-                "expiration_offset": 0,
-                "interest_rate": 0,
-                "max_price": 300,
-                "mean_volatility": 0.4,
-                "min_price": 200,
-                "step": 1,
-                "time_for_simulation": 15,
-                "time_to_expiry": 35
-            },
-            "ticker": "AAPL",
-            "trade": {
-                "expiration_date": "2025-04-17",
-                "mean_volatility": 0.15,
-                "trade_open_by": "2025-03-03"
-            }
-        },
-        "Credit Put Spread": {
-            "legs": [
-                {
-                    "expiration_offset": 0,
                     "qty": -1,
-                    "sim_volatility": 0.4,
-                    "strike": 250,
-                    "trade_volatility": 0.4,
-                    "type": "put"
+                    "sim_volatility": 0.12,
+                    "strike": 6130,
+                    "trade_volatility": 0.113,
+                    "type": "call"
                 },
                 {
                     "expiration_offset": 0,
-                    "qty": 1,
-                    "sim_volatility": 0.4,
-                    "strike": 235,
-                    "trade_volatility": 0.4,
-                    "type": "put"
+                    "qty": -2,
+                    "sim_volatility": 0.13,
+                    "strike": 6270,
+                    "trade_volatility": 0.103,
+                    "type": "call"
                 }
             ],
-            "name": "Credit Put Spread",
+            "name": "COMBO ZEBRA SPX MAR2025",
             "simulation": {
-                "expiration_offset": 0,
                 "interest_rate": 0,
-                "max_price": 300,
-                "mean_volatility": 0.4,
-                "min_price": 200,
+                "max_price": 6400,
+                "mean_volatility": 0.106,
+                "min_price": 5470,
                 "step": 1,
                 "time_for_simulation": 15,
                 "time_to_expiry": 35
             },
-            "ticker": "AAPL",
+            "ticker": "^SPX",
             "trade": {
-                "expiration_date": "2025-04-17",
-                "mean_volatility": 0.15,
-                "trade_open_by": "2025-03-03"
+                "expiration_date": "2025-03-21",
+                "mean_volatility": 0.2,
+                "trade_open_by": "2025-02-24"
+            }
+        },
+        "ZIP SPX 04APR'25": {
+            "legs": [
+                {
+                    "expiration_offset": 4,
+                    "qty": 3,
+                    "sim_volatility": 0.308,
+                    "strike": 5790,
+                    "trade_volatility": 0.308,
+                    "type": "call"
+                },
+                {
+                    "expiration_offset": 0,
+                    "qty": -1,
+                    "sim_volatility": 0.495,
+                    "strike": 5715,
+                    "trade_volatility": 0.495,
+                    "type": "call"
+                },
+                {
+                    "expiration_offset": 0,
+                    "qty": -2,
+                    "sim_volatility": 0.271,
+                    "strike": 5805,
+                    "trade_volatility": 0.271,
+                    "type": "call"
+                }
+            ],
+            "name": "COMBO ZIP SPX 04APR'25",
+            "simulation": {
+                "interest_rate": 0,
+                "max_price": 7000,
+                "mean_volatility": 0.106,
+                "min_price": 4500,
+                "step": 1,
+                "time_for_simulation": 8,
+                "time_to_expiry": 8
+            },
+            "ticker": "^SPX",
+            "trade": {
+                "expiration_date": "2025-03-21",
+                "mean_volatility": 0.2,
+                "trade_open_by": "2025-02-24"
             }
         }
     },
@@ -258,7 +680,7 @@
         "num_greeks": 6
     },
     "config": {
-        "combo": "SHORT CALL",
+        "combo": "LONG CALL",
         "use_real_values": false
     },
     "graph": {
@@ -279,6 +701,11 @@
             ]
         }
     },
+    "underlying_current_price": {
+        "price": 224.1999969482422,
+        "source": "live",
+        "ticker": "AAPL"
+    },
     "window": {
         "button": {
             "height": 20,
@@ -288,8 +715,8 @@
         },
         "days_left": {
             "max": 2,
-            "min": 0.01,
-            "step": 0.01,
+            "min": 1,
+            "step": 0.5,
             "type": "range",
             "width": "100px"
         },

@@ -2,10 +2,12 @@ import { computeOptionPrice } from './functions.js';
 import { is_mode_local, load_local_price, load_local_config, update_remote_config, fetch_configuration, fetch_price } from './async.js';
 import { Environment, ComboTemplater } from './configuration.js';
 import { VerticalCursor, HorizontalCursor, TextRect, Line } from './cursor.js';
-import { days_difference, days_difference_with_today } from './functions.js';
+import { hestonMonteCarlo } from './heston.js';
 
+  
 let volatility_is_per_leg;
 let auto_save=true;
+let simulated_underlying_price_changed=false;
 let underlying_current_price = 0;
 let svg;
 let scale_p_and_l;
@@ -151,30 +153,58 @@ function display_local_status() {
         .attr("font-family", "Menlo, monospace")  // Set font to Menlo
         .style("font-weight", "bold")
         .attr("x", 20).attr("y", 2)
-        .text("Data server " + (use_local ? "local" : "remote"));
+        .text(use_local ? "Local data" : "Remote data" );
 
-    c = d3.select("#change-status-container");
-    c.selectAll("*").remove();
-    s = c.append("svg")
-    s.attr("width", 200)    // Adjust size as needed
-        .attr("height", 20);
-    s.append("circle")
-        .attr("cx", 10)        // X position of the center
-        .attr("cy", 10)        // Y position of the center
-        .attr("r", 5)         // Radius of the circle
-        .attr("class", combo_changed ? "blinking-orange-circle" : "gray-dot");
 
-    s.append("text")
-        .attr("fill", combo_changed ? "red" : "gray")
-        .attr("color", "white")
-        .attr("text-anchor", "left")
-        .attr("dy", "1em")
-        .style("font-size", "12px")
-        .attr("font-family", "Menlo, monospace")  // Set font to Menlo
-        .style("font-weight", "bold")
-        .attr("x", 20).attr("y", 2)
-        .text(combo_changed ? "Combo modified" : "");
+        
+        c = d3.select("#change-status-container");
+        c.selectAll("*").remove();
+        s = c.append("svg")
+        s.attr("width", 200)    // Adjust size as needed
+            .attr("height", 20);
+        s.append("circle")
+            .attr("cx", 10)        // X position of the center
+            .attr("cy", 10)        // Y position of the center
+            .attr("r", 5)         // Radius of the circle
+            .attr("class", combo_changed ? "blinking-red-circle" : "gray-dot");
+    
+        s.append("text")
+            .attr("fill", combo_changed ? "red" : "gray")
+            .attr("color", "white")
+            .attr("text-anchor", "left")
+            .attr("dy", "1em")
+            .style("font-size", "12px")
+            .attr("font-family", "Menlo, monospace")  // Set font to Menlo
+            .style("font-weight", "bold")
+            .attr("x", 20).attr("y", 2)
+            .text(combo_changed ? "Modified combo" : "");
+    
 
+            
+        
+            c = d3.select("#underlying-status-container");
+            c.selectAll("*").remove();
+            s = c.append("svg")
+            s.attr("width", 220)    // Adjust size as needed
+                .attr("height", 20);
+            s.append("circle")
+                .attr("cx", 10)        // X position of the center
+                .attr("cy", 10)        // Y position of the center
+                .attr("r", 5)         // Radius of the circle
+                .attr("class", simulated_underlying_price_changed ? "blinking-orange-circle" : "gray-dot");
+        
+            s.append("text")
+                .attr("fill", simulated_underlying_price_changed ? "orange" : "gray")
+                .attr("color", "white")
+                .attr("text-anchor", "left")
+                .attr("dy", "1em")
+                .style("font-size", "12px")
+                .attr("font-family", "Menlo, monospace")  // Set font to Menlo
+                .style("font-weight", "bold")
+                .attr("x", 20).attr("y", 2)
+                .text(simulated_underlying_price_changed ? "Simulated underliying price" : "");
+        
+        
 
 
 
@@ -281,7 +311,8 @@ function compute_p_and_l_data(use_legs_volatility, num_days_left) {
             let ov = env.get_use_real_values() ?
                 option.trade_volatility : option.sim_volatility;
             let v = use_legs_volatility ? ov : env.get_mean_volatility_of_combo(env.get_use_real_values());
-            let option_price = computeOptionPrice(option.strike, option.strike, env.get_interest_rate_of_combo(), v, env.get_simulation_time_to_expiry() + option.expiration_offset, option.type);
+            //let option_price = computeOptionPrice(option.strike, option.strike, env.get_interest_rate_of_combo(), v, env.get_simulation_time_to_expiry() + option.expiration_offset, option.type);
+            let option_price = computeOptionPrice(underlying_current_price , option.strike, env.get_interest_rate_of_combo(), v, env.get_simulation_time_to_expiry() + option.expiration_offset, option.type);
             let premium = option_price[0];
             let greeks = computeOptionPrice(price, option.strike, env.get_interest_rate_of_combo(), v, num_days_left + option.expiration_offset, option.type);
             p_and_l_profile = p_and_l_profile + option.qty * 100 * (greeks[0] - premium);
@@ -616,6 +647,7 @@ function display_strike_buttons() {
                         //alert("Minus button clicked!");
                         let option = env.get_combo_params().legs[current_index - 1];
                         option.qty -= 1;
+                        combo_changed = true;
                         qty_label.text("Qty " + option.qty); // Update title text
                         draw_graph();
                     });
@@ -629,6 +661,7 @@ function display_strike_buttons() {
                         //alert("Plus button clicked!");
                         let option = env.get_combo_params().legs[current_index - 1];
                         option.qty += 1;
+                        combo_changed = true;
                         qty_label.text("Qty " + option.qty); // Update title text
                         draw_graph();
                     });
@@ -646,6 +679,7 @@ function display_strike_buttons() {
                         //alert("Minus button clicked!");
                         let option = env.get_combo_params().legs[current_index - 1];
                         option.expiration_offset -= 1;
+                        combo_changed = true;
                         exp_offset_label.text(option.expiration_offset + "d"); // Update title text
                         draw_graph();
                     });
@@ -661,6 +695,7 @@ function display_strike_buttons() {
                         //alert("Plus button clicked!");
                         let option = env.get_combo_params().legs[current_index - 1];
                         option.expiration_offset += 1;
+                        combo_changed = true;
                         exp_offset_label.text(option.expiration_offset + "d"); // Update title text
                         draw_graph();
                     });
@@ -703,6 +738,7 @@ function display_current_price(svg) {
     label.text_element
         .call(d3.drag()
             .on("drag", function (event) {
+                simulated_underlying_price_changed=true;
                 let newX = Math.max(0, Math.min(env.get_window_width(), (event.x - env.get_window_left_margin())));
                 d3.select(this).attr("x", newX - 15);
                 let newStrike = env.get_x_scale().invert(newX);
@@ -714,6 +750,8 @@ function display_current_price(svg) {
         .on("contextmenu", function (event) {
             event.preventDefault(); // Prevent default right-click menu
             underlying_current_price = env.get_underlying_current_price().price;
+            simulated_underlying_price_changed=false;
+
             draw_graph();
         });
 
@@ -1035,3 +1073,8 @@ display_combos_list();
 draw_graph();
 
 
+
+
+
+let o = computeOptionPrice(220, 225, 0, 0.15, 10, 'call');
+console.log('Option price:', o);

@@ -149,11 +149,23 @@
     right: 10px;
 }
 
-  .blinking-orange-circle {
-    animation: blinkFill 1s infinite;
+.blinking-orange-circle {
+    animation: blinkFillOrange 1s infinite;
   }
   
-  @keyframes blinkFill {
+  @keyframes blinkFillOrange {
+    0%   { fill: orange; }
+    33%  { fill: gray; }
+    34%  { fill: gray; }
+    66%  { fill: gray; }
+    67%  { fill: orange; }
+    100% { fill: orange; }
+  }
+  .blinking-red-circle {
+    animation: blinkFillRed 1s infinite;
+  }
+  
+  @keyframes blinkFillRed {
     0%   { fill: red; }
     33%  { fill: gray; }
     34%  { fill: gray; }
