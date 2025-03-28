@@ -71,21 +71,21 @@ function display_volatility_sliders() {
             const slider = document.createElement('input');
             slider.type = env.get_iv_slider_type();
             slider.style.width = env.get_iv_slider_width();
-            slider.min = env.get_iv_slider_min_val();
-            slider.max = env.get_iv_slider_max_val();
-            slider.step = env.get_iv_slider_step();
-            slider.value = env.get_use_real_values() ?
-                option.trade_volatility : option.sim_volatility;
+            slider.min = 100*env.get_iv_slider_min_val();
+            slider.max = 100*env.get_iv_slider_max_val();
+            slider.step = 100*env.get_iv_slider_step();
+            slider.value = 100*(env.get_use_real_values() ?
+                option.trade_volatility : option.sim_volatility);
 
             // Display the IV value next to the slider
             const value_display = document.createElement('span');
-            value_display.textContent = ` ${slider.value}`;
+            value_display.textContent = ` ${slider.value} %`;
             slider.addEventListener('input', () => {
-                value_display.textContent = ` ${slider.value}`;
+                value_display.textContent = ` ${slider.value} %`;
                 if (env.get_use_real_values()) {
-                    option.trade_volatility = parseFloat(slider.value);
+                    option.trade_volatility = parseFloat(slider.value/100.0);
                 } else {
-                    option.sim_volatility = parseFloat(slider.value);
+                    option.sim_volatility = parseFloat(slider.value/100.0);
                 }
                 draw_graph();
             });
@@ -104,17 +104,17 @@ function display_volatility_sliders() {
         const slider = document.createElement('input');
         slider.type = env.get_iv_slider_type();
         slider.style.width = env.get_iv_slider_width();
-        slider.min = env.get_iv_slider_min_val();
-        slider.max = env.get_iv_slider_max_val();
-        slider.step = env.get_iv_slider_step();
-        slider.value = env.get_mean_volatility_of_combo(env.get_use_real_values());
+        slider.min = 100*env.get_iv_slider_min_val();
+        slider.max = 100*env.get_iv_slider_max_val();
+        slider.step = 100*env.get_iv_slider_step();
+        slider.value = 100*env.get_mean_volatility_of_combo(env.get_use_real_values());
 
         // Display the IV value next to the slider
         const value_display = document.createElement('span');
-        value_display.textContent = ` ${slider.value}`;
+        value_display.textContent = ` ${slider.value} %`;
         slider.addEventListener('input', () => {
-            value_display.textContent = ` ${slider.value}`;
-            env.set_mean_volatility_of_combo(env.get_use_real_values(), parseFloat(slider.value));
+            value_display.textContent = ` ${slider.value} %`;
+            env.set_mean_volatility_of_combo(env.get_use_real_values(), parseFloat(slider.value/100.0));
             draw_graph();
         });
 
@@ -250,6 +250,7 @@ function display_days_left_slider() {
     slider.max = env.get_time_to_expiry_of_combo();
     slider.step = env.config.window.days_left.step;
     slider.value = env.get_time_for_simulation_of_combo();
+    slider.style.transform = 'scaleX(-1)'; // Mirror effect
 
     // Display the time value next to the slider
     const value_display = document.createElement('span');
@@ -898,14 +899,14 @@ function draw_p_and_l(graph, scale) {
 
     // Append the positive (green) gradient area
     graph.append("path")
-        .datum(env.get_pl_at_exp_data())
+        .datum(env.get_pl_at_sim_data())
         .attr("fill", "url(#greenGradient)") // Apply green gradient
         .attr("opacity", 0.6)
         .attr("d", area_above);
 
     // Append the negative (red) gradient area
     graph.append("path")
-        .datum(env.get_pl_at_exp_data())
+        .datum(env.get_pl_at_sim_data())
         .attr("fill", "url(#redGradient)") // Apply red gradient
         .attr("opacity", 0.6)
         .attr("d", area_below);
