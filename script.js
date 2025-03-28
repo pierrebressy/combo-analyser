@@ -259,7 +259,6 @@ function display_days_left_slider() {
     slider.addEventListener('input', () => {
         value_display.textContent = ` ${slider.value}/${env.get_time_to_expiry_of_combo()}`;
         env.set_time_for_simulation(parseFloat(slider.value));
-        console.log("Days left:", env.get_time_for_simulation_of_combo());
         draw_graph();
     });
 
