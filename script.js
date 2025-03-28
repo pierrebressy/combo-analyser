@@ -258,7 +258,8 @@ function display_days_left_slider() {
     value_display.textContent = ` ${slider.value}/${env.get_time_to_expiry_of_combo()}`;
     slider.addEventListener('input', () => {
         value_display.textContent = ` ${slider.value}/${env.get_time_to_expiry_of_combo()}`;
-        env.set_time_for_simulation(parseInt(slider.value));
+        env.set_time_for_simulation(parseFloat(slider.value));
+        console.log("Days left:", env.get_time_for_simulation_of_combo());
         draw_graph();
     });
 
@@ -403,8 +404,8 @@ function draw_one_sigma_area(svg, underlying_current_price, p_and_l_graph_height
     let sigma_text = `σ = ${sigma.toFixed(0)}`;
     let price_less_sigma = underlying_current_price - sigma_factor * sigma;
     let price_plus_sigma = underlying_current_price + sigma_factor * sigma;
-    let price_less_sigma_text = `${price_less_sigma.toFixed(0)}`;
-    let price_plus_sigma_text = `${price_plus_sigma.toFixed(0)}`;
+    let price_less_sigma_text = `${price_less_sigma.toFixed(1)}`;
+    let price_plus_sigma_text = `${price_plus_sigma.toFixed(1)}`;
 
     svg.append("text")
         .attr("x", env.get_window_left_margin() + env.get_x_scale()(underlying_current_price) - 30)
