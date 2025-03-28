@@ -4,11 +4,12 @@ import { Environment, ComboTemplater } from './configuration.js';
 import { VerticalCursor, HorizontalCursor, TextRect, Line } from './cursor.js';
 import { hestonMonteCarlo } from './heston.js';
 
-  
+
 let volatility_is_per_leg;
-let auto_save=true;
-let simulated_underlying_price_changed=false;
+let auto_save = true;
+let simulated_underlying_price_changed = false;
 let underlying_current_price = 0;
+let sigma_factor = 1;
 let svg;
 let scale_p_and_l;
 let combo_changed = false;
@@ -71,10 +72,10 @@ function display_volatility_sliders() {
             const slider = document.createElement('input');
             slider.type = env.get_iv_slider_type();
             slider.style.width = env.get_iv_slider_width();
-            slider.min = 100*env.get_iv_slider_min_val();
-            slider.max = 100*env.get_iv_slider_max_val();
-            slider.step = 100*env.get_iv_slider_step();
-            slider.value = 100*(env.get_use_real_values() ?
+            slider.min = 100 * env.get_iv_slider_min_val();
+            slider.max = 100 * env.get_iv_slider_max_val();
+            slider.step = 100 * env.get_iv_slider_step();
+            slider.value = 100 * (env.get_use_real_values() ?
                 option.trade_volatility : option.sim_volatility);
 
             // Display the IV value next to the slider
@@ -83,9 +84,9 @@ function display_volatility_sliders() {
             slider.addEventListener('input', () => {
                 value_display.textContent = ` ${slider.value} %`;
                 if (env.get_use_real_values()) {
-                    option.trade_volatility = parseFloat(slider.value/100.0);
+                    option.trade_volatility = parseFloat(slider.value / 100.0);
                 } else {
-                    option.sim_volatility = parseFloat(slider.value/100.0);
+                    option.sim_volatility = parseFloat(slider.value / 100.0);
                 }
                 draw_graph();
             });
@@ -104,17 +105,17 @@ function display_volatility_sliders() {
         const slider = document.createElement('input');
         slider.type = env.get_iv_slider_type();
         slider.style.width = env.get_iv_slider_width();
-        slider.min = 100*env.get_iv_slider_min_val();
-        slider.max = 100*env.get_iv_slider_max_val();
-        slider.step = 100*env.get_iv_slider_step();
-        slider.value = 100*env.get_mean_volatility_of_combo(env.get_use_real_values());
+        slider.min = 100 * env.get_iv_slider_min_val();
+        slider.max = 100 * env.get_iv_slider_max_val();
+        slider.step = 100 * env.get_iv_slider_step();
+        slider.value = 100 * env.get_mean_volatility_of_combo(env.get_use_real_values());
 
         // Display the IV value next to the slider
         const value_display = document.createElement('span');
         value_display.textContent = ` ${slider.value} %`;
         slider.addEventListener('input', () => {
             value_display.textContent = ` ${slider.value} %`;
-            env.set_mean_volatility_of_combo(env.get_use_real_values(), parseFloat(slider.value/100.0));
+            env.set_mean_volatility_of_combo(env.get_use_real_values(), parseFloat(slider.value / 100.0));
             draw_graph();
         });
 
@@ -153,58 +154,58 @@ function display_local_status() {
         .attr("font-family", "Menlo, monospace")  // Set font to Menlo
         .style("font-weight", "bold")
         .attr("x", 20).attr("y", 2)
-        .text(use_local ? "Local data" : "Remote data" );
+        .text(use_local ? "Local data" : "Remote data");
 
 
-        
-        c = d3.select("#change-status-container");
-        c.selectAll("*").remove();
-        s = c.append("svg")
-        s.attr("width", 200)    // Adjust size as needed
-            .attr("height", 20);
-        s.append("circle")
-            .attr("cx", 10)        // X position of the center
-            .attr("cy", 10)        // Y position of the center
-            .attr("r", 5)         // Radius of the circle
-            .attr("class", combo_changed ? "blinking-red-circle" : "gray-dot");
-    
-        s.append("text")
-            .attr("fill", combo_changed ? "red" : "gray")
-            .attr("color", "white")
-            .attr("text-anchor", "left")
-            .attr("dy", "1em")
-            .style("font-size", "12px")
-            .attr("font-family", "Menlo, monospace")  // Set font to Menlo
-            .style("font-weight", "bold")
-            .attr("x", 20).attr("y", 2)
-            .text(combo_changed ? "Modified combo" : "");
-    
 
-            
-        
-            c = d3.select("#underlying-status-container");
-            c.selectAll("*").remove();
-            s = c.append("svg")
-            s.attr("width", 220)    // Adjust size as needed
-                .attr("height", 20);
-            s.append("circle")
-                .attr("cx", 10)        // X position of the center
-                .attr("cy", 10)        // Y position of the center
-                .attr("r", 5)         // Radius of the circle
-                .attr("class", simulated_underlying_price_changed ? "blinking-orange-circle" : "gray-dot");
-        
-            s.append("text")
-                .attr("fill", simulated_underlying_price_changed ? "orange" : "gray")
-                .attr("color", "white")
-                .attr("text-anchor", "left")
-                .attr("dy", "1em")
-                .style("font-size", "12px")
-                .attr("font-family", "Menlo, monospace")  // Set font to Menlo
-                .style("font-weight", "bold")
-                .attr("x", 20).attr("y", 2)
-                .text(simulated_underlying_price_changed ? "Simulated underliying price" : "");
-        
-        
+    c = d3.select("#change-status-container");
+    c.selectAll("*").remove();
+    s = c.append("svg")
+    s.attr("width", 200)    // Adjust size as needed
+        .attr("height", 20);
+    s.append("circle")
+        .attr("cx", 10)        // X position of the center
+        .attr("cy", 10)        // Y position of the center
+        .attr("r", 5)         // Radius of the circle
+        .attr("class", combo_changed ? "blinking-red-circle" : "gray-dot");
+
+    s.append("text")
+        .attr("fill", combo_changed ? "red" : "gray")
+        .attr("color", "white")
+        .attr("text-anchor", "left")
+        .attr("dy", "1em")
+        .style("font-size", "12px")
+        .attr("font-family", "Menlo, monospace")  // Set font to Menlo
+        .style("font-weight", "bold")
+        .attr("x", 20).attr("y", 2)
+        .text(combo_changed ? "Modified combo" : "");
+
+
+
+
+    c = d3.select("#underlying-status-container");
+    c.selectAll("*").remove();
+    s = c.append("svg")
+    s.attr("width", 220)    // Adjust size as needed
+        .attr("height", 20);
+    s.append("circle")
+        .attr("cx", 10)        // X position of the center
+        .attr("cy", 10)        // Y position of the center
+        .attr("r", 5)         // Radius of the circle
+        .attr("class", simulated_underlying_price_changed ? "blinking-orange-circle" : "gray-dot");
+
+    s.append("text")
+        .attr("fill", simulated_underlying_price_changed ? "orange" : "gray")
+        .attr("color", "white")
+        .attr("text-anchor", "left")
+        .attr("dy", "1em")
+        .style("font-size", "12px")
+        .attr("font-family", "Menlo, monospace")  // Set font to Menlo
+        .style("font-weight", "bold")
+        .attr("x", 20).attr("y", 2)
+        .text(simulated_underlying_price_changed ? "Simulated underliying price" : "");
+
+
 
 
 
@@ -313,7 +314,7 @@ function compute_p_and_l_data(use_legs_volatility, num_days_left) {
                 option.trade_volatility : option.sim_volatility;
             let v = use_legs_volatility ? ov : env.get_mean_volatility_of_combo(env.get_use_real_values());
             //let option_price = computeOptionPrice(option.strike, option.strike, env.get_interest_rate_of_combo(), v, env.get_simulation_time_to_expiry() + option.expiration_offset, option.type);
-            let option_price = computeOptionPrice(underlying_current_price , option.strike, env.get_interest_rate_of_combo(), v, env.get_simulation_time_to_expiry() + option.expiration_offset, option.type);
+            let option_price = computeOptionPrice(underlying_current_price, option.strike, env.get_interest_rate_of_combo(), v, env.get_simulation_time_to_expiry() + option.expiration_offset, option.type);
             let premium = option_price[0];
             let greeks = computeOptionPrice(price, option.strike, env.get_interest_rate_of_combo(), v, num_days_left + option.expiration_offset, option.type);
             p_and_l_profile = p_and_l_profile + option.qty * 100 * (greeks[0] - premium);
@@ -399,8 +400,8 @@ function find_zero_crossings(data) {
 function draw_one_sigma_area(svg, underlying_current_price, p_and_l_graph_height) {
     let sigma = underlying_current_price * env.get_mean_volatility_of_combo(env.get_use_real_values()) * Math.sqrt(env.get_time_for_simulation_of_combo() / 365);
     let sigma_text = `σ = ${sigma.toFixed(0)}`;
-    let price_less_sigma = underlying_current_price - sigma;
-    let price_plus_sigma = underlying_current_price + sigma;
+    let price_less_sigma = underlying_current_price - sigma_factor*sigma;
+    let price_plus_sigma = underlying_current_price + sigma_factor*sigma;
     let price_less_sigma_text = `${price_less_sigma.toFixed(0)}`;
     let price_plus_sigma_text = `${price_plus_sigma.toFixed(0)}`;
 
@@ -411,34 +412,34 @@ function draw_one_sigma_area(svg, underlying_current_price, p_and_l_graph_height
         .attr("fill", "black")
         .text(sigma_text);
     svg.append("text")
-        .attr("x", env.get_window_left_margin() + env.get_x_scale()(underlying_current_price - sigma) - 15)
+        .attr("x", env.get_window_left_margin() + env.get_x_scale()(underlying_current_price - sigma_factor*sigma) - 15)
         .attr("y", env.get_window_top_margin() + 15)
         .attr("font-family", "Menlo, monospace")  // Set font to Menlo
         .attr("fill", "black")
-        .text(`-1σ`);
+        .text(`-${sigma_factor.toFixed(1)}σ`);
     svg.append("text")
-        .attr("x", env.get_window_left_margin() + env.get_x_scale()(underlying_current_price - sigma) - 15)
+        .attr("x", env.get_window_left_margin() + env.get_x_scale()(underlying_current_price - sigma_factor*sigma) - 15)
         .attr("y", env.get_window_top_margin() + 30)
         .attr("font-family", "Menlo, monospace")  // Set font to Menlo
         .attr("fill", "black")
         .text(price_less_sigma_text);
     svg.append("text")
-        .attr("x", env.get_window_left_margin() + env.get_x_scale()(underlying_current_price + sigma) - 15)
+        .attr("x", env.get_window_left_margin() + env.get_x_scale()(underlying_current_price + sigma_factor*sigma) - 15)
         .attr("y", env.get_window_top_margin() + 15)
         .attr("font-family", "Menlo, monospace")  // Set font to Menlo
         .attr("fill", "black")
-        .text(`+1σ`);
+        .text(`+${sigma_factor.toFixed(1)}σ`);
     svg.append("text")
-        .attr("x", env.get_window_left_margin() + env.get_x_scale()(underlying_current_price + sigma) - 15)
+        .attr("x", env.get_window_left_margin() + env.get_x_scale()(underlying_current_price + sigma_factor*sigma) - 15)
         .attr("y", env.get_window_top_margin() + 30)
         .attr("font-family", "Menlo, monospace")  // Set font to Menlo
         .attr("fill", "black")
         .text(price_plus_sigma_text);
 
     svg.append("rect")
-        .attr("x", env.get_window_left_margin() + env.get_x_scale()(underlying_current_price - sigma))
+        .attr("x", env.get_window_left_margin() + env.get_x_scale()(underlying_current_price - sigma_factor*sigma))
         .attr("y", env.get_window_top_margin())
-        .attr("width", env.get_x_scale()(underlying_current_price + sigma) - env.get_x_scale()(underlying_current_price - sigma))
+        .attr("width", env.get_x_scale()(underlying_current_price + sigma_factor*sigma) - env.get_x_scale()(underlying_current_price - sigma_factor*sigma))
         .attr("height", p_and_l_graph_height)
         .attr("font-family", "Menlo, monospace")  // Set font to Menlo
         .attr("fill", "blue")
@@ -739,7 +740,7 @@ function display_current_price(svg) {
     label.text_element
         .call(d3.drag()
             .on("drag", function (event) {
-                simulated_underlying_price_changed=true;
+                simulated_underlying_price_changed = true;
                 let newX = Math.max(0, Math.min(env.get_window_width(), (event.x - env.get_window_left_margin())));
                 d3.select(this).attr("x", newX - 15);
                 let newStrike = env.get_x_scale().invert(newX);
@@ -751,7 +752,7 @@ function display_current_price(svg) {
         .on("contextmenu", function (event) {
             event.preventDefault(); // Prevent default right-click menu
             underlying_current_price = env.get_underlying_current_price().price;
-            simulated_underlying_price_changed=false;
+            simulated_underlying_price_changed = false;
 
             draw_graph();
         });
@@ -1075,7 +1076,81 @@ draw_graph();
 
 
 
+const sigmaValues = [1, 1.5, 2, 2.5, 3, 4];
+let index = 0; // Position initiale
+
+const n = sigmaValues.length;
+const angleStep = 360 / n;
+const angles = sigmaValues.map((_, i) => i * angleStep);
+console.log(angles);
+
+let c = d3.select("#knob-container");
+c.selectAll("*").remove();
+let s = c.append("svg")
+    .attr("width", 200)    // Adjust size as needed
+    .attr("height", 200)
+let knob = s.append("g")
+    .attr("transform", "translate(100, 100)"); // Center the knob
+knob.append("circle")
+    .attr("cx", 0)
+    .attr("cy", 0)
+    .attr("r", 40)
+    .attr("fill", "black")
+    .attr("opacity", 0.5);
+knob.append("line")
+    .attr("x1", 0)
+    .attr("y1", 0)
+    .attr("x2", 0)
+    .attr("y2", 40)
+    .attr("stroke", "white")
+    .attr("stroke-width", 2);
 
 
-let o = computeOptionPrice(220, 225, 0, 0.15, 10, 'call');
-console.log('Option price:', o);
+//let rotationAngle = 30;
+//knob.attr("transform", `translate(100, 100) rotate(${rotationAngle})`);  // Apply 30° rotation
+
+// draw a small blue point at sigma values centered on the knob radius 
+sigmaValues.forEach((v, index) => {
+    let angle = (angles[index] + 90) * Math.PI / 180;
+    let x = 100 + 50 * Math.cos(angle);
+    let y = 100 + 50 * Math.sin(angle);
+    s.append("circle")
+        .attr("cx", x)
+        .attr("cy", y)
+        .attr("r", 5)
+        .attr("fill", "blue")
+        .attr("opacity", 1);
+    x = 100 + 70 * Math.cos(angle);
+    y = 100 + 70 * Math.sin(angle);
+    s.append("text")
+        .attr("x", x)
+        .attr("y", y)
+        .attr("font-size", 12)
+        .attr("text-anchor", "middle")
+        .attr("dominant-baseline", "middle")
+        .attr("font-family", "Menlo, monospace")  // Set font to Menlo
+        .attr("fill", "black")
+        .text(v);
+});
+
+function onDrag(event) {
+    // Get mouse position relative to the SVG
+    const mousePos = d3.pointer(event);
+
+    // Since the knob is centered at (100, 100), we subtract that to get position relative to the knob's center
+    const x = mousePos[0] - 100 -20;
+    const y = mousePos[1] - 100 -110;
+
+    // Calculate the angle relative to the center of the knob
+    let angle = Math.atan2(y, x) * (180 / Math.PI);  // Convert radians to degrees
+    angle = (Math.round((angle+270) / angleStep) * angleStep)%360;
+    index=angle/angleStep
+        sigma_factor=sigmaValues[index];
+    // Apply the angle to rotate the knob
+    knob.attr("transform", `translate(100, 100) rotate(${angle })`); // Adding 90 to adjust the starting angle
+    draw_graph();
+
+}
+
+// Apply drag behavior
+knob.call(d3.drag().on("drag", onDrag));

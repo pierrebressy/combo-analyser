@@ -174,3 +174,6 @@
     100% { fill: red; }
   }
   
+  .knob {
+    cursor: pointer;
+  }
