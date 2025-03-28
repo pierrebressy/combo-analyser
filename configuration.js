@@ -83,7 +83,9 @@ export class Environment {
     get_greeks_data() {
         return this.greeks_data;
     }
-
+    get_sigma_factors() {
+        return this.config.computation.sigma_factors;
+    }
     set_pl_at_exp_data(data) {
         this.pl_at_exp_data = data;
     }

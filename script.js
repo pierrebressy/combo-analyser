@@ -1,7 +1,7 @@
 import { computeOptionPrice } from './functions.js';
 import { is_mode_local, load_local_price, load_local_config, update_remote_config, fetch_configuration, fetch_price } from './async.js';
 import { Environment, ComboTemplater } from './configuration.js';
-import { VerticalCursor, HorizontalCursor, TextRect, Line } from './cursor.js';
+import { VerticalCursor, HorizontalCursor, TextRect, Line, Knob } from './cursor.js';
 import { hestonMonteCarlo } from './heston.js';
 
 
@@ -9,7 +9,6 @@ let volatility_is_per_leg;
 let auto_save = true;
 let simulated_underlying_price_changed = false;
 let underlying_current_price = 0;
-let sigma_factor = 1;
 let svg;
 let scale_p_and_l;
 let combo_changed = false;
@@ -17,6 +16,7 @@ let pl_at_expiration_cursor;
 let pl_at_initial_cursor;
 let pl_at_sim_cursor;
 let price_cursor;
+let sigma_knob;
 
 function reloadWithParam(key, value) {
     const url = new URL(window.location);
@@ -398,10 +398,11 @@ function find_zero_crossings(data) {
 }
 
 function draw_one_sigma_area(svg, underlying_current_price, p_and_l_graph_height) {
+    let sigma_factor=sigma_knob.get_current_value();
     let sigma = underlying_current_price * env.get_mean_volatility_of_combo(env.get_use_real_values()) * Math.sqrt(env.get_time_for_simulation_of_combo() / 365);
     let sigma_text = `σ = ${sigma.toFixed(0)}`;
-    let price_less_sigma = underlying_current_price - sigma_factor*sigma;
-    let price_plus_sigma = underlying_current_price + sigma_factor*sigma;
+    let price_less_sigma = underlying_current_price - sigma_factor * sigma;
+    let price_plus_sigma = underlying_current_price + sigma_factor * sigma;
     let price_less_sigma_text = `${price_less_sigma.toFixed(0)}`;
     let price_plus_sigma_text = `${price_plus_sigma.toFixed(0)}`;
 
@@ -412,34 +413,34 @@ function draw_one_sigma_area(svg, underlying_current_price, p_and_l_graph_height
         .attr("fill", "black")
         .text(sigma_text);
     svg.append("text")
-        .attr("x", env.get_window_left_margin() + env.get_x_scale()(underlying_current_price - sigma_factor*sigma) - 15)
+        .attr("x", env.get_window_left_margin() + env.get_x_scale()(underlying_current_price - sigma_factor * sigma) - 15)
         .attr("y", env.get_window_top_margin() + 15)
         .attr("font-family", "Menlo, monospace")  // Set font to Menlo
         .attr("fill", "black")
         .text(`-${sigma_factor.toFixed(1)}σ`);
     svg.append("text")
-        .attr("x", env.get_window_left_margin() + env.get_x_scale()(underlying_current_price - sigma_factor*sigma) - 15)
+        .attr("x", env.get_window_left_margin() + env.get_x_scale()(underlying_current_price - sigma_factor * sigma) - 15)
         .attr("y", env.get_window_top_margin() + 30)
         .attr("font-family", "Menlo, monospace")  // Set font to Menlo
         .attr("fill", "black")
         .text(price_less_sigma_text);
     svg.append("text")
-        .attr("x", env.get_window_left_margin() + env.get_x_scale()(underlying_current_price + sigma_factor*sigma) - 15)
+        .attr("x", env.get_window_left_margin() + env.get_x_scale()(underlying_current_price + sigma_factor * sigma) - 15)
         .attr("y", env.get_window_top_margin() + 15)
         .attr("font-family", "Menlo, monospace")  // Set font to Menlo
         .attr("fill", "black")
         .text(`+${sigma_factor.toFixed(1)}σ`);
     svg.append("text")
-        .attr("x", env.get_window_left_margin() + env.get_x_scale()(underlying_current_price + sigma_factor*sigma) - 15)
+        .attr("x", env.get_window_left_margin() + env.get_x_scale()(underlying_current_price + sigma_factor * sigma) - 15)
         .attr("y", env.get_window_top_margin() + 30)
         .attr("font-family", "Menlo, monospace")  // Set font to Menlo
         .attr("fill", "black")
         .text(price_plus_sigma_text);
 
     svg.append("rect")
-        .attr("x", env.get_window_left_margin() + env.get_x_scale()(underlying_current_price - sigma_factor*sigma))
+        .attr("x", env.get_window_left_margin() + env.get_x_scale()(underlying_current_price - sigma_factor * sigma))
         .attr("y", env.get_window_top_margin())
-        .attr("width", env.get_x_scale()(underlying_current_price + sigma_factor*sigma) - env.get_x_scale()(underlying_current_price - sigma_factor*sigma))
+        .attr("width", env.get_x_scale()(underlying_current_price + sigma_factor * sigma) - env.get_x_scale()(underlying_current_price - sigma_factor * sigma))
         .attr("height", p_and_l_graph_height)
         .attr("font-family", "Menlo, monospace")  // Set font to Menlo
         .attr("fill", "blue")
@@ -611,6 +612,7 @@ function display_strike_buttons() {
         let ot = option.type === "call" ? "C" : "P";
         label.set_text(` ${option.qty}x ${ot} ${option.strike.toFixed(1)}`);
         label.set_text_color("white");
+        label.text_element.style("cursor", "grabbing")
         label.show();
         //strike_label.text_element.attr("class", "draggable-button")
 
@@ -718,8 +720,6 @@ function display_strike_buttons() {
 
 function display_current_price(svg) {
 
-
-
     const x_position = env.get_x_scale()(underlying_current_price);
     let l = new Line(svg, env);
     l.set_position(x_position, -14, x_position, env.get_window_height());
@@ -735,6 +735,7 @@ function display_current_price(svg) {
         env.get_button_default_text_vpos() + 8);
     label.set_text(`${underlying_current_price.toFixed(1)}`);
     label.set_text_color("white");
+    label.text_element.style("cursor", "grabbing")
     label.show();
 
     label.text_element
@@ -1013,6 +1014,11 @@ function draw_graph() {
 
     // X scale for the price axis ; set at the bottom of the graph window
     const graph_width = env.get_window_width() - env.get_window_left_margin() - env.get_window_right_margin();
+    //env.set_x_scale(d3.scaleLinear().domain([env.get_simul_min_price_of_combo(), env.get_simul_max_price_of_combo()]).range([0, graph_width]));
+    if (!simulated_underlying_price_changed) {
+        env.set_simul_max_price_of_combo(underlying_current_price * 1.2);
+        env.set_simul_min_price_of_combo(underlying_current_price / 1.2);
+    }
     env.set_x_scale(d3.scaleLinear().domain([env.get_simul_min_price_of_combo(), env.get_simul_max_price_of_combo()]).range([0, graph_width]));
 
     // add the x axis with price values
@@ -1066,6 +1072,10 @@ underlying_current_price = env.get_underlying_current_price().price;
 console.log('State: underlying_current_price=', underlying_current_price);
 //console.log('State: env=', env);
 
+let c = d3.select("#knob-container");
+c.selectAll("*").remove();
+sigma_knob=new Knob(c, env, env.get_sigma_factors(), draw_graph);
+
 display_local_status();
 
 display_checkbox_for_volatility_mode();
@@ -1074,83 +1084,3 @@ display_days_left_slider();
 display_combos_list();
 draw_graph();
 
-
-
-const sigmaValues = [1, 1.5, 2, 2.5, 3, 4];
-let index = 0; // Position initiale
-
-const n = sigmaValues.length;
-const angleStep = 360 / n;
-const angles = sigmaValues.map((_, i) => i * angleStep);
-console.log(angles);
-
-let c = d3.select("#knob-container");
-c.selectAll("*").remove();
-let s = c.append("svg")
-    .attr("width", 200)    // Adjust size as needed
-    .attr("height", 200)
-let knob = s.append("g")
-    .attr("transform", "translate(100, 100)"); // Center the knob
-knob.append("circle")
-    .attr("cx", 0)
-    .attr("cy", 0)
-    .attr("r", 40)
-    .attr("fill", "black")
-    .attr("opacity", 0.5);
-knob.append("line")
-    .attr("x1", 0)
-    .attr("y1", 0)
-    .attr("x2", 0)
-    .attr("y2", 40)
-    .attr("stroke", "white")
-    .attr("stroke-width", 2);
-
-
-//let rotationAngle = 30;
-//knob.attr("transform", `translate(100, 100) rotate(${rotationAngle})`);  // Apply 30° rotation
-
-// draw a small blue point at sigma values centered on the knob radius 
-sigmaValues.forEach((v, index) => {
-    let angle = (angles[index] + 90) * Math.PI / 180;
-    let x = 100 + 50 * Math.cos(angle);
-    let y = 100 + 50 * Math.sin(angle);
-    s.append("circle")
-        .attr("cx", x)
-        .attr("cy", y)
-        .attr("r", 5)
-        .attr("fill", "blue")
-        .attr("opacity", 1);
-    x = 100 + 70 * Math.cos(angle);
-    y = 100 + 70 * Math.sin(angle);
-    s.append("text")
-        .attr("x", x)
-        .attr("y", y)
-        .attr("font-size", 12)
-        .attr("text-anchor", "middle")
-        .attr("dominant-baseline", "middle")
-        .attr("font-family", "Menlo, monospace")  // Set font to Menlo
-        .attr("fill", "black")
-        .text(v);
-});
-
-function onDrag(event) {
-    // Get mouse position relative to the SVG
-    const mousePos = d3.pointer(event);
-
-    // Since the knob is centered at (100, 100), we subtract that to get position relative to the knob's center
-    const x = mousePos[0] - 100 -20;
-    const y = mousePos[1] - 100 -110;
-
-    // Calculate the angle relative to the center of the knob
-    let angle = Math.atan2(y, x) * (180 / Math.PI);  // Convert radians to degrees
-    angle = (Math.round((angle+270) / angleStep) * angleStep)%360;
-    index=angle/angleStep
-        sigma_factor=sigmaValues[index];
-    // Apply the angle to rotate the knob
-    knob.attr("transform", `translate(100, 100) rotate(${angle })`); // Adding 90 to adjust the starting angle
-    draw_graph();
-
-}
-
-// Apply drag behavior
-knob.call(d3.drag().on("drag", onDrag));

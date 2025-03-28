@@ -4,9 +4,115 @@ function getNearestYValue(data, xValue) {
     );
     return nearestPoint;
 }
+
+export class Knob {
+    constructor(svg, env, values, call_back) {
+        this.values = values;
+        this.call_back = call_back;
+        this.current_value = this.values[0];
+        this.knob_area_width = 200;
+        this.knob_area_height = 200;
+        this.knob_center_x = 100;
+        this.knob_center_y = 100;
+        this.knob_radius = 40;
+        this.knob_dots_center_radius = 50;
+        this.knob_labels_center_radius = 70;
+        this.angleStep = 360 / values.length;
+        this.angles = values.map((_, i) => i * this.angleStep);
+        this.knob_area = svg.append("svg")
+            .attr("width", this.knob_area_width)
+            .attr("height", this.knob_area_height);
+        this.area_width = this.knob_area.node().getBoundingClientRect().x;
+        this.area_height = this.knob_area.node().getBoundingClientRect().y;
+
+        this.knob = this.knob_area.append("g")
+            .attr("transform", `translate(${this.knob_center_x}, ${this.knob_center_y})`); // Center the knob
+        this.knob.append("circle")
+            .attr("cx", 0)
+            .attr("cy", 0)
+            .attr("r", this.knob_radius)
+            .attr("fill", "black")
+            .attr("opacity", 0.5);
+        this.knob.append("line")
+            .attr("x1", 0)
+            .attr("y1", 0)
+            .attr("x2", 0)
+            .attr("y2", -this.knob_radius)
+            .attr("stroke", "white")
+            .attr("stroke-width", 5)
+            .style("cursor", "grabbing");
+        this.knob.call(d3.drag().on("drag", this.onDrag));
+
+
+        console.log("this.values: " + this.values);
+        this.values.forEach((v, index) => {
+            let angle = (this.angles[index] - 90) * Math.PI / 180;
+            let x = this.knob_center_x + this.knob_dots_center_radius * Math.cos(angle);
+            let y = this.knob_center_y + this.knob_dots_center_radius * Math.sin(angle);
+            this.label_area = this.knob_area.append("g")
+            this.label_area.append("circle")
+                .attr("cx", x)
+                .attr("cy", y)
+                .attr("r", 5)
+                .attr("fill", "blue")
+                .attr("opacity", 1)
+                .style("cursor", "grabbing");
+            x = this.knob_center_x + this.knob_labels_center_radius * Math.cos(angle);
+            y = this.knob_center_y + this.knob_labels_center_radius * Math.sin(angle);
+            this.label_area.append("text")
+                .attr("x", x)
+                .attr("y", y)
+                .attr("font-size", 12)
+                .attr("text-anchor", "middle")
+                .attr("dominant-baseline", "middle")
+                .attr("font-family", "Menlo, monospace")  // Set font to Menlo
+                .attr("fill", "black")
+                .style("cursor", "grabbing")
+                .text(v);
+            this.label_area.on("click", () => {
+                // Set the knob to the clicked sigma value
+                index = this.values.indexOf(v);
+                this.current_value = this.values[index];
+                this.knob.transition()
+                    .duration(100)
+                    .ease(d3.easeCubicInOut)
+                    .attr("transform", `translate(${this.knob_center_x}, ${this.knob_center_y}) rotate(${this.angles[index]})`);
+                this.call_back();
+            }
+            );
+        });
+
+        this.knob.call(d3.drag().on("drag", (event) => {
+            // Get mouse position relative to the SVG
+            const mousePos = d3.pointer(event);
+            // Since the knob is centered at (100, 100), we subtract that to get position relative to the knob's center
+            const x = mousePos[0] - this.knob_center_x - this.knob_area.node().getBoundingClientRect().x;
+            const y = mousePos[1] - this.knob_center_y -this.knob_area.node().getBoundingClientRect().y;
+            // Calculate the angle relative to the center of the knob
+            let angle = Math.atan2(y, x) * (180 / Math.PI);  // Convert radians to degrees
+            angle = (Math.round((angle + 90) / this.angleStep) * this.angleStep) % 360;
+            const index = Math.round(angle / this.angleStep);
+            this.current_value = this.values[index];
+            // Apply the angle to rotate the knob
+            //knob.attr("transform", `translate(${knob_center_x}, ${knob_center_y}) rotate(${angle})`); // Adding 90 to adjust the starting angle
+            this.knob.transition()  // Apply transition for smooth animation
+                .duration(100)  // Duration of the transition (in milliseconds)
+                .ease(d3.easeCubicInOut)  // Smooth easing function
+                .attr("transform", `translate(${this.knob_center_x}, ${this.knob_center_y}) rotate(${angle})`);
+
+            this.call_back();
+
+        }));
+    }
+
+    get_current_value() {
+        return this.current_value;
+    }
+}
+
 export class Line {
     constructor(svg, env) {
-        this.line=svg.append("line")
+        this.line = svg.append("line")
             .attr("x1", 100)
             .attr("y1", 100)
             .attr("x2", 200)
@@ -16,7 +122,7 @@ export class Line {
             .attr("stroke-dasharray", "5,5")
             .attr("transform", `translate(${env.get_window_left_margin()},${env.get_window_top_margin()})`);
     }
-    set_position(x1,y1,x2,y2) {
+    set_position(x1, y1, x2, y2) {
         this.line
             .attr("x1", x1)
             .attr("x2", x2)
@@ -154,7 +260,6 @@ export class HorizontalCursor extends Cursor {
     }
 
 }
-
 
 export class VerticalCursor extends Cursor {
 

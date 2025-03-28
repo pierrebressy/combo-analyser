@@ -242,28 +242,28 @@
                 {
                     "expiration_offset": 0,
                     "qty": -1,
-                    "sim_volatility": 0.228,
-                    "strike": 5568,
-                    "trade_volatility": 0.228,
+                    "sim_volatility": 0.4,
+                    "strike": 240,
+                    "trade_volatility": 0.266,
                     "type": "put"
                 }
             ],
             "name": "Single PUT",
             "simulation": {
                 "expiration_offset": 0,
-                "interest_rate": 0.14,
-                "max_price": 6100,
-                "mean_volatility": 0.228,
-                "min_price": 4900,
+                "interest_rate": 0,
+                "max_price": 300,
+                "mean_volatility": 0.4,
+                "min_price": 200,
                 "step": 1,
-                "time_for_simulation": 31,
-                "time_to_expiry": 31
+                "time_for_simulation": 15,
+                "time_to_expiry": 35
             },
-            "ticker": "^SPX",
+            "ticker": "AAPL",
             "trade": {
-                "expiration_date": "2025-04-14",
-                "mean_volatility": 0.164,
-                "trade_open_by": "2025-08-29"
+                "expiration_date": "2025-04-17",
+                "mean_volatility": 0.15,
+                "trade_open_by": "2025-03-03"
             }
         },
         "TANK MSTR MAR14'25": {
@@ -677,7 +677,8 @@
             100,
             100
         ],
-        "num_greeks": 6
+        "num_greeks": 6,
+        "sigma_factors": [1,  2, 3, 4, 5]
     },
     "config": {
         "combo": "LONG CALL",
