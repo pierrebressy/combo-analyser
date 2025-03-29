@@ -57,6 +57,10 @@ export function normalCDF2(x) {
     //return (1.0 + Math.erf(x / Math.sqrt(2))) / 2.0;
     return (1.0 + erf(x / Math.sqrt(2))) / 2.0;
 }
+
+
+
+
 export function computeOptionPrice(price = 0., strike = 0., interest_rate = 0., volatility = 0., num_days_left = 0., option_type = 'call') {
     ///console.log("computeOptionPrice");
     // If num_days_left is 0 or negative, set it to a very small number to avoid division by zero

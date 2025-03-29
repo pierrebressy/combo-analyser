@@ -19,8 +19,8 @@
                 "mean_volatility": 0.15,
                 "min_price": 210,
                 "step": 0.1,
-                "time_for_simulation": 10,
-                "time_to_expiry": 10
+                "time_for_simulation": 14,
+                "time_to_expiry": 14
             },
             "ticker": "AAPL",
             "trade": {
@@ -48,8 +48,8 @@
                 "mean_volatility": 0.4,
                 "min_price": 200,
                 "step": 1,
-                "time_for_simulation": 15,
-                "time_to_expiry": 35
+                "time_for_simulation": 14,
+                "time_to_expiry": 14
             },
             "ticker": "AAPL",
             "trade": {
@@ -294,6 +294,51 @@
                 }
             ],
             "name": "TANK MSTR MAR14'25",
+            "simulation": {
+                "expiration_offset": 0,
+                "interest_rate": 0,
+                "max_price": 310,
+                "mean_volatility": 0.8,
+                "min_price": 200,
+                "step": 1,
+                "time_for_simulation": 10,
+                "time_to_expiry": 17
+            },
+            "ticker": "MSTR",
+            "trade": {
+                "expiration_date": "2025-03-14",
+                "mean_volatility": 0.7,
+                "trade_open_by": "2025-02-24"
+            }
+        },
+        "TANK MSTR 17APR'25": {
+            "legs": [
+                {
+                    "expiration_offset": 0,
+                    "qty": 1,
+                    "sim_volatility": 0.94,
+                    "strike": 250,
+                    "trade_volatility": 0.94,
+                    "type": "put"
+                },
+                {
+                    "expiration_offset": 0,
+                    "qty": -1,
+                    "sim_volatility": 0.92,
+                    "strike": 245,
+                    "trade_volatility": 0.92,
+                    "type": "put"
+                },
+                {
+                    "expiration_offset": 0,
+                    "qty": -1,
+                    "sim_volatility": 1.09,
+                    "strike": 210,
+                    "trade_volatility": 1.09,
+                    "type": "put"
+                }
+            ],
+            "name": "TANK MSTR 17APR'25",
             "simulation": {
                 "expiration_offset": 0,
                 "interest_rate": 0,
@@ -716,7 +761,7 @@
         },
         "days_left": {
             "max": 2,
-            "min": 0.1,
+            "min": 0.0,
             "step": 0.1,
             "type": "range",
             "width": "200px"
@@ -734,11 +779,12 @@
             "greeks_vspacer": 40,
             "left": 80,
             "price_axis": 17,
-            "right": 2,
+            "right": 20,
             "top": 40,
-            "vspacer": 20
+            "vspacer": 10
         },
         "p_and_l_ratio": 0.5,
-        "width": 1339.2734375
+        "width": 1339.2734375,
+        "zoom": 1.5
     }
 }

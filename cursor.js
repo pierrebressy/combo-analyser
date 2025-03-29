@@ -25,14 +25,23 @@ export class Knob {
         this.area_width = this.knob_area.node().getBoundingClientRect().x;
         this.area_height = this.knob_area.node().getBoundingClientRect().y;
 
+        this.knob_area.append("g")
+            .attr("transform", `translate(${this.knob_center_x}, ${this.knob_center_y})`)
+            .append("circle")
+            .attr("r", this.knob_radius + 5)
+            .attr("fill", "black")
+            .attr("opacity", 0.1)
+            .attr("cx", 3)
+            .attr("cy", 3);
         this.knob = this.knob_area.append("g")
             .attr("transform", `translate(${this.knob_center_x}, ${this.knob_center_y})`); // Center the knob
+
         this.knob.append("circle")
-            .attr("cx", 0)
-            .attr("cy", 0)
             .attr("r", this.knob_radius)
-            .attr("fill", "black")
-            .attr("opacity", 0.5);
+            .attr("fill", "silver")
+            .attr("stroke", "#999")
+            .attr("stroke-width", 2);
+
         this.knob.append("line")
             .attr("x1", 0)
             .attr("y1", 0)
@@ -50,13 +59,25 @@ export class Knob {
             let x = this.knob_center_x + this.knob_dots_center_radius * Math.cos(angle);
             let y = this.knob_center_y + this.knob_dots_center_radius * Math.sin(angle);
             this.label_area = this.knob_area.append("g")
-            this.label_area.append("circle")
+            /*this.label_area.append("circle")
                 .attr("cx", x)
                 .attr("cy", y)
                 .attr("r", 5)
-                .attr("fill", "blue")
+                .attr("fill", "black")
                 .attr("opacity", 1)
+                .style("cursor", "grabbing");*/
+
+             this.label_area.append("line")
+                .attr("x1", this.knob_center_x + this.knob_dots_center_radius * Math.cos(angle))
+                .attr("y1", this.knob_center_x + this.knob_dots_center_radius * Math.sin(angle))
+                .attr("x2", this.knob_center_x + (10 + this.knob_dots_center_radius) * Math.cos(angle))
+                .attr("y2", this.knob_center_y + (10 + this.knob_dots_center_radius) * Math.sin(angle))
+                .attr("stroke", "black")
+                .attr("stroke-width", 3)
                 .style("cursor", "grabbing");
+
+
+
             x = this.knob_center_x + this.knob_labels_center_radius * Math.cos(angle);
             y = this.knob_center_y + this.knob_labels_center_radius * Math.sin(angle);
             this.label_area.append("text")
@@ -87,19 +108,19 @@ export class Knob {
             const mousePos = d3.pointer(event);
             // Since the knob is centered at (100, 100), we subtract that to get position relative to the knob's center
             const x = mousePos[0] - this.knob_center_x - this.knob_area.node().getBoundingClientRect().x;
-            const y = mousePos[1] - this.knob_center_y -this.knob_area.node().getBoundingClientRect().y;
+            const y = mousePos[1] - this.knob_center_y - this.knob_area.node().getBoundingClientRect().y;
             // Calculate the angle relative to the center of the knob
             let angle = Math.atan2(y, x) * (180 / Math.PI);  // Convert radians to degrees
             angle = (Math.round((angle + 90) / this.angleStep) * this.angleStep) % 360;
             const index = Math.round(angle / this.angleStep);
             this.current_value = this.values[index];
             // Apply the angle to rotate the knob
-            //knob.attr("transform", `translate(${knob_center_x}, ${knob_center_y}) rotate(${angle})`); // Adding 90 to adjust the starting angle
-            this.knob.transition()  // Apply transition for smooth animation
-                .duration(100)  // Duration of the transition (in milliseconds)
+            this.knob.attr("transform", `translate(${this.knob_center_x}, ${this.knob_center_y}) rotate(${angle})`); // Adding 90 to adjust the starting angle
+            /*this.knob.transition()  // Apply transition for smooth animation
+                .duration(1000)  // Duration of the transition (in milliseconds)
                 .ease(d3.easeCubicInOut)  // Smooth easing function
                 .attr("transform", `translate(${this.knob_center_x}, ${this.knob_center_y}) rotate(${angle})`);
-
+*/
             this.call_back();
 
         }));
@@ -246,7 +267,7 @@ export class HorizontalCursor extends Cursor {
 
         this.set_position(
             x - 25,
-            env.get_window_height() - env.get_window_bottom_margin() + 4);
+            env.get_window_height() - env.get_window_bottom_margin() - env.get_window_bottom_margin() + 4);
         this.set_text(formattedPrice);
 
         //this.textRect.rect_element.attr("transform", `translate(${x - 25}, ${env.get_window_height() - env.get_window_bottom_margin() + 4})`);

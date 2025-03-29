@@ -120,8 +120,14 @@ export class Environment {
     get_window_height() {
         return this.config.window.height;
     }
+    set_window_height(height) {
+        this.config.window.height = height;
+    }
     get_window_width() {
         return this.config.window.width;
+    }
+    set_window_width(width) {
+        this.config.window.width = width;
     }
     get_window_left_margin() {
         return this.config.window.margin.left;
@@ -146,6 +152,9 @@ export class Environment {
     }
     get_window_p_and_l_ratio() {
         return this.config.window.p_and_l_ratio;
+    }
+    get_window_zoom() {
+        return this.config.window.zoom;
     }
     get_full_graph_height() {
         return this.get_window_height()-this.get_window_top_margin();

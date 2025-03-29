@@ -1,0 +1,196 @@
+ody {
+    margin: 0;
+    display: flex;
+    height: 100vh;
+}
+.control-container {
+    width: 300px;
+    min-width: 300px;
+    background-color: #f4f4f4;
+    padding: 10px;
+}
+.graph-container {
+    width: 80%;
+    background-color: #e0e0e0;
+    padding: 20px;
+}
+
+/* Set the container to use Flexbox */
+#two-column-container {
+    display: flex;
+    /* Optional: add some gap between columns */
+    gap: 10px;
+    /* Optional: set a width or max-width for the container */
+    width: 100%;
+    margin: 0 auto;
+    height: 100%;
+}
+
+/* Style for the left column (20% width) */
+.control-container_XX {
+    width: 20%;
+    height: 100%;
+    padding: 10px;
+    /* Optional: add background color for clarity */
+    background-color: #f0f0f0;
+}
+
+.context-container_XX {
+    height: 100%;
+    padding: 10px;
+    /* Optional: add background color for clarity */
+    background-color: #b8ffe7;
+}
+
+.combo-templates-container {
+    height: 100%;
+    padding: 10px;
+    /* Optional: add background color for clarity */
+    background-color: #ffc593;
+}
+
+/* Style for the right column (80% width) */
+.graph-container {
+    width: 80%;
+    padding: 10px;
+    height: 100vh;
+    /* Full viewport height */
+    /* Optional: add background color for clarity */
+    background-color: #fffff9;
+    box-sizing: border-box;
+    /* Ensures padding doesn't affect height */
+}
+
+.red-dot {
+    width: 15px;
+    height: 15px;
+    fill: red;
+    border-radius: 50%;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
+
+
+.green-dot {
+    width: 15px;
+    height: 15px;
+    fill: green;
+    border-radius: 50%;
+    position: absolute;
+    top: 30px;
+    right: 10px;
+}
+
+
+.crosshair-line {
+    transition: opacity 0.2s ease-in-out;
+}
+
+
+
+.floating-window {
+    position: absolute;
+    background: white;
+    border: 1px solid #ccc;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+    padding: 10px;
+    display: none;
+    z-index: 1000;
+    font-family: Menlo, monospace;
+    border-radius: 5px;
+    min-width: 120px;
+}
+
+.floating-window .title {
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.button-container {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 10px;
+}
+
+.floating-window button {
+    padding: 5px 10px;
+    background: #007BFF;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-family: Menlo, monospace;
+    border-radius: 3px;
+    font-size: 16px;
+}
+
+.floating-window button:hover {
+    background: #0056b3;
+}
+
+
+
+
+
+.blinking-border {
+    stroke: red;              /* Initial stroke color */
+    stroke-width: 3px;        /* Border thickness */
+    animation: blinkStroke 1s infinite;
+  }
+  
+  @keyframes blinkStroke {
+    0%   { stroke: red; }
+    50%  { stroke: lightgray; }
+    100% { stroke: red; }
+  }
+
+  
+  .orange-dot {
+    width: 15px;
+    height: 15px;
+    fill: orange;
+    border-radius: 50%;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
+
+.gray-dot {
+    width: 15px;
+    height: 15px;
+    fill: lightgray;
+    border-radius: 50%;
+    position: absolute;
+    top: 30px;
+    right: 10px;
+}
+
+.blinking-orange-circle {
+    animation: blinkFillOrange 1s infinite;
+  }
+  
+  @keyframes blinkFillOrange {
+    0%   { fill: orange; }
+    33%  { fill: gray; }
+    34%  { fill: gray; }
+    66%  { fill: gray; }
+    67%  { fill: orange; }
+    100% { fill: orange; }
+  }
+  .blinking-red-circle {
+    animation: blinkFillRed 1s infinite;
+  }
+  
+  @keyframes blinkFillRed {
+    0%   { fill: red; }
+    33%  { fill: gray; }
+    34%  { fill: gray; }
+    66%  { fill: gray; }
+    67%  { fill: red; }
+    100% { fill: red; }
+  }
+  
+  .knob {
+    cursor: pointer;
+  }

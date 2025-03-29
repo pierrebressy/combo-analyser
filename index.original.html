@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Combo Analyzer</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+  <!-- Container for the two columns -->
+  <div id="two-column-container">
+    <!-- Left Column -->
+    <div class="control-container" id="control-container">
+      <div class="status-container" id="status-container"> 
+        <div id="local-status-container"></div>
+        <div id="underlying-status-container"></div>
+        <div id="change-status-container"></div>
+        <div id="auto-save-checkbox-container"></div>
+      </div>
+      <div class="context-container" id="context-container">
+        <div id="title_container"></div>
+        <div>
+          <hr>
+        </div>
+        <div id="combo_container"></div>
+        <div id="displayModeCheckboxContainer"></div>
+        <div id="ivCheckboxContainer"></div>
+        <div>
+          <hr>
+        </div>
+        <div id="timeSliderContainer"></div>
+        <div>
+          <hr>
+        </div>
+        <div id="sliders_container"></div>
+      </div>
+      <br>
+      <div class="combo-templates-container" id="combo-tpl-container">
+        <div id="combo_tpl_container"></div><br>
+        <div id="underlying_list_container"></div><br>
+        <label for="comboName">Name of the combo:</label>
+        <textarea id="comboName" rows="1" placeholder="Combo name"></textarea>
+        <br>
+        <button id="button_view_combo">View combo</button>
+        <button id="button_create_combo">Create combo</button>
+      </div>
+      <br>
+      <div id="knob-container"></div>
+
+    </div>
+    <!-- Right Column -->
+    <div class="graph-container" id="graph-container">
+      <div id="graph-container"></div>
+    </div>
+  </div>
+  <!-- context button -->
+
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="functions.js" type="module"></script>
+  <script src="configuration.js" type="module"></script>
+  <script src="async.js" type="module"></script>
+  <script src="script.js" type="module"></script>
+  <script src="https://unpkg.com/mathjs@14.3.1/lib/browser/math.js"></script>
+
+</body>

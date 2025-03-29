@@ -1,47 +1,58 @@
-/* Set the container to use Flexbox */
-#two-column-container {
+body {
+    margin: 0;
     display: flex;
-    /* Optional: add some gap between columns */
-    gap: 10px;
-    /* Optional: set a width or max-width for the container */
-    width: 100%;
-    margin: 0 auto;
-    height: 100%;
+    height: 100vh;
 }
 
-/* Style for the left column (20% width) */
 .control-container {
-    width: 20%;
-    height: 100%;
+    width: 300px;
+    min-width: 300px;
+    background-color: #f4f4f4;
     padding: 10px;
-    /* Optional: add background color for clarity */
-    background-color: #f0f0f0;
 }
 
 .context-container {
-    height: 100%;
-    padding: 10px;
-    /* Optional: add background color for clarity */
+    height: 20%;
+    padding: 5px;
     background-color: #b8ffe7;
 }
 
 .combo-templates-container {
-    height: 100%;
-    padding: 10px;
-    /* Optional: add background color for clarity */
+    height: 20%;
+    padding: 5px;
     background-color: #ffc593;
 }
 
-/* Style for the right column (80% width) */
+.knob-container {
+    height: 20%;
+    padding: 5px;
+    background-color: #eaf494;
+}
+
 .graph-container {
     width: 80%;
+    background-color: #ffffff;
+    padding: 6px;
+}
+
+
+.floating-window {
+    position: absolute;
+    background: white;
+    border: 1px solid #ccc;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
     padding: 10px;
-    height: 100vh;
-    /* Full viewport height */
-    /* Optional: add background color for clarity */
-    background-color: #fffff4;
-    box-sizing: border-box;
-    /* Ensures padding doesn't affect height */
+    display: none;
+    z-index: 1000;
+    font-family: Menlo, monospace;
+    border-radius: 5px;
+    min-width: 120px;
+}
+
+.floating-window .title {
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 10px;
 }
 
 .red-dot {
@@ -65,78 +76,34 @@
     right: 10px;
 }
 
-
-.crosshair-line {
-    transition: opacity 0.2s ease-in-out;
+.blinking-red-circle {
+    animation: blinkFillRed 1s infinite;
 }
 
+@keyframes blinkFillRed {
+    0% {
+        fill: red;
+    }
 
+    33% {
+        fill: gray;
+    }
 
-.floating-window {
-    position: absolute;
-    background: white;
-    border: 1px solid #ccc;
-    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
-    padding: 10px;
-    display: none;
-    z-index: 1000;
-    font-family: Menlo, monospace;
-    border-radius: 5px;
-    min-width: 120px;
-}
+    34% {
+        fill: gray;
+    }
 
-.floating-window .title {
-    font-weight: bold;
-    text-align: center;
-    margin-bottom: 10px;
-}
+    66% {
+        fill: gray;
+    }
 
-.button-container {
-    display: flex;
-    justify-content: space-around;
-    margin-top: 10px;
-}
+    67% {
+        fill: red;
+    }
 
-.floating-window button {
-    padding: 5px 10px;
-    background: #007BFF;
-    color: white;
-    border: none;
-    cursor: pointer;
-    font-family: Menlo, monospace;
-    border-radius: 3px;
-    font-size: 16px;
-}
-
-.floating-window button:hover {
-    background: #0056b3;
-}
-
-
-
-
-
-.blinking-border {
-    stroke: red;              /* Initial stroke color */
-    stroke-width: 3px;        /* Border thickness */
-    animation: blinkStroke 1s infinite;
-  }
-  
-  @keyframes blinkStroke {
-    0%   { stroke: red; }
-    50%  { stroke: lightgray; }
-    100% { stroke: red; }
-  }
-
-  
-  .orange-dot {
-    width: 15px;
-    height: 15px;
-    fill: orange;
-    border-radius: 50%;
-    position: absolute;
-    top: 10px;
-    right: 10px;
+    100% {
+        fill: red;
+    }
 }
 
 .gray-dot {
@@ -151,29 +118,34 @@
 
 .blinking-orange-circle {
     animation: blinkFillOrange 1s infinite;
-  }
-  
-  @keyframes blinkFillOrange {
-    0%   { fill: orange; }
-    33%  { fill: gray; }
-    34%  { fill: gray; }
-    66%  { fill: gray; }
-    67%  { fill: orange; }
-    100% { fill: orange; }
-  }
-  .blinking-red-circle {
-    animation: blinkFillRed 1s infinite;
-  }
-  
-  @keyframes blinkFillRed {
-    0%   { fill: red; }
-    33%  { fill: gray; }
-    34%  { fill: gray; }
-    66%  { fill: gray; }
-    67%  { fill: red; }
-    100% { fill: red; }
-  }
-  
-  .knob {
-    cursor: pointer;
-  }
+}
+
+@keyframes blinkFillOrange {
+    0% {
+        fill: orange;
+    }
+
+    33% {
+        fill: gray;
+    }
+
+    34% {
+        fill: gray;
+    }
+
+    66% {
+        fill: gray;
+    }
+
+    67% {
+        fill: orange;
+    }
+
+    100% {
+        fill: orange;
+    }
+}
+
+.crosshair-line {
+    transition: opacity 0.2s ease-in-out;
+}
