@@ -1109,9 +1109,50 @@ function update_main_page() {
     display_sigma_selector();
     draw_graph();
 
+    update_3d_view();
+}
+function update_3d_view() {
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+
+    // Step 2: Append the renderer to the div with id '3d-view'
+    document.getElementById('3d-view').appendChild(renderer.domElement);
+
+    // Step 3: Create a 3D grid of points using D3.js
+    const data = d3.range(0, 100).map(i => ({
+        x: Math.sin(i * 0.1) * 5,
+        y: Math.cos(i * 0.1) * 5,
+        z: i * 0.1
+    }));
+
+    // Step 4: Create 3D spheres for each data point
+    data.forEach(point => {
+        const geometry = new THREE.SphereGeometry(0.1);
+        const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+        const sphere = new THREE.Mesh(geometry, material);
+        sphere.position.set(point.x, point.y, point.z);
+        scene.add(sphere);
+    });
+
+    // Step 5: Position the camera
+    camera.position.z = 10;
+
+    // Step 6: Animate the scene
+    function animate() {
+        requestAnimationFrame(animate);
+
+        // Rotate the scene to view the 3D plot from different angles
+        scene.rotation.x += 0.01;
+        scene.rotation.y += 0.01;
+
+        renderer.render(scene, camera);
+    }
+
+    animate();
 
 }
-
 use_local = await is_mode_local();
 //use_local = true;
 //console.log('State: use_local='+use_local);
