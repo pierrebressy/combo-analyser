@@ -53,7 +53,6 @@ export class Knob {
         this.knob.call(d3.drag().on("drag", this.onDrag));
 
 
-        console.log("this.values: " + this.values);
         this.values.forEach((v, index) => {
             let angle = (this.angles[index] - 90) * Math.PI / 180;
             let x = this.knob_center_x + this.knob_dots_center_radius * Math.cos(angle);
@@ -256,8 +255,11 @@ export class HorizontalCursor extends Cursor {
     constructor(svg, data, xscale, name, fill) {
         super(svg, data, xscale, name, fill); // Call the parent class constructor
         this.svg = svg;
+        this.vpos=0;
     }
-
+    set_vpos(vpos) {
+        this.vpos = vpos;
+    }
     update(env, x) {
 
         const price = env.get_x_scale().invert(x - env.get_window_left_margin());
@@ -267,7 +269,8 @@ export class HorizontalCursor extends Cursor {
 
         this.set_position(
             x - 25,
-            env.get_window_height() - env.get_window_bottom_margin() - env.get_window_bottom_margin() + 4);
+            this.vpos);
+//            env.get_window_height() - env.get_window_bottom_margin() - env.get_window_bottom_margin() + 4);
         this.set_text(formattedPrice);
 
         //this.textRect.rect_element.attr("transform", `translate(${x - 25}, ${env.get_window_height() - env.get_window_bottom_margin() + 4})`);

@@ -43,7 +43,7 @@ export class Environment {
             console.log("Info: no [combo] in URL, using default value ["+combo+"]");
         }
         config.config.combo = combo;
-        console.log("State: config.config.combo="+ config.config.combo);
+        //console.log("State: config.config.combo="+ config.config.combo);
 
         let use_real_values = false;
         try {
@@ -54,7 +54,7 @@ export class Environment {
             use_real_values = false;
         }
         config.config.use_real_values = use_real_values;
-        console.log("State: config.config.use_real_values="+config.config.use_real_values);
+        //console.log("State: config.config.use_real_values="+config.config.use_real_values);
 
         // Attributes (properties)
         this.config = config;
@@ -63,7 +63,7 @@ export class Environment {
         this.config.window.height = container.getBoundingClientRect().height - 50;
         
         this.combo = this.get_combo_params();
-        console.log("State: env.combo=", this.combo);
+        //console.log("State: env.combo=", this.combo);
 
     }
 
@@ -282,6 +282,12 @@ export class Environment {
     }
     get_interest_rate_of_combo() {
         return this.combo.simulation.interest_rate;
+    }
+    check_if_volatility_is_per_leg() {
+        return this.config.computation.volatility_is_per_leg;
+    }
+    set_if_volatility_is_per_leg(value) {
+        this.config.computation.volatility_is_per_leg = value;
     }
 }
 

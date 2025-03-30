@@ -4,6 +4,11 @@ import { Environment } from './configuration.js';
 import { VerticalCursor, HorizontalCursor, TextRect, Line, Knob } from './cursor.js';
 
 
+let use_local = false;
+let env;
+let ticker;
+let price;
+
 let volatility_is_per_leg;
 let auto_save = true;
 let simulated_underlying_price_changed = false;
@@ -23,15 +28,17 @@ function reloadWithParam(key, value) {
     url.searchParams.set(key, value); // Add or update the parameter
     window.location.href = url.toString(); // Navigate to the new URL
 }
-
 async function setup_global_env(e) {
     if (!e) {
+        console.log("setup_global_env: loading env...");
         e = new Environment(use_local ? await load_local_config() : await fetch_configuration());
+        volatility_is_per_leg = e.check_if_volatility_is_per_leg();
     }
-
+    else {
+        console.log("setup_global_env: env already set.");
+    }
     return e
 }
-
 function find_zero_crossings(data) {
     let crossings = [];
 
@@ -93,20 +100,50 @@ function compute_p_and_l_data(use_legs_volatility, num_days_left) {
     return p_and_l_data
 }
 function compute_data_to_display() {
-
     env.set_pl_at_exp_data(compute_p_and_l_data(volatility_is_per_leg, 0));
     env.set_pl_at_init_data(compute_p_and_l_data(volatility_is_per_leg, env.get_time_to_expiry_of_combo()));
     env.set_pl_at_sim_data(compute_p_and_l_data(volatility_is_per_leg, env.get_time_for_simulation_of_combo()));
 
     env.set_greeks_data(compute_greeks_data(volatility_is_per_leg));
 }
-function display_combos_list() {
+function display_combos_list_old() {
 
-    const titleContainer = d3.select("#title_container");
+    const titleContainer = d3.select("#title_container").selectAll("*").remove();
     titleContainer.insert("label", "#comboName")
         .text(env.get_combo_params().name);
 
-    const comboContainer = d3.select("#combo_container");
+    const comboContainer = d3.select("#combo_container").selectAll("*").remove();
+    const dropdown = comboContainer.append("select")
+        .attr("id", "comboBox")
+        .on("change", function () {
+            console.log("Selected:", this.value);
+            env.config.config.combo = this.value;
+
+            if (!use_local) {
+                update_remote_config(env.config);
+                console.log("Remote config updated", env.config);
+                env = 0
+            }
+            location.reload();
+            console.log("reloadWithParam combo=", this.value);
+            reloadWithParam("combo", this.value);
+
+        });
+    dropdown.selectAll("option")
+        .data(env.get_combos())
+        .enter()
+        .append("option")
+        .text(d => d)
+        .attr("value", d => d)
+        .attr("selected", d => d === env.config.config.combo ? "selected" : null);
+    comboContainer.insert("label", "#comboBox")
+        .text("Choose combo: ");
+
+}
+function display_combos_list() {
+
+    const comboContainer = d3.select("#combo-list-container")
+    comboContainer.selectAll("*").remove();
     const dropdown = comboContainer.append("select")
         .attr("id", "comboBox")
         .on("change", function () {
@@ -135,136 +172,133 @@ function display_combos_list() {
 
 }
 function display_days_left_slider() {
-    // Fetch the config each time the slider needs to be updated
-    // Get the container for the time slider
-    const time_slider_container = document.getElementById('timeSliderContainer');
 
-    // Clear existing sliders
-    time_slider_container.innerHTML = '';
+    const days_left_container = d3.select("#days-left-container")
+    days_left_container.selectAll("*").remove();
 
-    // Create the time slider
-    const slider_container = document.createElement('div');
-    const label = document.createElement('label');
-    label.textContent = 'Days';
+    let days_left_text = days_left_container.append("p")
+        .attr("class", "checkbox-title")
+        .text("Days left:");
+    let slider = days_left_container.append("input")
+        .attr("type", "range")
+        .attr("id", "days-left-slider")
+        .attr("class", "slider-reverse")
+        .attr("min", env.config.window.days_left.min)
+        .attr("max", env.get_time_to_expiry_of_combo())
+        .attr("value", env.get_time_for_simulation_of_combo())
+        .attr("step", env.config.window.days_left.step)
+        .style("width", "100%"); // Make it full width
+    days_left_text.text(`Days left: ${env.get_time_for_simulation_of_combo()}/${env.get_time_to_expiry_of_combo()}`);
 
-    const slider = document.createElement('input');
-    slider.type = env.config.window.days_left.type;
-    slider.style.width = env.config.window.days_left.width;
-    slider.min = env.config.window.days_left.min;
-    slider.max = env.get_time_to_expiry_of_combo();
-    slider.step = env.config.window.days_left.step;
-    slider.value = env.get_time_for_simulation_of_combo();
-    slider.style.transform = 'scaleX(-1)'; // Mirror effect
-
-    // Display the time value next to the slider
-    const value_display = document.createElement('span');
-    value_display.textContent = ` ${slider.value}/${env.get_time_to_expiry_of_combo()}`;
-    slider.addEventListener('input', () => {
-        value_display.textContent = ` ${slider.value}/${env.get_time_to_expiry_of_combo()}`;
-        env.set_time_for_simulation(parseFloat(slider.value));
+    d3.select("#days-left-slider").on("input", function () {
+        days_left_text.text(`Days left: ${this.value}/${env.get_time_to_expiry_of_combo()}`);
+        env.set_time_for_simulation(parseFloat(this.value));
         draw_graph();
     });
 
-    slider_container.appendChild(label);
-    slider_container.appendChild(slider);
-    slider_container.appendChild(value_display);
-
-    time_slider_container.appendChild(slider_container);
 }
 function display_volatility_sliders() {
 
-    volatility_is_per_leg = document.getElementById('ivCheckbox').checked;
-    const sliders_container = document.getElementById('sliders_container');
-
-    // Clear existing sliders
-    sliders_container.innerHTML = '';
-
-    if (volatility_is_per_leg) {
-
-        // Multiple sliders for each leg
-        env.get_combo_params().legs.forEach((option, index) => {
-            const slider_container = document.createElement('div');
-            const label = document.createElement('label');
-            label.textContent = `${option.type} ${option.strike} IV`;
-
-            const slider = document.createElement('input');
-            slider.type = env.get_iv_slider_type();
-            slider.style.width = env.get_iv_slider_width();
-            slider.min = 100 * env.get_iv_slider_min_val();
-            slider.max = 100 * env.get_iv_slider_max_val();
-            slider.step = 100 * env.get_iv_slider_step();
-            slider.value = 100 * (env.get_use_real_values() ?
-                option.trade_volatility : option.sim_volatility);
-
-            // Display the IV value next to the slider
-            const value_display = document.createElement('span');
-            value_display.textContent = ` ${slider.value} %`;
-            slider.addEventListener('input', () => {
-                value_display.textContent = ` ${slider.value} %`;
-                if (env.get_use_real_values()) {
-                    option.trade_volatility = parseFloat(slider.value / 100.0);
-                } else {
-                    option.sim_volatility = parseFloat(slider.value / 100.0);
-                }
-                draw_graph();
-            });
-
-            slider_container.appendChild(label);
-            slider_container.appendChild(slider);
-            slider_container.appendChild(value_display);
-
-            sliders_container.appendChild(slider_container);
-        });
-    } else {
-        // Single slider for mean IV
-        const slider_container = document.createElement('div');
-        const label = document.createElement('label');
-        label.textContent = 'Vol.';
-        const slider = document.createElement('input');
-        slider.type = env.get_iv_slider_type();
-        slider.style.width = env.get_iv_slider_width();
-        slider.min = 100 * env.get_iv_slider_min_val();
-        slider.max = 100 * env.get_iv_slider_max_val();
-        slider.step = 100 * env.get_iv_slider_step();
-        slider.value = 100 * env.get_mean_volatility_of_combo(env.get_use_real_values());
-
-        // Display the IV value next to the slider
-        const value_display = document.createElement('span');
-        value_display.textContent = ` ${slider.value} %`;
-        slider.addEventListener('input', () => {
-            value_display.textContent = ` ${slider.value} %`;
-            env.set_mean_volatility_of_combo(env.get_use_real_values(), parseFloat(slider.value / 100.0));
+    const per_leg_volatility_container = d3.select("#per-leg-volatility-container")
+    per_leg_volatility_container.selectAll("*").remove();
+    env.get_combo_params().legs.forEach((option, index) => {
+        let iv_value = 100 * (env.get_use_real_values() ? option.trade_volatility : option.sim_volatility)
+        let leg_vol_text = per_leg_volatility_container.append("p")
+            .attr("class", "checkbox-title")
+            .text(`${option.type} ${option.strike} IV ` + iv_value + "%");
+        let leg_vol_slider = per_leg_volatility_container.append("input")
+            .attr("type", "range")
+            .attr("id", "leg_vol_slider" + index)
+            .attr("min", 100 * env.get_iv_slider_min_val())
+            .attr("max", 100 * env.get_iv_slider_max_val())
+            .attr("value", iv_value)
+            .attr("step", 100 * env.get_iv_slider_step())
+            .style("width", "100%"); // Make it full width
+        leg_vol_slider.on("input", function () {
+            leg_vol_text.text(`${option.type} ${option.strike} IV ` + this.value + "%");
+            if (env.get_use_real_values()) {
+                option.trade_volatility = parseFloat(this.value / 100.0);
+            } else {
+                option.sim_volatility = parseFloat(this.value / 100.0);
+            }
             draw_graph();
         });
 
-        slider_container.appendChild(label);
-        slider_container.appendChild(slider);
-        slider_container.appendChild(value_display);
+    });
 
-        sliders_container.appendChild(slider_container);
-    }
-    document.getElementById('ivCheckbox').addEventListener('change', display_volatility_sliders);
+    const mean_volatility_container = d3.select("#mean-volatility-container")
+    mean_volatility_container.selectAll("*").remove();
+
+    let iv_value = 100 * env.get_mean_volatility_of_combo(env.get_use_real_values());
+    let mean_vol_text = mean_volatility_container.append("p")
+        .attr("class", "checkbox-title")
+        .text("Mean Volatility " + iv_value + "%");
+    let mean_vol_slider = mean_volatility_container.append("input")
+        .attr("type", "range")
+        .attr("id", "mean_vol_slider")
+        .attr("min", 100 * env.get_iv_slider_min_val())
+        .attr("max", 100 * env.get_iv_slider_max_val())
+        .attr("value", iv_value)
+        .attr("step", 100 * env.get_iv_slider_step())
+        .style("width", "100%"); // Make it full width
+    d3.select("#mean_vol_slider").on("input", function () {
+        mean_vol_text.text("Mean Volatility " + this.value + "%");
+        env.set_mean_volatility_of_combo(env.get_use_real_values(), parseFloat(this.value / 100.0));
+        draw_graph();
+    });
+
+
+
+
+
+
+    // Display the IV value next to the slider
+    //const value_display = document.createElement('span');
+    //value_display.textContent = ` ${slider.value} %`;
+    //slider.addEventListener('input', () => {
+    //    value_display.textContent = ` ${slider.value} %`;
+    //    env.set_mean_volatility_of_combo(env.get_use_real_values(), parseFloat(slider.value / 100.0));
+    //    draw_graph();
+    //});
+
+
+    //document.getElementById('ivCheckbox').addEventListener('change', display_volatility_sliders);
 
 }
 function display_checkbox_for_volatility_mode() {
 
-    d3.select("#ivCheckboxContainer")
-        .append("input")
+    const volatility_main_container = d3.select("#volatility-main-container")
+    volatility_main_container.selectAll("*").remove();
+    const per_leg_volatility_container = d3.select("#per-leg-volatility-container")
+    const mean_volatility_container = d3.select("#mean-volatility-container")
+
+    volatility_main_container.append("p")
+        .attr("class", "checkbox-title")
+        .text("Volatility Management");
+    const checkbox = volatility_main_container.append("input")
         .attr("type", "checkbox")
-        .attr("id", "ivCheckbox")
-        .attr("name", "ivCheckbox");
-
-    // Append a label for the checkbox
-    d3.select("#ivCheckboxContainer")
-        .append("label")
-        .attr("for", "ivCheckbox")
-        .text("Set Vol. per leg");
-
-    // Event listener to detect changes
-    d3.select("#ivCheckbox").on("change", function () {
+        .attr("id", "myCheckbox2")
+        .attr("name", "Volatility by leg");
+    volatility_main_container.append("label")
+        .attr("for", "myCheckbox2")
+        .text(" Volatility by leg");
+    checkbox.on("change", function () {
+        volatility_is_per_leg = this.checked;
+        if (this.checked) {
+            per_leg_volatility_container.style("display", "block"); // Show the new container
+            mean_volatility_container.style("display", "none"); // Show the new container
+        } else {
+            per_leg_volatility_container.style("display", "none"); // Hide the new container
+            mean_volatility_container.style("display", "block"); // Hide the new container
+        }
         display_volatility_sliders();
     });
-    volatility_is_per_leg = document.getElementById('ivCheckbox').checked;
+
+    // Event listener to detect changes
+    //d3.select("#ivCheckbox").on("change", function () {
+    //    display_volatility_sliders();
+    //});
+    //volatility_is_per_leg = document.getElementById('ivCheckbox').checked;
 }
 function svg_cleanup(svg) {
     if (!svg) {
@@ -441,7 +475,7 @@ function add_y_axis_label(graph, graph_height, label) {
         .text(label);        // Change this to your label
 }
 function draw_one_sigma_area(svg, underlying_current_price, p_and_l_graph_height) {
-    let sigma_factor = sigma_knob.get_current_value();
+    let sigma_factor = 1.; //sigma_knob.get_current_value();
     let sigma = underlying_current_price * env.get_mean_volatility_of_combo(env.get_use_real_values()) * Math.sqrt(env.get_time_for_simulation_of_combo() / 365);
     let sigma_text = `σ = ${sigma.toFixed(0)}`;
     let price_less_sigma = underlying_current_price - sigma_factor * sigma;
@@ -604,12 +638,9 @@ function display_greeks_graph(greeks_graph_area, greeks_graphs_height, p_and_l_g
     const greek_graph_height = Math.round(
         (greeks_graphs_height - env.get_window_greeks_vspacer_margin() * (num_greeks_to_display + 1)) / num_greeks_to_display
     );
-    console.log("greeks_graphs_height", greeks_graphs_height);
-    console.log("greek_graph_height", greek_graph_height);
 
 
     for (let index = 0; index < num_greeks_to_display; index++) {
-        console.log("greek index", index);
         let greek_index = env.config.graph.greeks.ids[index];
         const yExtent = d3.extent(env.get_greeks_data()[greek_index], d => d.y);
         const min_greek = Math.min(0, yExtent[0]);  // Ensure axis is visible
@@ -827,99 +858,35 @@ function display_current_price(svg) {
 
 }
 function display_local_status() {
-    // Display a red or green dot depending on whether we are using local data
-    // red for local
-    // green for remote
 
-    let c = d3.select("#local-status-container");
-    c.selectAll("*").remove();
-    let s = c.append("svg")
-    s.attr("width", 220)    // Adjust size as needed
-        .attr("height", 20)
-        .append("circle")
-        .attr("cx", 10)        // X position of the center
-        .attr("cy", 10)        // Y position of the center
-        .attr("r", 5)         // Radius of the circle
-        .attr("class", use_local ? "red-dot" : "green-dot")
+    const local_status_container = d3.select("#local-status-container")
+    local_status_container.selectAll("*").remove();
 
-    s.append("text")
-        .attr("fill", use_local ? "red" : "green")
-        .attr("color", "white")
-        .attr("text-anchor", "left")
-        .attr("dy", "1em")
-        .style("font-size", "12px")
-        .attr("font-family", "Menlo, monospace")  // Set font to Menlo
-        .style("font-weight", "bold")
-        .attr("x", 20).attr("y", 2)
-        .text(use_local ? "Local data" : "Remote data");
+    local_status_container.append("p")
+        .attr("class", "checkbox-title")
+        .text("Local Status Info");
+    const local_status_remote_data_state = local_status_container.append("p")
+        .attr("class", use_local ? "checkbox-text-inactive" : "checkbox-text-active")
+        .text("Remote data");
+    const local_status_underlying_state = local_status_container.append("p")
+        .attr("class", !simulated_underlying_price_changed ? "checkbox-text-inactive" : "checkbox-text-active")
+        .text("Underlying price modified");
+    const local_status_strikes_state = local_status_container.append("p")
+        .attr("class", !combo_changed ? "checkbox-text-inactive" : "checkbox-text-active")
+        .text("Strike(s) modified");
 
-
-
-    c = d3.select("#change-status-container");
-    c.selectAll("*").remove();
-    s = c.append("svg")
-    s.attr("width", 200)    // Adjust size as needed
-        .attr("height", 20);
-    s.append("circle")
-        .attr("cx", 10)        // X position of the center
-        .attr("cy", 10)        // Y position of the center
-        .attr("r", 5)         // Radius of the circle
-        .attr("class", combo_changed ? "blinking-red-circle" : "gray-dot");
-
-    s.append("text")
-        .attr("fill", combo_changed ? "red" : "gray")
-        .attr("color", "white")
-        .attr("text-anchor", "left")
-        .attr("dy", "1em")
-        .style("font-size", "12px")
-        .attr("font-family", "Menlo, monospace")  // Set font to Menlo
-        .style("font-weight", "bold")
-        .attr("x", 20).attr("y", 2)
-        .text(combo_changed ? "Modified combo" : "");
-
-
-
-
-    c = d3.select("#underlying-status-container");
-    c.selectAll("*").remove();
-    s = c.append("svg")
-    s.attr("width", 220)    // Adjust size as needed
-        .attr("height", 20);
-    s.append("circle")
-        .attr("cx", 10)        // X position of the center
-        .attr("cy", 10)        // Y position of the center
-        .attr("r", 5)         // Radius of the circle
-        .attr("class", simulated_underlying_price_changed ? "blinking-orange-circle" : "gray-dot");
-
-    s.append("text")
-        .attr("fill", simulated_underlying_price_changed ? "orange" : "gray")
-        .attr("color", "white")
-        .attr("text-anchor", "left")
-        .attr("dy", "1em")
-        .style("font-size", "12px")
-        .attr("font-family", "Menlo, monospace")  // Set font to Menlo
-        .style("font-weight", "bold")
-        .attr("x", 20).attr("y", 2)
-        .text(simulated_underlying_price_changed ? "Simulated underliying price" : "");
-
-
-
-
-
-    d3.select("#auto-save-checkbox-container").selectAll("*").remove();
-    d3.select("#auto-save-checkbox-container")
+    const auto_save_container = d3.select("#auto-save-container")
+    auto_save_container.selectAll("*").remove();
+    d3.select("#auto-save-container")
         .append("input")
         .attr("type", "checkbox")
         .attr("id", "autosaveCheckbox")
         .attr("checked", auto_save ? "checked" : null)
         .attr("name", "autosaveCheckbox");
-
-    // Append a label for the checkbox
-    d3.select("#auto-save-checkbox-container")
+    d3.select("#auto-save-container")
         .append("label")
         .attr("for", "autosaveCheckbox")
-        .text("Auto save");
-
+        .text(" Auto-save");
     // Event listener to detect changes
     d3.select("#autosaveCheckbox").on("change", function () {
         auto_save = document.getElementById('autosaveCheckbox').checked;
@@ -956,7 +923,7 @@ function add_crosshair() {
     pl_at_initial_cursor = new VerticalCursor(svg, env.get_pl_at_init_data(), scale_p_and_l, "pl-init", "orange");
     pl_at_sim_cursor = new VerticalCursor(svg, env.get_pl_at_sim_data(), scale_p_and_l, "pl-sim", "green");
     price_cursor = new HorizontalCursor(svg, env.get_pl_at_sim_data(), scale_p_and_l, "price", "blue");
-
+    price_cursor.set_vpos(env.get_window_top_margin());
     pl_at_expiration_cursor.set_text_color("white");
     pl_at_initial_cursor.set_text_color("white");
     pl_at_sim_cursor.set_text_color("white");
@@ -1057,33 +1024,76 @@ function draw_graph() {
     add_crosshair();
 
 }
-
 function update_main_page() {
     let graph_width = document.getElementById("graph-container").offsetWidth;
     let graph_height = document.getElementById("graph-container").offsetHeight;
-    console.log(`Graph Height: ${graph_height}px`);
     env.set_window_width(graph_width);
     env.set_window_height(graph_height);
 
-    let c = d3.select("#knob-container");
-    c.selectAll("*").remove();
-    sigma_knob = new Knob(c, env, env.get_sigma_factors(), draw_graph);
+    let left_container = d3.select("#left-container");
+    left_container.selectAll("*").remove();
 
+    const local_status_container = d3.select("#left-container").append("div")
+        .attr("class", "local-status-container")
+        .attr("id", "local-status-container");
+
+    const auto_save_container = d3.select("#left-container").append("div")
+        .attr("class", "local-status-container")
+        .attr("id", "auto-save-container");
+
+    d3.select("#left-container").append("div").append("br")
+
+    const combo_list_container = d3.select("#left-container").append("div")
+        .attr("class", "combo-list-container")
+        .attr("id", "combo-list-container");
+
+    d3.select("#left-container").append("div").append("br")
+
+    const days_left_container = d3.select("#left-container").append("div")
+        .attr("class", "days-left-container")
+        .attr("id", "days-left-container");
+
+    d3.select("#left-container").append("div").append("br")
+
+    const volatility_main_container = d3.select("#left-container").append("div")
+        .attr("class", "volatility-main-container")
+        .attr("id", "volatility-main-container");
+    const per_leg_volatility_container = d3.select("#left-container").append("div")
+        .attr("class", "per-leg-volatility-container")
+        .attr("id", "per-leg-volatility-container")
+        .style("display", "none"); // Initially hidden
+    const mean_volatility_container = d3.select("#left-container").append("div")
+        .attr("class", "mean-volatility-container")
+        .attr("id", "mean-volatility-container")
+        .style("display", "block")  // Initially hidden
+
+    d3.select("#left-container").append("div").append("br")
+
+    const combo_templater_container = d3.select("#left-container").append("div")
+        .attr("class", "combo-templater-container")
+        .attr("id", "combo-templater-container");
+
+    d3.select("#left-container").append("div").append("br")
+
+    const sigma_container = d3.select("#left-container").append("div")
+        .attr("class", "sigma-container")
+        .attr("id", "sigma-container");
+
+    sigma_knob = new Knob(sigma_container, env, env.get_sigma_factors(), draw_graph);
     display_local_status();
     display_checkbox_for_volatility_mode();
+    display_days_left_slider();
     display_volatility_sliders();
     display_days_left_slider();
     display_combos_list();
+    
     draw_graph();
+
+
 }
 
-let use_local = false;
-let env;
-let ticker;
-let price;
-
 use_local = await is_mode_local();
-use_local = true;
+//use_local = true;
 //console.log('State: use_local='+use_local);
 env = await setup_global_env(env);
 console.log('State: env=', env);
@@ -1093,7 +1103,7 @@ price = use_local ? await load_local_price(ticker) : await fetch_price(ticker);
 //console.log('State: price=', price);
 env.set_underlying_current_price(price);
 underlying_current_price = env.get_underlying_current_price().price;
-console.log('State: underlying_current_price=', underlying_current_price);
+//console.log('State: underlying_current_price=', underlying_current_price);
 
 window.addEventListener("resize", update_main_page);
 update_main_page();
