@@ -723,7 +723,7 @@
             100
         ],
         "num_greeks": 6,
-        "sigma_factors": [1,  2, 3, 4, 5],
+        "sigma_factors": [1, 1.5, 2, 2.5, 3, 3.5],
         "volatility_is_per_leg": true
     },
     "config": {

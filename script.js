@@ -21,6 +21,7 @@ let pl_at_initial_cursor;
 let pl_at_sim_cursor;
 let price_cursor;
 let sigma_knob;
+let sigma_factor = 1.;
 let memo_price_at_mouse_down = 0;
 
 function reloadWithParam(key, value) {
@@ -453,7 +454,6 @@ function add_y_axis_label(graph, graph_height, label) {
         .text(label);        // Change this to your label
 }
 function draw_one_sigma_area(svg, underlying_current_price, p_and_l_graph_height) {
-    let sigma_factor = 1.; //sigma_knob.get_current_value();
     let sigma = underlying_current_price * env.get_mean_volatility_of_combo(env.get_use_real_values()) * Math.sqrt(env.get_time_for_simulation_of_combo() / 365);
     let sigma_text = `σ = ${sigma.toFixed(0)}`;
     let price_less_sigma = underlying_current_price - sigma_factor * sigma;
@@ -990,6 +990,58 @@ function draw_graph() {
     add_crosshair();
 
 }
+function display_sigma_selector() {
+    const sigma_selector_container = d3.select("#sigma-selector-container")
+    sigma_selector_container.selectAll("*").remove();
+    sigma_selector_container.append("p")
+        .attr("class", "checkbox-title")
+        .text("Sigma");
+
+    const sigma_factors = env.get_sigma_factors();
+
+    const sliderWrapper = sigma_selector_container.append("div")
+        .style("position", "relative")
+        .style("width", "100%");
+
+    // Create the slider input
+    const slider = sliderWrapper.append("input")
+        .attr("type", "range")
+        .attr("min", 0)
+        .attr("max", sigma_factors.length - 1) // Indices as values
+        .attr("value", sigma_factors.indexOf(sigma_factor)) // Set the initial value
+        .attr("step", 1) // Discrete steps
+        .style("width", "100%")
+        .style("margin-bottom", "20px") // Space for labels
+        .on("input", function () {
+            let index = +this.value;
+            let selectedValue = sigma_factors[index];
+            d3.select("#slider-label").text("Sigma Factor: " + selectedValue);
+            sigma_factor = selectedValue;
+            draw_graph();
+        });
+
+    // Create a label to display the selected value
+
+        const tickContainer = sliderWrapper.append("div")
+        .style("position", "relative")
+        .style("width", "100%")
+        .style("height", "20px") // Space for ticks
+        .style("display", "flex")
+        .style("justify-content", "space-between")
+        .style("pointer-events", "none");
+    
+    tickContainer.selectAll("div")
+        .data(sigma_factors)
+        .enter()
+        .append("div")
+        .style("position", "absolute")
+        .style("left", (d, i) => `calc(${(i / (sigma_factors.length - 1)) * 95}% + 0px)`) // Center the text
+        .style("text-align", "center")
+        .style("width", "20px") // Small width to avoid overlap
+        .style("font-size", "12px")
+        .text(d => d);
+    
+}
 function update_main_page() {
     let graph_width = document.getElementById("graph-container").offsetWidth;
     let graph_height = document.getElementById("graph-container").offsetHeight;
@@ -1035,15 +1087,17 @@ function update_main_page() {
 
     d3.select("#left-container").append("div").append("br")
 
+    /*
     const combo_templater_container = d3.select("#left-container").append("div")
         .attr("class", "combo-templater-container")
         .attr("id", "combo-templater-container");
 
     d3.select("#left-container").append("div").append("br")
+    */
 
     const sigma_container = d3.select("#left-container").append("div")
-        .attr("class", "sigma-container")
-        .attr("id", "sigma-container");
+        .attr("class", "sigma-selector-container")
+        .attr("id", "sigma-selector-container");
 
     sigma_knob = new Knob(sigma_container, env, env.get_sigma_factors(), draw_graph);
     display_local_status();
@@ -1052,7 +1106,7 @@ function update_main_page() {
     display_volatility_sliders();
     display_days_left_slider();
     display_combos_list();
-
+    display_sigma_selector();
     draw_graph();
 
 
