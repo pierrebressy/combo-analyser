@@ -82,6 +82,13 @@ function compute_greeks_data(use_legs_volatility) {
 }
 function compute_p_and_l_data(use_legs_volatility, num_days_left) {
 
+    env.get_combo_params().legs.forEach((option, index) => {
+        let ov = env.get_use_real_values() ?
+            option.trade_volatility : option.sim_volatility;
+        let v = use_legs_volatility ? ov : env.get_mean_volatility_of_combo(env.get_use_real_values());
+    });
+
+
     let p_and_l_data = [];
     for (let price = env.get_simul_min_price_of_combo(); price <= env.get_simul_max_price_of_combo(); price += env.get_simul_step_price_of_combo()) {
         let p_and_l_profile = 0;
@@ -105,40 +112,6 @@ function compute_data_to_display() {
     env.set_pl_at_sim_data(compute_p_and_l_data(volatility_is_per_leg, env.get_time_for_simulation_of_combo()));
 
     env.set_greeks_data(compute_greeks_data(volatility_is_per_leg));
-}
-function display_combos_list_old() {
-
-    const titleContainer = d3.select("#title_container").selectAll("*").remove();
-    titleContainer.insert("label", "#comboName")
-        .text(env.get_combo_params().name);
-
-    const comboContainer = d3.select("#combo_container").selectAll("*").remove();
-    const dropdown = comboContainer.append("select")
-        .attr("id", "comboBox")
-        .on("change", function () {
-            console.log("Selected:", this.value);
-            env.config.config.combo = this.value;
-
-            if (!use_local) {
-                update_remote_config(env.config);
-                console.log("Remote config updated", env.config);
-                env = 0
-            }
-            location.reload();
-            console.log("reloadWithParam combo=", this.value);
-            reloadWithParam("combo", this.value);
-
-        });
-    dropdown.selectAll("option")
-        .data(env.get_combos())
-        .enter()
-        .append("option")
-        .text(d => d)
-        .attr("value", d => d)
-        .attr("selected", d => d === env.config.config.combo ? "selected" : null);
-    comboContainer.insert("label", "#comboBox")
-        .text("Choose combo: ");
-
 }
 function display_combos_list() {
 
@@ -278,10 +251,20 @@ function display_checkbox_for_volatility_mode() {
     const checkbox = volatility_main_container.append("input")
         .attr("type", "checkbox")
         .attr("id", "myCheckbox2")
-        .attr("name", "Volatility by leg");
+        .attr("name", "Volatility by leg")
+        .attr("checked", volatility_is_per_leg ? "checked" : null);
     volatility_main_container.append("label")
         .attr("for", "myCheckbox2")
         .text(" Volatility by leg");
+    if (volatility_is_per_leg) {
+        per_leg_volatility_container.style("display", "block"); // Show the new container
+        mean_volatility_container.style("display", "none"); // Show the new container
+    } else {
+        per_leg_volatility_container.style("display", "none"); // Hide the new container
+        mean_volatility_container.style("display", "block"); // Hide the new container
+    }
+    display_volatility_sliders();
+
     checkbox.on("change", function () {
         volatility_is_per_leg = this.checked;
         if (this.checked) {
@@ -292,13 +275,8 @@ function display_checkbox_for_volatility_mode() {
             mean_volatility_container.style("display", "block"); // Hide the new container
         }
         display_volatility_sliders();
+        draw_graph();
     });
-
-    // Event listener to detect changes
-    //d3.select("#ivCheckbox").on("change", function () {
-    //    display_volatility_sliders();
-    //});
-    //volatility_is_per_leg = document.getElementById('ivCheckbox').checked;
 }
 function svg_cleanup(svg) {
     if (!svg) {
@@ -745,65 +723,53 @@ function display_strike_buttons() {
                 // Create a div container for the buttons (side by side)
                 let buttonContainer = floatingWindow.append("div").attr("class", "button-container");
 
-                // Add "-" button
+
+
+
+
+
+                let t = buttonContainer.append("table");
+                let tr = t.append("tr");
+                tr.append("td").text("Qty");
+                let tq = tr.append("td");
+                tq.append("input")
+                    .attr("type", "number")
+                    .attr("value", option.qty)
+                    .attr("min", -10)
+                    .attr("max", 10)
+                    .attr("step", 1)
+                    .attr("size", 3)
+                    .on("input", function () {
+                        console.log("Qty changed to: " + this.value);
+                        let option = env.get_combo_params().legs[current_index - 1];
+                        option.qty = parseInt(this.value);
+                        combo_changed = true;
+                        draw_graph();
+                    });
+                let tr2 = t.append("tr");
+                tr2.append("td").text("Exp. offset");
+                let tq2 = tr2.append("td");
+                tq2.append("input")
+                    .attr("type", "number")
+                    .attr("value", option.expiration_offset)
+                    .attr("min", -50)
+                    .attr("max", 50)
+                    .attr("step", 1)
+                    .attr("size", 3)
+                    .on("input", function () {
+                        console.log("Exp. offset changed to: " + this.value);
+                        let option = env.get_combo_params().legs[current_index - 1];
+                        option.expiration_offset = parseInt(this.value);
+                        combo_changed = true;
+                        draw_graph();
+                    });
+
                 buttonContainer.append("button")
-                    .text("-")
+                    .text("Dismiss")
                     .on("click", function () {
-                        //alert("Minus button clicked!");
-                        let option = env.get_combo_params().legs[current_index - 1];
-                        option.qty -= 1;
-                        combo_changed = true;
-                        qty_label.text("Qty " + option.qty); // Update title text
-                        draw_graph();
+                        floatingWindow.style("display", "none");
                     });
 
-                qty_label = buttonContainer.append("text").text("Qty " + option.qty);
-
-                // Add "+" button
-                buttonContainer.append("button")
-                    .text("+")
-                    .on("click", function () {
-                        //alert("Plus button clicked!");
-                        let option = env.get_combo_params().legs[current_index - 1];
-                        option.qty += 1;
-                        combo_changed = true;
-                        qty_label.text("Qty " + option.qty); // Update title text
-                        draw_graph();
-                    });
-
-
-
-                let exp_offset_label;
-
-                // Create a div container for the buttons (side by side)
-                let buttonContainer2 = floatingWindow.append("div").attr("class", "button-container");
-                // Add "-" button
-                buttonContainer2.append("button")
-                    .text("-")
-                    .on("click", function () {
-                        //alert("Minus button clicked!");
-                        let option = env.get_combo_params().legs[current_index - 1];
-                        option.expiration_offset -= 1;
-                        combo_changed = true;
-                        exp_offset_label.text(option.expiration_offset + "d"); // Update title text
-                        draw_graph();
-                    });
-
-
-                exp_offset_label = buttonContainer2.append("text").text(option.expiration_offset + "d");
-
-
-                // Add "+" button
-                buttonContainer2.append("button")
-                    .text("+")
-                    .on("click", function () {
-                        //alert("Plus button clicked!");
-                        let option = env.get_combo_params().legs[current_index - 1];
-                        option.expiration_offset += 1;
-                        combo_changed = true;
-                        exp_offset_label.text(option.expiration_offset + "d"); // Update title text
-                        draw_graph();
-                    });
 
                 d3.select("body").on("click", (event) => {
                     if (!floatingWindow.node().contains(event.target) && event.target.id !== "myButton") {
@@ -1086,7 +1052,7 @@ function update_main_page() {
     display_volatility_sliders();
     display_days_left_slider();
     display_combos_list();
-    
+
     draw_graph();
 
 
