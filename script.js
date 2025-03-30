@@ -701,8 +701,8 @@ function display_strike_buttons() {
                     let newX = Math.max(0, Math.min(env.get_window_width(), (event.x - env.get_window_left_margin())));
                     d3.select(this).attr("x", newX - 15);
                     let newStrike = env.get_x_scale().invert(newX);
-                    //option.strike = Math.round(newStrike);
-                    option.strike = (newStrike);
+                    option.strike = Math.round(newStrike * 2) / 2; // Round to nearest 0.5
+                    //option.strike = (newStrike);
                     combo_changed = true;
                     draw_graph();
                 })
