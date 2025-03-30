@@ -16,8 +16,44 @@
 <body>
   <div class="left-container" id="left-container">
   </div>
-  <div class="graph-container" id="graph-container">
+  <div class="right-container" id="right-container">
+    <div class="tabs">
+      <button class="tab-button active" onclick="showTab('pl-graph')">P/L Graph</button>
+      <button class="tab-button" onclick="showTab('3d-view')">3D View</button>
+    </div>
+
+    <div class="tab-content" id="pl-graph">
+      <div class="graph-container" id="graph-container">
+      </div>
+      </div>
+
+    <div class="tab-content hidden" id="3d-view">
+      <h2>3D View</h2>
+      <p>Here goes your 3D visualization.</p>
+      <!-- Your 3D visualization can be inserted here -->
+    </div>
+
   </div>
 </body>
+
+<script>
+  function showTab(tabId) {
+    // Hide all tabs
+    document.querySelectorAll('.tab-content').forEach(tab => {
+      tab.classList.add('hidden');
+    });
+
+    // Remove "active" class from all buttons
+    document.querySelectorAll('.tab-button').forEach(button => {
+      button.classList.remove('active');
+    });
+
+    // Show the selected tab
+    document.getElementById(tabId).classList.remove('hidden');
+
+    // Highlight the selected tab button
+    event.currentTarget.classList.add('active');
+  }
+</script>
 
 </html>
