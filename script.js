@@ -2,10 +2,10 @@ import { computeOptionPrice } from './functions.js';
 import { is_mode_local, load_local_price, load_local_config, update_remote_config, fetch_configuration, fetch_price } from './async.js';
 import { Environment } from './configuration.js';
 import { VerticalCursor, HorizontalCursor, TextRect, Line, Knob } from './cursor.js';
-
+import { update_3d_view, cameraPosition } from './3dview.js';
 
 let use_local = false;
-let env;
+export let env;
 let ticker;
 let price;
 
@@ -23,6 +23,7 @@ let price_cursor;
 let sigma_knob;
 let sigma_factor = 1.;
 let memo_price_at_mouse_down = 0;
+
 
 function reloadWithParam(key, value) {
     const url = new URL(window.location);
@@ -80,6 +81,22 @@ function compute_greeks_data(use_legs_volatility) {
         }
     }
     return greeks_data;
+}
+export function compute_p_and_l_data_for_price(use_legs_volatility, num_days_left, price) {
+
+    let p_and_l_profile = 0;
+    env.get_combo_params().legs.forEach(option => {
+        let ov = env.get_use_real_values() ?
+            option.trade_volatility : option.sim_volatility;
+        let v = use_legs_volatility ? ov : env.get_mean_volatility_of_combo(env.get_use_real_values());
+        //console.log("compute_p_and_l_data_for_price: v=", v);
+        let option_price = computeOptionPrice(underlying_current_price, option.strike, env.get_interest_rate_of_combo(), v, env.get_simulation_time_to_expiry() + option.expiration_offset, option.type);
+        let premium = option_price[0];
+        let greeks = computeOptionPrice(price, option.strike, env.get_interest_rate_of_combo(), v, num_days_left + option.expiration_offset, option.type);
+        p_and_l_profile = p_and_l_profile + option.qty * 100 * (greeks[0] - premium);
+    });
+
+    return { x: price, y: p_and_l_profile }
 }
 function compute_p_and_l_data(use_legs_volatility, num_days_left) {
 
@@ -1022,14 +1039,14 @@ function display_sigma_selector() {
 
     // Create a label to display the selected value
 
-        const tickContainer = sliderWrapper.append("div")
+    const tickContainer = sliderWrapper.append("div")
         .style("position", "relative")
         .style("width", "100%")
         .style("height", "20px") // Space for ticks
         .style("display", "flex")
         .style("justify-content", "space-between")
         .style("pointer-events", "none");
-    
+
     tickContainer.selectAll("div")
         .data(sigma_factors)
         .enter()
@@ -1040,7 +1057,104 @@ function display_sigma_selector() {
         .style("width", "20px") // Small width to avoid overlap
         .style("font-size", "12px")
         .text(d => d);
-    
+
+}
+function display_camera_position_sliders() {
+    const camera_position_container = d3.select("#camera-position-container")
+    camera_position_container.selectAll("*").remove();
+    camera_position_container.append("p")
+        .attr("class", "checkbox-title")
+        .text("Camera Position");
+
+    camera_position_container.append("p")
+        .attr("class", "checkbox-title")
+        .attr("id", "camera-position-x-label")
+        .text("x=" + cameraPosition.x);
+    const slider_x = camera_position_container.append("input")
+        .attr("type", "range")
+        .attr("min", 0)
+        .attr("max", 40) // Indices as values
+        .attr("value", cameraPosition.x) // Set the initial value
+        .attr("step", 1) // Discrete steps
+        .style("width", "100%")
+        .style("margin-bottom", "20px") // Space for labels
+        .on("input", function () {
+            cameraPosition.x = this.value;
+            d3.select("#camera-position-x-label").text("x=" + cameraPosition.x);
+            update_3d_view();
+        });
+    camera_position_container.append("p")
+        .attr("class", "checkbox-title")
+        .attr("id", "camera-position-y-label")
+        .text("y=" + cameraPosition.y);
+    const slider_y = camera_position_container.append("input")
+        .attr("type", "range")
+        .attr("min", 0)
+        .attr("max", 40) // Indices as values
+        .attr("value", cameraPosition.y) // Set the initial value
+        .attr("step", 1) // Discrete steps
+        .style("width", "100%")
+        .style("margin-bottom", "20px") // Space for labels
+        .on("input", function () {
+            cameraPosition.y = this.value;
+            d3.select("#camera-position-y-label").text("y=" + cameraPosition.y);
+            update_3d_view();
+        });
+    camera_position_container.append("p")
+        .attr("class", "checkbox-title")
+        .attr("id", "camera-position-z-label")
+        .text("z=" + cameraPosition.z);
+    const slider_z = camera_position_container.append("input")
+        .attr("type", "range")
+        .attr("min", -40)
+        .attr("max", 40) // Indices as values
+        .attr("value", cameraPosition.z) // Set the initial value
+        .attr("step", 1) // Discrete steps
+        .style("width", "100%")
+        .style("margin-bottom", "20px") // Space for labels
+        .on("input", function () {
+            cameraPosition.z = this.value;
+            d3.select("#camera-position-z-label").text("z=" + cameraPosition.z);
+            update_3d_view();
+        });
+
+    camera_position_container.append("p")
+        .attr("class", "checkbox-title")
+        .attr("id", "camera-position-fov-label")
+        .text("fov=" + cameraPosition.fov);
+    const slider_fov = camera_position_container.append("input")
+        .attr("type", "range")
+        .attr("min", 1)
+        .attr("max", 120) // Indices as values
+        .attr("value", cameraPosition.fov) // Set the initial value
+        .attr("step", 1) // Discrete steps
+        .style("width", "100%")
+        .style("margin-bottom", "20px") // Space for labels
+        .on("input", function () {
+            cameraPosition.fov = this.value;
+            d3.select("#camera-position-fov-label").text("fov=" + cameraPosition.fov);
+            update_3d_view();
+        });
+
+    camera_position_container.append("p")
+        .attr("class", "checkbox-title")
+        .attr("id", "camera-position-zrot-label")
+        .text("zrot=" + cameraPosition.z_rotation);
+    const slider_zrotation = camera_position_container.append("input")
+        .attr("type", "range")
+        .attr("min", -4)
+        .attr("max", 4) // Indices as values
+        .attr("value", cameraPosition.z_rotation) // Set the initial value
+        .attr("step", 0.01) // Discrete steps
+        .style("width", "100%")
+        .style("margin-bottom", "20px") // Space for labels
+        .on("input", function () {
+            cameraPosition.z_rotation = this.value;
+            d3.select("#camera-position-zrot-label").text("zrot=" + cameraPosition.z_rotation);
+            update_3d_view();
+        });
+
+
 }
 function update_main_page() {
     let graph_width = document.getElementById("graph-container").offsetWidth;
@@ -1100,6 +1214,17 @@ function update_main_page() {
         .attr("id", "sigma-selector-container");
 
     sigma_knob = new Knob(sigma_container, env, env.get_sigma_factors(), draw_graph);
+
+    d3.select("#left-container").append("div").append("br")
+
+    const camera_container = d3.select("#left-container").append("div")
+        .attr("class", "camera-position-container")
+        .attr("id", "camera-position-container");
+
+
+
+
+
     display_local_status();
     display_checkbox_for_volatility_mode();
     display_days_left_slider();
@@ -1108,51 +1233,10 @@ function update_main_page() {
     display_combos_list();
     display_sigma_selector();
     draw_graph();
-
+    display_camera_position_sliders();
     update_3d_view();
 }
-function update_3d_view() {
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    const renderer = new THREE.WebGLRenderer();
-    renderer.setSize(window.innerWidth, window.innerHeight);
 
-    // Step 2: Append the renderer to the div with id '3d-view'
-    document.getElementById('3d-view').appendChild(renderer.domElement);
-
-    // Step 3: Create a 3D grid of points using D3.js
-    const data = d3.range(0, 100).map(i => ({
-        x: Math.sin(i * 0.1) * 5,
-        y: Math.cos(i * 0.1) * 5,
-        z: i * 0.1
-    }));
-
-    // Step 4: Create 3D spheres for each data point
-    data.forEach(point => {
-        const geometry = new THREE.SphereGeometry(0.1);
-        const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
-        const sphere = new THREE.Mesh(geometry, material);
-        sphere.position.set(point.x, point.y, point.z);
-        scene.add(sphere);
-    });
-
-    // Step 5: Position the camera
-    camera.position.z = 10;
-
-    // Step 6: Animate the scene
-    function animate() {
-        requestAnimationFrame(animate);
-
-        // Rotate the scene to view the 3D plot from different angles
-        scene.rotation.x += 0.01;
-        scene.rotation.y += 0.01;
-
-        renderer.render(scene, camera);
-    }
-
-    animate();
-
-}
 use_local = await is_mode_local();
 //use_local = true;
 //console.log('State: use_local='+use_local);
@@ -1170,4 +1254,7 @@ window.addEventListener("resize", update_main_page);
 update_main_page();
 
 
-
+let p=225
+let t=14
+const z = compute_p_and_l_data_for_price(false, t, p);
+console.log("price", p, "time", t, "output", z.y);
