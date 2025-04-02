@@ -79,7 +79,6 @@
     // Highlight the selected tab button
     event.currentTarget.classList.add('active');
 
-    console.log(typeof callback);
     if (callback && typeof callback === 'function') {
       callback(); // Pass tabId or other parameters if needed
     }

@@ -10,7 +10,7 @@ export let cameraPosition = {
     y: 17,
     z: 4,
     fov: 40,
-    z_rotation: 0,
+    z_rotation: -2.0,
     z_zoom_factor: 1,
 };
 const ref_plane_half_size = 5;
@@ -115,14 +115,13 @@ function create_curve() {
             count++;
         });
     });
-    console.log("count", count);
     return [priceRange, timeRange, matrixData];
 }
 function create_mesh(curve_data) {
 
-    let priceRange=curve_data[0];
-    let timeRange=curve_data[1];
-    let matrixData=curve_data[2];
+    let priceRange = curve_data[0];
+    let timeRange = curve_data[1];
+    let matrixData = curve_data[2];
 
     // Create a geometry for the plane
     const plane_width = ref_plane_half_size * 2;
@@ -158,13 +157,12 @@ function create_mesh(curve_data) {
     return [mesh, wireframe];
 }
 function activate_3d() {
-    console.log("activate_3d");
     update_3d_view();
 }
 window.activate_3d = activate_3d;
+let animationFrameId = -1;
 
 export function update_3d_view() {
-    console.log("update_3d_view");
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(cameraPosition.fov, window.innerWidth / window.innerHeight, 0.1, 100);
@@ -178,15 +176,11 @@ export function update_3d_view() {
     view_container.classed("hidden", false);
     const width = view_container.node().clientWidth;
     const height = view_container.node().clientHeight;
-    //console.log("camera-view: width", width, "height", height);
     view_container.classed("hidden", tab_is_hidden);
-    if (tab_is_hidden) {
-        return;
-    }
+
     if (!renderer) {
         renderer = new THREE.WebGLRenderer();
         renderer.setSize(width, height);
-        //renderer.setSize(800, 800);
     }
     document.getElementById('camera-view').appendChild(renderer.domElement);
 
@@ -200,7 +194,7 @@ export function update_3d_view() {
     scene.add(ref_arrow);
 
     let curve_data = create_curve();
-    let mesh_data=create_mesh(curve_data);
+    let mesh_data = create_mesh(curve_data);
 
     scene.add(mesh_data[0]); // mesh surface
     scene.add(mesh_data[1]); // mesh wireframe
@@ -222,9 +216,16 @@ export function update_3d_view() {
         mesh_data[1].rotation.z = cameraPosition.z_rotation;
 
         ref_arrow.rotation.z = cameraPosition.z_rotation;
-        requestAnimationFrame(animate);
+        animationFrameId = requestAnimationFrame(animate);
         camera.position.set(cameraPosition.x, cameraPosition.y, cameraPosition.z);  // Camera at (10,10,1)
         renderer.render(scene, camera);
+        const view_container = d3.select("#camera-view")
+        let tab_is_hidden = view_container.classed("hidden")
+        if (tab_is_hidden) {
+            cancelAnimationFrame(animationFrameId);
+            animationFrameId = -1;
+            return;
+        }
     }
     animate();
 
