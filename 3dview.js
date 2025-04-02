@@ -117,6 +117,82 @@ function create_curve() {
     });
     return [priceRange, timeRange, matrixData];
 }
+function  create_specific_lines() {
+
+    let lines = new THREE.Group();
+
+    const min_price = env.get_simul_min_price_of_combo();
+    const max_price = env.get_simul_max_price_of_combo();
+
+    //const min_price = 210;
+    //const max_price = 230;
+    const step_price = 2;
+    const min_time = 0;
+    const max_time = 15;
+    const step_time = 2;
+    const priceRange = d3.range(min_price, max_price + 1e-5, step_price); // x-axis (Price)
+    const timeRange = d3.range(min_time, max_time + 1e-5, step_time);   // y-axis (Time)
+    //console.log("priceRange", priceRange);
+    let price_to_xscale = d3.scaleLinear()
+        .domain([min_price, max_price])
+        .range([-ref_plane_half_size, ref_plane_half_size]);
+    let time_to_yscale = d3.scaleLinear()
+        .domain([min_time, max_time])
+        .range([-ref_plane_half_size, ref_plane_half_size]);
+
+
+
+        const black_material = new THREE.LineBasicMaterial({ color: 0x000000 });
+        const green_material = new THREE.LineBasicMaterial({ color: 0x00FF00 });
+        const orange_material = new THREE.LineBasicMaterial({ color: 0xFFA500 });
+
+    for (let i = 0; i < env.get_pl_at_exp_data().length - 1; i++) {
+        const x1 = time_to_yscale(0);
+        const x2 = time_to_yscale(0);
+        const y1 = price_to_xscale(env.get_pl_at_exp_data()[i].x);
+        const y2 = price_to_xscale(env.get_pl_at_exp_data()[i+1].x);
+        const z1 = env.get_pl_at_exp_data()[i].y / 30 / cameraPosition.z_zoom_factor;
+        const z2 = env.get_pl_at_exp_data()[i+1].y / 30 / cameraPosition.z_zoom_factor;
+        const p1 = new THREE.Vector3(x1,-y1,z2)
+        const p2 = new THREE.Vector3(x2,-y2,z1)
+        const geometry = new THREE.BufferGeometry().setFromPoints([p1, p2]);
+        const line = new THREE.Line(geometry, black_material);
+        lines.add(line);
+    }
+    for (let i = 0; i < env.get_pl_at_sim_data().length - 1; i++) {
+        const x1 = time_to_yscale(env.get_time_for_simulation_of_combo());
+        const x2 = time_to_yscale(env.get_time_for_simulation_of_combo());
+        const y1 = price_to_xscale(env.get_pl_at_sim_data()[i].x);
+        const y2 = price_to_xscale(env.get_pl_at_sim_data()[i+1].x);
+        const z1 = env.get_pl_at_sim_data()[i].y / 30 / cameraPosition.z_zoom_factor;
+        const z2 = env.get_pl_at_sim_data()[i+1].y / 30 / cameraPosition.z_zoom_factor;
+
+        const p1 = new THREE.Vector3(x1,-y1,z2)
+        const p2 = new THREE.Vector3(x2,-y2,z1)
+        const geometry = new THREE.BufferGeometry().setFromPoints([p1, p2]);
+        const line = new THREE.Line(geometry, green_material);
+        lines.add(line);
+    }
+    for (let i = 0; i < env.get_pl_at_init_data().length - 1; i++) {
+        const x1 = time_to_yscale(env.get_time_to_expiry_of_combo());
+        const x2 = time_to_yscale(env.get_time_to_expiry_of_combo());
+        const y1 = price_to_xscale(env.get_pl_at_init_data()[i].x);
+        const y2 = price_to_xscale(env.get_pl_at_init_data()[i+1].x);
+        const z1 = env.get_pl_at_init_data()[i].y / 30 / cameraPosition.z_zoom_factor;
+        const z2 = env.get_pl_at_init_data()[i+1].y / 30 / cameraPosition.z_zoom_factor;
+
+        const p1 = new THREE.Vector3(x1,-y1,z2)
+        const p2 = new THREE.Vector3(x2,-y2,z1)
+        const geometry = new THREE.BufferGeometry().setFromPoints([p1, p2]);
+        const line = new THREE.Line(geometry, orange_material);
+        lines.add(line);
+    }
+
+    
+
+
+    return lines;
+}
 function create_mesh(curve_data) {
 
     let priceRange = curve_data[0];
@@ -148,7 +224,7 @@ function create_mesh(curve_data) {
         color: 0x0000FF,
         side: THREE.DoubleSide,
         transparent: true,
-        opacity: 0.5
+        opacity: 0.1
     });
     const materialWireframe = new THREE.LineBasicMaterial({ color: 0xffffff }); // Black wireframe
     const mesh = new THREE.Mesh(geometry, materialSurface);
@@ -163,6 +239,7 @@ window.activate_3d = activate_3d;
 let animationFrameId = -1;
 
 export function update_3d_view() {
+
 
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0xffffff);
@@ -208,14 +285,16 @@ export function update_3d_view() {
     const light2 = new THREE.DirectionalLight(0xffffff, 1);
     light2.position.set(10, 0, 5);
     scene.add(light2);
-
+    
+    const lines=create_specific_lines()
+    scene.add(lines);
 
     function animate() {
 
         reference_plane.rotation.z = cameraPosition.z_rotation;
         mesh_data[0].rotation.z = cameraPosition.z_rotation;
         mesh_data[1].rotation.z = cameraPosition.z_rotation;
-
+        lines.rotation.z = cameraPosition.z_rotation;
         ref_arrow.rotation.z = cameraPosition.z_rotation;
         animationFrameId = requestAnimationFrame(animate);
         camera.position.set(cameraPosition.x, cameraPosition.y, cameraPosition.z);  // Camera at (10,10,1)

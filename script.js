@@ -16,11 +16,10 @@ let underlying_current_price = 0;
 let svg;
 let scale_p_and_l;
 let combo_changed = false;
-let pl_at_expiration_cursor;
-let pl_at_initial_cursor;
-let pl_at_sim_cursor;
+export let pl_at_expiration_cursor;
+export let pl_at_initial_cursor;
+export let pl_at_sim_cursor;
 let price_cursor;
-let sigma_knob;
 let sigma_factor = 1.;
 let memo_price_at_mouse_down = 0;
 
@@ -446,34 +445,14 @@ function add_grid(graph, y_scale) {
     const xAxis = d3.axisBottom(env.get_x_scale())
         .ticks(5); // Number of ticks
 
-    // Append X axis to SVG
-
-
     y_scale(0)
     graph.append("g")
         .attr("transform", `translate(0,${y_scale(y_scale.domain()[0])})`) // Positioning at the bottom
         .call(xAxis);
 
-
-
-    // const x_axis_grid = d3.axisBottom(env.get_x_scale())
-    //     .tickSize(-env.get_window_height() - env.get_window_top_margin() - env.get_window_bottom_margin())
-    //     //.tickSize(env.get_window_height()/4)
-    //     .tickFormat("");  // Hide tick labels
-
     const y_axis_grid = d3.axisLeft(y_scale)
         .tickSize(-env.get_window_width() + env.get_window_left_margin() + env.get_window_right_margin())
         .tickFormat("");
-
-    // Add X-axis grid
-    // graph.append("g")
-    //    .attr("class", "x-grid")
-    //    .attr("transform", `translate(0, ${env.get_window_height() - env.get_window_top_margin() - env.get_window_bottom_margin() - env.get_window_vspacer_margin()})`)
-    //    //.call(x_axis_grid)
-    //    .selectAll("line")
-    //    .attr("stroke", "lightgray")
-    //    .attr("stroke-opacity", 0.7)
-    //    .attr("stroke-dasharray", "4,4");
 
     // Add Y-axis grid
     graph.append("g")
@@ -1269,7 +1248,7 @@ function update_main_page() {
         .attr("class", "sigma-selector-container")
         .attr("id", "sigma-selector-container");
 
-    sigma_knob = new Knob(sigma_container, env, env.get_sigma_factors(), draw_graph);
+    //sigma_knob = new Knob(sigma_container, env, env.get_sigma_factors(), draw_graph);
 
     d3.select("#left-container").append("div").append("br")
 
@@ -1292,8 +1271,6 @@ function update_main_page() {
     display_camera_position_sliders();
     update_3d_view();
 }
-
-
 function create_main_frame(tab_active) {
     const body = document.body;
 
@@ -1330,7 +1307,7 @@ function create_main_frame(tab_active) {
 
     // Create and append the "P/L Graph" tab content
     const plGraphContent = document.createElement('div');
-    plGraphContent.classList.add('tab-content', tab_active==='pl-graph' ? 'visible':'hidden');
+    plGraphContent.classList.add('tab-content', tab_active === 'pl-graph' ? 'visible' : 'hidden');
     plGraphContent.id = 'pl-graph';
     const graphContainer = document.createElement('div');
     graphContainer.classList.add('graph-container');
@@ -1340,7 +1317,7 @@ function create_main_frame(tab_active) {
 
     // Create and append the "3D View" tab content (hidden initially)
     const cameraViewContent = document.createElement('div');
-    cameraViewContent.classList.add('tab-content', tab_active==='camera-view' ? 'visible':'hidden');
+    cameraViewContent.classList.add('tab-content', tab_active === 'camera-view' ? 'visible' : 'hidden');
     cameraViewContent.id = 'camera-view';
     const cameraViewHeading = document.createElement('h2');
     cameraViewHeading.textContent = '3D View';
@@ -1350,9 +1327,6 @@ function create_main_frame(tab_active) {
     cameraViewContent.appendChild(cameraViewParagraph);
     rightContainer.appendChild(cameraViewContent);
 }
-
-
-// Your existing showTab function
 function showTab(tabId, callback) {
     // Hide all tabs
     document.querySelectorAll('.tab-content').forEach(tab => {
@@ -1396,11 +1370,3 @@ create_main_frame(env.config.window.tab_active);
 window.addEventListener("resize", update_main_page);
 update_main_page();
 
-
-let p = 225
-let t = 14
-const z = compute_p_and_l_data_for_price(false, t, p);
-console.log("price", p, "time", t, "output", z.y);
-
-
-console.log("env.config.window.tab_active=", env.config.window.tab_active);
