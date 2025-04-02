@@ -300,13 +300,13 @@ function svg_cleanup(svg) {
     if (!svg) {
 
         const container = d3.select("#pl-graph")
-        let original_state=container.classed("hidden")
+        let original_state = container.classed("hidden")
         container.classed("hidden", false);
         const width = container.node().clientWidth;
         const height = container.node().clientHeight;
         console.log("graph-container : width", width, "height", height);
         container.classed("hidden", original_state);
-    
+
         svg = d3.select("#graph-container")
             .append("svg")
             .attr("width", "100%")
@@ -444,15 +444,15 @@ function draw_p_and_l(graph, scale) {
 function add_grid(graph, y_scale) {
 
     const xAxis = d3.axisBottom(env.get_x_scale())
-    .ticks(5); // Number of ticks
+        .ticks(5); // Number of ticks
 
-// Append X axis to SVG
+    // Append X axis to SVG
 
 
-y_scale(0)
-graph.append("g")
-    .attr("transform", `translate(0,${y_scale(y_scale.domain()[0])})`) // Positioning at the bottom
-    .call(xAxis);
+    y_scale(0)
+    graph.append("g")
+        .attr("transform", `translate(0,${y_scale(y_scale.domain()[0])})`) // Positioning at the bottom
+        .call(xAxis);
 
 
 
@@ -1088,63 +1088,63 @@ function display_camera_position_sliders() {
     const camera_position_container = d3.select("#camera-position-container")
     camera_position_container.selectAll("*").remove();
 
-/*
-    camera_position_container.append("p")
-        .attr("class", "checkbox-title")
-        .text("Camera Position");
-
-    camera_position_container.append("p")
-        .attr("class", "checkbox-title")
-        .attr("id", "camera-position-x-label")
-        .text("x=" + cameraPosition.x);
-    const slider_x = camera_position_container.append("input")
-        .attr("type", "range")
-        .attr("min", 0)
-        .attr("max", 40) // Indices as values
-        .attr("value", cameraPosition.x) // Set the initial value
-        .attr("step", 1) // Discrete steps
-        .style("width", "100%")
-        .style("margin-bottom", "20px") // Space for labels
-        .on("input", function () {
-            cameraPosition.x = this.value;
-            d3.select("#camera-position-x-label").text("x=" + cameraPosition.x);
-            update_3d_view();
-        });
-    camera_position_container.append("p")
-        .attr("class", "checkbox-title")
-        .attr("id", "camera-position-y-label")
-        .text("y=" + cameraPosition.y);
-    const slider_y = camera_position_container.append("input")
-        .attr("type", "range")
-        .attr("min", 0)
-        .attr("max", 40) // Indices as values
-        .attr("value", cameraPosition.y) // Set the initial value
-        .attr("step", 1) // Discrete steps
-        .style("width", "100%")
-        .style("margin-bottom", "20px") // Space for labels
-        .on("input", function () {
-            cameraPosition.y = this.value;
-            d3.select("#camera-position-y-label").text("y=" + cameraPosition.y);
-            update_3d_view();
-        });
-    camera_position_container.append("p")
-        .attr("class", "checkbox-title")
-        .attr("id", "camera-position-z-label")
-        .text("z=" + cameraPosition.z);
-    const slider_z = camera_position_container.append("input")
-        .attr("type", "range")
-        .attr("min", -40)
-        .attr("max", 40) // Indices as values
-        .attr("value", cameraPosition.z) // Set the initial value
-        .attr("step", 1) // Discrete steps
-        .style("width", "100%")
-        .style("margin-bottom", "20px") // Space for labels
-        .on("input", function () {
-            cameraPosition.z = this.value;
-            d3.select("#camera-position-z-label").text("z=" + cameraPosition.z);
-            update_3d_view();
-        });
-*/
+    /*
+        camera_position_container.append("p")
+            .attr("class", "checkbox-title")
+            .text("Camera Position");
+    
+        camera_position_container.append("p")
+            .attr("class", "checkbox-title")
+            .attr("id", "camera-position-x-label")
+            .text("x=" + cameraPosition.x);
+        const slider_x = camera_position_container.append("input")
+            .attr("type", "range")
+            .attr("min", 0)
+            .attr("max", 40) // Indices as values
+            .attr("value", cameraPosition.x) // Set the initial value
+            .attr("step", 1) // Discrete steps
+            .style("width", "100%")
+            .style("margin-bottom", "20px") // Space for labels
+            .on("input", function () {
+                cameraPosition.x = this.value;
+                d3.select("#camera-position-x-label").text("x=" + cameraPosition.x);
+                update_3d_view();
+            });
+        camera_position_container.append("p")
+            .attr("class", "checkbox-title")
+            .attr("id", "camera-position-y-label")
+            .text("y=" + cameraPosition.y);
+        const slider_y = camera_position_container.append("input")
+            .attr("type", "range")
+            .attr("min", 0)
+            .attr("max", 40) // Indices as values
+            .attr("value", cameraPosition.y) // Set the initial value
+            .attr("step", 1) // Discrete steps
+            .style("width", "100%")
+            .style("margin-bottom", "20px") // Space for labels
+            .on("input", function () {
+                cameraPosition.y = this.value;
+                d3.select("#camera-position-y-label").text("y=" + cameraPosition.y);
+                update_3d_view();
+            });
+        camera_position_container.append("p")
+            .attr("class", "checkbox-title")
+            .attr("id", "camera-position-z-label")
+            .text("z=" + cameraPosition.z);
+        const slider_z = camera_position_container.append("input")
+            .attr("type", "range")
+            .attr("min", -40)
+            .attr("max", 40) // Indices as values
+            .attr("value", cameraPosition.z) // Set the initial value
+            .attr("step", 1) // Discrete steps
+            .style("width", "100%")
+            .style("margin-bottom", "20px") // Space for labels
+            .on("input", function () {
+                cameraPosition.z = this.value;
+                d3.select("#camera-position-z-label").text("z=" + cameraPosition.z);
+                update_3d_view();
+            });
+    */
     camera_position_container.append("p")
         .attr("class", "checkbox-title")
         .attr("id", "camera-position-fov-label")
@@ -1163,7 +1163,7 @@ function display_camera_position_sliders() {
             update_3d_view();
         });
 
-        camera_position_container.append("p")
+    camera_position_container.append("p")
         .attr("class", "checkbox-title")
         .attr("id", "camera-position-zrot-label")
         .text("zrot=" + cameraPosition.z_rotation);
@@ -1203,7 +1203,7 @@ function display_camera_position_sliders() {
 function update_main_page() {
 
     const container = d3.select("#pl-graph")
-    let original_state=container.classed("hidden")
+    let original_state = container.classed("hidden")
     container.classed("hidden", false);
     let graph_width = container.node().clientWidth;
     let graph_height = container.node().clientHeight;
@@ -1293,11 +1293,96 @@ function update_main_page() {
     update_3d_view();
 }
 
+
+function create_main_frame(tab_active) {
+    const body = document.body;
+
+    // Create and append the left container
+    const leftContainer = document.createElement('div');
+    leftContainer.classList.add('left-container');
+    leftContainer.id = 'left-container';
+    body.appendChild(leftContainer);
+
+    // Create and append the right container
+    const rightContainer = document.createElement('div');
+    rightContainer.classList.add('right-container');
+    rightContainer.id = 'right-container';
+    body.appendChild(rightContainer);
+
+    // Create and append the tabs container
+    const tabsContainer = document.createElement('div');
+    tabsContainer.classList.add('tabs');
+    rightContainer.appendChild(tabsContainer);
+
+    // Create and append the "P/L Graph" button
+    const plButton = document.createElement('button');
+    plButton.classList.add('tab-button', 'active');
+    plButton.textContent = 'P/L Graph';
+    plButton.onclick = () => showTab('pl-graph');
+    tabsContainer.appendChild(plButton);
+
+    // Create and append the "3D View" button
+    const viewButton = document.createElement('button');
+    viewButton.classList.add('tab-button');
+    viewButton.textContent = '3D View';
+    viewButton.onclick = () => showTab('camera-view', window.activate_3d);
+    tabsContainer.appendChild(viewButton);
+
+    // Create and append the "P/L Graph" tab content
+    const plGraphContent = document.createElement('div');
+    plGraphContent.classList.add('tab-content', tab_active==='pl-graph' ? 'visible':'hidden');
+    plGraphContent.id = 'pl-graph';
+    const graphContainer = document.createElement('div');
+    graphContainer.classList.add('graph-container');
+    graphContainer.id = 'graph-container';
+    plGraphContent.appendChild(graphContainer);
+    rightContainer.appendChild(plGraphContent);
+
+    // Create and append the "3D View" tab content (hidden initially)
+    const cameraViewContent = document.createElement('div');
+    cameraViewContent.classList.add('tab-content', tab_active==='camera-view' ? 'visible':'hidden');
+    cameraViewContent.id = 'camera-view';
+    const cameraViewHeading = document.createElement('h2');
+    cameraViewHeading.textContent = '3D View';
+    const cameraViewParagraph = document.createElement('p');
+    cameraViewParagraph.textContent = 'Here goes your 3D visualization.';
+    cameraViewContent.appendChild(cameraViewHeading);
+    cameraViewContent.appendChild(cameraViewParagraph);
+    rightContainer.appendChild(cameraViewContent);
+}
+
+
+// Your existing showTab function
+function showTab(tabId, callback) {
+    // Hide all tabs
+    document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.add('hidden');
+    });
+
+    // Remove "active" class from all buttons
+    document.querySelectorAll('.tab-button').forEach(button => {
+        button.classList.remove('active');
+    });
+
+    // Show the selected tab
+    document.getElementById(tabId).classList.remove('hidden');
+
+    // Highlight the selected tab button
+    event.currentTarget.classList.add('active');
+
+    // Call the callback function if provided
+    if (callback && typeof callback === 'function') {
+        callback(tabId); // Pass tabId or other parameters if needed
+    }
+}
+
 use_local = await is_mode_local();
 //use_local = true;
 //console.log('State: use_local='+use_local);
 env = await setup_global_env(env);
 console.log('State: env=', env);
+
+
 ticker = env.get_ticker_of_combo();
 //console.log('State: ticker=', ticker);
 price = use_local ? await load_local_price(ticker) : await fetch_price(ticker);
@@ -1306,11 +1391,16 @@ env.set_underlying_current_price(price);
 underlying_current_price = env.get_underlying_current_price().price;
 //console.log('State: underlying_current_price=', underlying_current_price);
 
+create_main_frame(env.config.window.tab_active);
+
 window.addEventListener("resize", update_main_page);
 update_main_page();
 
 
-let p=225
-let t=14
+let p = 225
+let t = 14
 const z = compute_p_and_l_data_for_price(false, t, p);
 console.log("price", p, "time", t, "output", z.y);
+
+
+console.log("env.config.window.tab_active=", env.config.window.tab_active);

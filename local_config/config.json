@@ -786,6 +786,7 @@
         },
         "p_and_l_ratio": 0.5,
         "width": 1339.2734375,
-        "zoom": 1.5
+        "zoom": 1.5,
+        "tab_active": "pl-graph"
     }
 }

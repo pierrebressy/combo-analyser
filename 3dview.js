@@ -18,6 +18,7 @@ const ref_plane_half_size = 5;
 
 function create_reference_plane() {
     let reference_plane = new THREE.Group();
+    let plane_color=0x000000;
     let points;
     let geometry;
     let material;
@@ -34,7 +35,7 @@ function create_reference_plane() {
         geometry = new THREE.BufferGeometry().setFromPoints(points);
 
         // Create a material for the line (red)
-        material = new THREE.LineBasicMaterial({ color: 0xff0000 });
+        material = new THREE.LineBasicMaterial({ color: plane_color });
 
         // Create the line using the geometry and material
         line = new THREE.Line(geometry, material);
@@ -49,7 +50,7 @@ function create_reference_plane() {
         geometry = new THREE.BufferGeometry().setFromPoints(points);
 
         // Create a material for the line (red)
-        material = new THREE.LineBasicMaterial({ color: 0xff0000 });
+        material = new THREE.LineBasicMaterial({ color: plane_color });
 
         // Create the line using the geometry and material
         line = new THREE.Line(geometry, material);
@@ -70,7 +71,6 @@ function create_reference_arrows() {
     ref_arrow.add(arrowZ);
     return ref_arrow;
 }
-
 function create_curve() {
 
     // points of the surface
@@ -165,6 +165,7 @@ let animationFrameId = -1;
 export function update_3d_view() {
 
     const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0xffffff);
     const camera = new THREE.PerspectiveCamera(cameraPosition.fov, window.innerWidth / window.innerHeight, 0.1, 100);
     camera.up.set(0, 0, 1);          // Make Z the "up" direction
     camera.position.set(100, 100, 1);  // Camera at (10,10,1)

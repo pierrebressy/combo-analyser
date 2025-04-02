@@ -58,9 +58,9 @@ export class Environment {
 
         // Attributes (properties)
         this.config = config;
-        const container = d3.select("#graph-container").node();
-        this.config.window.width = container.getBoundingClientRect().width;
-        this.config.window.height = container.getBoundingClientRect().height - 50;
+        //const container = d3.select("#graph-container").node();
+        //this.config.window.width = container.getBoundingClientRect().width;
+        //this.config.window.height = container.getBoundingClientRect().height - 50;
         
         this.combo = this.get_combo_params();
         //console.log("State: env.combo=", this.combo);
