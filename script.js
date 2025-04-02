@@ -298,8 +298,19 @@ function display_checkbox_for_volatility_mode() {
 }
 function svg_cleanup(svg) {
     if (!svg) {
+
+        const container = d3.select("#pl-graph")
+        let original_state=container.classed("hidden")
+        container.classed("hidden", false);
+        const width = container.node().clientWidth;
+        const height = container.node().clientHeight;
+        console.log("graph-container : width", width, "height", height);
+        container.classed("hidden", original_state);
+    
         svg = d3.select("#graph-container")
             .append("svg")
+            .attr("width", "100%")
+            .attr("height", "100%")
             .attr("width", "100%")
             .attr("height", "100%")
             .style("display", "block");
@@ -398,7 +409,7 @@ function draw_p_and_l(graph, scale) {
         let zero_crossing_label = new TextRect(graph, "price", "orange");
         zero_crossing_label.set_rect_position(env.get_x_scale()(x) - zero_crossing_label.get_width() / 2, scale.range()[0]);
         zero_crossing_label.set_text_position(env.get_x_scale()(x), scale.range()[0]);
-        zero_crossing_label.set_text(x.toFixed(0));
+        zero_crossing_label.set_text(x.toFixed(1));
         zero_crossing_label.set_text_color("black");
         zero_crossing_label.show();
     });
@@ -432,20 +443,33 @@ function draw_p_and_l(graph, scale) {
 }
 function add_grid(graph, y_scale) {
 
-    //const x_axis_grid = d3.axisBottom(env.get_x_scale())
-    //    //.tickSize(-env.get_window_height() - env.get_window_top_margin() - env.get_window_bottom_margin())
-    //    .tickSize(env.get_window_height()/4)
-    //    .tickFormat("");  // Hide tick labels
+    const xAxis = d3.axisBottom(env.get_x_scale())
+    .ticks(5); // Number of ticks
+
+// Append X axis to SVG
+
+
+y_scale(0)
+graph.append("g")
+    .attr("transform", `translate(0,${y_scale(y_scale.domain()[0])})`) // Positioning at the bottom
+    .call(xAxis);
+
+
+
+    // const x_axis_grid = d3.axisBottom(env.get_x_scale())
+    //     .tickSize(-env.get_window_height() - env.get_window_top_margin() - env.get_window_bottom_margin())
+    //     //.tickSize(env.get_window_height()/4)
+    //     .tickFormat("");  // Hide tick labels
 
     const y_axis_grid = d3.axisLeft(y_scale)
         .tickSize(-env.get_window_width() + env.get_window_left_margin() + env.get_window_right_margin())
         .tickFormat("");
 
     // Add X-axis grid
-    //graph.append("g")
+    // graph.append("g")
     //    .attr("class", "x-grid")
     //    .attr("transform", `translate(0, ${env.get_window_height() - env.get_window_top_margin() - env.get_window_bottom_margin() - env.get_window_vspacer_margin()})`)
-    //    .call(x_axis_grid)
+    //    //.call(x_axis_grid)
     //    .selectAll("line")
     //    .attr("stroke", "lightgray")
     //    .attr("stroke-opacity", 0.7)
@@ -1006,6 +1030,7 @@ function draw_graph() {
 
     add_crosshair();
 
+    update_3d_view();
 }
 function display_sigma_selector() {
     const sigma_selector_container = d3.select("#sigma-selector-container")
@@ -1062,6 +1087,8 @@ function display_sigma_selector() {
 function display_camera_position_sliders() {
     const camera_position_container = d3.select("#camera-position-container")
     camera_position_container.selectAll("*").remove();
+
+/*
     camera_position_container.append("p")
         .attr("class", "checkbox-title")
         .text("Camera Position");
@@ -1117,7 +1144,7 @@ function display_camera_position_sliders() {
             d3.select("#camera-position-z-label").text("z=" + cameraPosition.z);
             update_3d_view();
         });
-
+*/
     camera_position_container.append("p")
         .attr("class", "checkbox-title")
         .attr("id", "camera-position-fov-label")
@@ -1136,7 +1163,7 @@ function display_camera_position_sliders() {
             update_3d_view();
         });
 
-    camera_position_container.append("p")
+        camera_position_container.append("p")
         .attr("class", "checkbox-title")
         .attr("id", "camera-position-zrot-label")
         .text("zrot=" + cameraPosition.z_rotation);
@@ -1154,11 +1181,40 @@ function display_camera_position_sliders() {
             update_3d_view();
         });
 
+    camera_position_container.append("p")
+        .attr("class", "checkbox-title")
+        .attr("id", "camera-position-zzf-label")
+        .text("Vzoom=" + cameraPosition.z_zoom_factor);
+    const slider_zzf = camera_position_container.append("input")
+        .attr("type", "range")
+        .attr("min", 0.1)
+        .attr("max", 30) // Indices as values
+        .attr("value", cameraPosition.z_zoom_factor) // Set the initial value
+        .attr("step", 0.1) // Discrete steps
+        .style("width", "100%")
+        .style("margin-bottom", "20px") // Space for labels
+        .on("input", function () {
+            cameraPosition.z_zoom_factor = this.value;
+            d3.select("#camera-position-zzf-label").text("Vzoom=" + cameraPosition.z_zoom_factor);
+            update_3d_view();
+        });
 
 }
 function update_main_page() {
-    let graph_width = document.getElementById("graph-container").offsetWidth;
-    let graph_height = document.getElementById("graph-container").offsetHeight;
+
+    const container = d3.select("#pl-graph")
+    let original_state=container.classed("hidden")
+    container.classed("hidden", false);
+    let graph_width = container.node().clientWidth;
+    let graph_height = container.node().clientHeight;
+    console.log("graph-update_main_page : width", graph_width, "height", graph_height);
+    container.classed("hidden", original_state);
+
+
+
+
+    //let graph_width = document.getElementById("graph-container").offsetWidth;
+    //let graph_height = document.getElementById("graph-container").offsetHeight;
     env.set_window_width(graph_width);
     env.set_window_height(graph_height);
 
