@@ -1,4 +1,4 @@
-import { compute_p_and_l_data_for_price, env } from './script.js';
+import { compute_p_and_l_data_for_price, compute_greeks_data_for_price, env } from './script.js';
 
 export let renderer;
 export let x_camera = 20;
@@ -8,27 +8,115 @@ export let z_camera = 5;
 export let cameraPosition = {
     x: 17,
     y: 17,
-    z: 4,
+    z: 1,
     fov: 40,
-    z_rotation: -2.0,
+    z_rotation: 1.8,
     z_zoom_factor: 1,
 };
 const ref_plane_half_size = 5;
+window.activate_3d = activate_3d;
+let animationFrameId = -1;
+
+class Generic3DSurface {
+    constructor() {
+        this.xdata = null;
+        this.ydata = null;
+        this.half_width = ref_plane_half_size;
+    }
+    set_x_limits(min_value, max_value, num_points) {
+        this.x_min = min_value;
+        this.x_max = max_value;
+        this.num_x_points = num_points;
+        this.x_step = (this.x_max - this.x_min) / this.num_x_points;
+    }
+    set_y_limits(min_value, max_value, num_points) {
+        this.y_min = min_value;
+        this.y_max = max_value;
+        this.num_y_points = num_points;
+        this.y_step = (this.y_max - this.y_min) / this.num_y_points;
+    }
+    prepare_dataset(dataset) {
+        this.data = dataset;
+        this.min_data = d3.min(this.data.flat(), d => d.y);
+        this.max_data = d3.max(this.data.flat(), d => d.y);
+
+        this.xscale = d3.scaleLinear()
+            .domain([this.x_min, this.x_max])
+            .range([-this.half_width, this.half_width]);
+        this.yscale = d3.scaleLinear()
+            .domain([this.y_min, this.y_max])
+            .range([-this.half_width, this.half_width]);
+        this.zscale = d3.scaleLinear()
+            .domain([this.min_data, this.max_data])
+            .range([-this.half_width, this.half_width]);
+
+        this.xrange = d3.range(this.x_min, this.x_max + 1e-5, this.x_step);
+        this.yrange = d3.range(this.y_min, this.y_max + 1e-5, this.y_step);
+        this.matrixData = new Array(this.xrange.length * this.yrange.length);
+
+    }
+}
+
+class GreekSurface extends Generic3DSurface {
+
+    run(greek_index) {
+        let count = 0;
+        this.xrange.forEach((x, i) => {
+            this.yrange.forEach((y, j) => {
+
+                const use_legs_volatility = false
+                const get_use_real_values = false
+                let z = compute_greeks_data_for_price(greek_index, use_legs_volatility, get_use_real_values, x);
+
+                this.matrixData[count] = {
+                    x: this.xscale(x),
+                    y: this.yscale(y),
+                    z: this.zscale(z.y / cameraPosition.z_zoom_factor)
+                };
+
+                count++;
+            });
+        });
+        return [this.xrange, this.yrange, this.matrixData];
+    }
+}
+
+class PLSurface extends Generic3DSurface {
+
+    run() {
+        let count = 0;
+        this.xrange.forEach((x, i) => {
+            this.yrange.forEach((y, j) => {
+
+                let z = compute_p_and_l_data_for_price(true, y, x);
+
+                this.matrixData[count] = {
+                    x: this.xscale(x),
+                    y: -this.yscale(y),
+                    z: this.zscale(z.y / cameraPosition.z_zoom_factor)
+                };
+
+                count++;
+            });
+        });
+        return [this.xrange, this.yrange, this.matrixData];
+    }
+}
 
 
-function create_reference_plane() {
+function create_reference_plane(z) {
     let reference_plane = new THREE.Group();
-    let plane_color=0x000000;
+    let plane_color = 0xa0a0a0; // Gray color
     let points;
     let geometry;
     let material;
     let line;
 
-    for (let i = -ref_plane_half_size; i <= ref_plane_half_size; i++) {
+    for (let i = -ref_plane_half_size; i <= ref_plane_half_size; i += ref_plane_half_size) {
 
         points = [
-            new THREE.Vector3(i, -ref_plane_half_size, 0),  // Starting point
-            new THREE.Vector3(i, ref_plane_half_size, 0)   // Ending point
+            new THREE.Vector3(i, -ref_plane_half_size, z),  // Starting point
+            new THREE.Vector3(i, ref_plane_half_size, z)   // Ending point
         ];
 
         // Create a geometry for the line
@@ -42,8 +130,8 @@ function create_reference_plane() {
         reference_plane.add(line);  // Add the cube mesh
 
         points = [
-            new THREE.Vector3(-ref_plane_half_size, i, 0),  // Starting point
-            new THREE.Vector3(ref_plane_half_size, i, 0)   // Ending point
+            new THREE.Vector3(-ref_plane_half_size, i, z),  // Starting point
+            new THREE.Vector3(ref_plane_half_size, i, z)   // Ending point
         ];
 
         // Create a geometry for the line
@@ -60,8 +148,7 @@ function create_reference_plane() {
     }
     return reference_plane;
 }
-
-function create_reference_arrows() {
+function create_reference_arrows(z) {
     let ref_arrow = new THREE.Group();
     const arrowX = new THREE.ArrowHelper(new THREE.Vector3(1, 0, 0), new THREE.Vector3(0, 0, 0), 5, 0xff0000);
     ref_arrow.add(arrowX);
@@ -69,126 +156,86 @@ function create_reference_arrows() {
     ref_arrow.add(arrowY);
     const arrowZ = new THREE.ArrowHelper(new THREE.Vector3(0, 0, 1), new THREE.Vector3(0, 0, 0), 5, 0x0000FF);
     ref_arrow.add(arrowZ);
+    ref_arrow.position.z += z;
     return ref_arrow;
 }
-function create_curve() {
-
-    // points of the surface
-    const min_price = env.get_simul_min_price_of_combo();
-    const max_price = env.get_simul_max_price_of_combo();
-
-    //const min_price = 210;
-    //const max_price = 230;
-    const step_price = 2;
-    const min_time = 0;
-    const max_time = 15;
-    const step_time = 2;
-    const priceRange = d3.range(min_price, max_price + 1e-5, step_price); // x-axis (Price)
-    const timeRange = d3.range(min_time, max_time + 1e-5, step_time);   // y-axis (Time)
-    //console.log("priceRange", priceRange);
-    let price_to_xscale = d3.scaleLinear()
-        .domain([min_price, max_price])
-        .range([-ref_plane_half_size, ref_plane_half_size]);
-    let time_to_yscale = d3.scaleLinear()
-        .domain([min_time, max_time])
-        .range([-ref_plane_half_size, ref_plane_half_size]);
-
-    const matrixData = [];
-    let count = 0;
-    priceRange.forEach((price, i) => {
-        const real_price = price;
-        const x = price_to_xscale(real_price);
-        //console.log(real_price,x);
-        timeRange.forEach((time, j) => {
-            let real_time = time;
-            // Convert price and time to x and y coordinates
-            const y = time_to_yscale(real_time);
-            let z = compute_p_and_l_data_for_price(false, real_time, real_price);
-            //let z=real_price>=225? 0.:2.;
-            //console.log("price", price, "time", time, "output", z.y);
-            matrixData.push({
-                x: x,
-                y: y,
-                z: z.y / 30 / cameraPosition.z_zoom_factor
-            });
-            //console.log(price,time,x,y);//, z.y);
-            count++;
-        });
-    });
-    return [priceRange, timeRange, matrixData];
+function create_pl_vs_time_and_price_surface() {
+    let surface = new PLSurface();
+    surface.set_x_limits(env.get_simul_min_price_of_combo(), env.get_simul_max_price_of_combo(), 20);
+    surface.set_y_limits(0, env.get_time_to_expiry_of_combo(), 20);
+    surface.prepare_dataset([env.get_pl_at_init_data(), env.get_pl_at_sim_data(), env.get_pl_at_exp_data()]);
+    return surface.run();
 }
-function  create_specific_lines() {
+function create_greek_vs_time_and_price_surface(greek_index) {
+    let surface = new GreekSurface();
+    surface.set_x_limits(env.get_simul_min_price_of_combo(), env.get_simul_max_price_of_combo(), 20);
+    surface.set_y_limits(0, env.get_time_to_expiry_of_combo(), 20);
+    surface.prepare_dataset([env.get_greeks_data()[greek_index]]);
+    return surface.run(greek_index);
+}
+function create_specific_lines() {
 
     let lines = new THREE.Group();
 
     const min_price = env.get_simul_min_price_of_combo();
     const max_price = env.get_simul_max_price_of_combo();
-
-    //const min_price = 210;
-    //const max_price = 230;
-    const step_price = 2;
+    const min_p_and_l = env.get_min_of_dataset();
+    const max_p_and_l = env.get_max_of_dataset();
     const min_time = 0;
-    const max_time = 15;
-    const step_time = 2;
-    const priceRange = d3.range(min_price, max_price + 1e-5, step_price); // x-axis (Price)
-    const timeRange = d3.range(min_time, max_time + 1e-5, step_time);   // y-axis (Time)
-    //console.log("priceRange", priceRange);
-    let price_to_xscale = d3.scaleLinear()
+    const max_time = env.get_time_to_expiry_of_combo();
+    let time_to_xscale = d3.scaleLinear()
+        .domain([max_time, min_time])
+        .range([-ref_plane_half_size, ref_plane_half_size]);
+    let price_to_yscale = d3.scaleLinear()
         .domain([min_price, max_price])
         .range([-ref_plane_half_size, ref_plane_half_size]);
-    let time_to_yscale = d3.scaleLinear()
-        .domain([min_time, max_time])
+    let zscale = d3.scaleLinear()
+        .domain([min_p_and_l, max_p_and_l])
         .range([-ref_plane_half_size, ref_plane_half_size]);
 
 
 
-        const black_material = new THREE.LineBasicMaterial({ color: 0x000000 });
-        const green_material = new THREE.LineBasicMaterial({ color: 0x00FF00 });
-        const orange_material = new THREE.LineBasicMaterial({ color: 0xFFA500 });
-
-    for (let i = 0; i < env.get_pl_at_exp_data().length - 1; i++) {
-        const x1 = time_to_yscale(0);
-        const x2 = time_to_yscale(0);
-        const y1 = price_to_xscale(env.get_pl_at_exp_data()[i].x);
-        const y2 = price_to_xscale(env.get_pl_at_exp_data()[i+1].x);
-        const z1 = env.get_pl_at_exp_data()[i].y / 30 / cameraPosition.z_zoom_factor;
-        const z2 = env.get_pl_at_exp_data()[i+1].y / 30 / cameraPosition.z_zoom_factor;
-        const p1 = new THREE.Vector3(x1,-y1,z2)
-        const p2 = new THREE.Vector3(x2,-y2,z1)
-        const geometry = new THREE.BufferGeometry().setFromPoints([p1, p2]);
-        const line = new THREE.Line(geometry, black_material);
+    const black_material = new THREE.LineBasicMaterial({ color: 0x000000 });
+    const green_material = new THREE.LineBasicMaterial({ color: 0x008000 });
+    const orange_material = new THREE.LineBasicMaterial({ color: 0xFFA500 });
+    let line_count = 0;
+    const num_points = Math.round(env.get_pl_at_exp_data().length / 50);
+    for (let i = 0; i < env.get_pl_at_exp_data().length - num_points; i += num_points) {
+        line_count++;
+        let x = time_to_xscale(0);
+        const y1 = price_to_yscale(env.get_pl_at_exp_data()[i].x);
+        const y2 = price_to_yscale(env.get_pl_at_exp_data()[i + num_points].x);
+        let z1 = env.get_pl_at_exp_data()[i].y / cameraPosition.z_zoom_factor; // / 30 / cameraPosition.z_zoom_factor;
+        let z2 = env.get_pl_at_exp_data()[i + num_points].y / cameraPosition.z_zoom_factor; // / 30 / cameraPosition.z_zoom_factor;
+        let p2 = new THREE.Vector3(x, y1, zscale(z1))
+        let p1 = new THREE.Vector3(x, y2, zscale(z2))
+        let geometry = new THREE.BufferGeometry().setFromPoints([p1, p2]);
+        let line = new THREE.Line(geometry, black_material);
         lines.add(line);
-    }
-    for (let i = 0; i < env.get_pl_at_sim_data().length - 1; i++) {
-        const x1 = time_to_yscale(env.get_time_for_simulation_of_combo());
-        const x2 = time_to_yscale(env.get_time_for_simulation_of_combo());
-        const y1 = price_to_xscale(env.get_pl_at_sim_data()[i].x);
-        const y2 = price_to_xscale(env.get_pl_at_sim_data()[i+1].x);
-        const z1 = env.get_pl_at_sim_data()[i].y / 30 / cameraPosition.z_zoom_factor;
-        const z2 = env.get_pl_at_sim_data()[i+1].y / 30 / cameraPosition.z_zoom_factor;
 
-        const p1 = new THREE.Vector3(x1,-y1,z2)
-        const p2 = new THREE.Vector3(x2,-y2,z1)
-        const geometry = new THREE.BufferGeometry().setFromPoints([p1, p2]);
-        const line = new THREE.Line(geometry, green_material);
+        x = time_to_xscale(env.get_time_for_simulation_of_combo());
+        z1 = env.get_pl_at_sim_data()[i].y / cameraPosition.z_zoom_factor; // / 30 / cameraPosition.z_zoom_factor;
+        z2 = env.get_pl_at_sim_data()[i + num_points].y / cameraPosition.z_zoom_factor; // / 30 / cameraPosition.z_zoom_factor;
+
+        p1 = new THREE.Vector3(x, y1, zscale(z1))
+        p2 = new THREE.Vector3(x, y2, zscale(z2))
+        geometry = new THREE.BufferGeometry().setFromPoints([p1, p2]);
+        line = new THREE.Line(geometry, green_material);
         lines.add(line);
-    }
-    for (let i = 0; i < env.get_pl_at_init_data().length - 1; i++) {
-        const x1 = time_to_yscale(env.get_time_to_expiry_of_combo());
-        const x2 = time_to_yscale(env.get_time_to_expiry_of_combo());
-        const y1 = price_to_xscale(env.get_pl_at_init_data()[i].x);
-        const y2 = price_to_xscale(env.get_pl_at_init_data()[i+1].x);
-        const z1 = env.get_pl_at_init_data()[i].y / 30 / cameraPosition.z_zoom_factor;
-        const z2 = env.get_pl_at_init_data()[i+1].y / 30 / cameraPosition.z_zoom_factor;
 
-        const p1 = new THREE.Vector3(x1,-y1,z2)
-        const p2 = new THREE.Vector3(x2,-y2,z1)
-        const geometry = new THREE.BufferGeometry().setFromPoints([p1, p2]);
-        const line = new THREE.Line(geometry, orange_material);
+        x = time_to_xscale(env.get_time_to_expiry_of_combo());
+        z1 = env.get_pl_at_init_data()[i].y / cameraPosition.z_zoom_factor; // / 30 / cameraPosition.z_zoom_factor;
+        z2 = env.get_pl_at_init_data()[i + num_points].y / cameraPosition.z_zoom_factor; // / 30 / cameraPosition.z_zoom_factor;
+
+        p1 = new THREE.Vector3(x, y1, zscale(z1))
+        p2 = new THREE.Vector3(x, y2, zscale(z2))
+        geometry = new THREE.BufferGeometry().setFromPoints([p1, p2]);
+        line = new THREE.Line(geometry, orange_material);
         lines.add(line);
-    }
 
-    
+    }
+    //console.log("line_count=", line_count);
+
 
 
     return lines;
@@ -212,7 +259,9 @@ function create_mesh(curve_data) {
     let k = 0;
     for (let i = 0; i < widthSeg; i++) {
         for (let j = 0; j < heightSeg; j++) {
-            positions[k + 2] = matrixData[i * heightSeg + j].z; // Set Z value
+            positions[k + 0] = matrixData[i * heightSeg + j].y;
+            positions[k + 1] = matrixData[i * heightSeg + j].x;
+            positions[k + 2] = matrixData[i * heightSeg + j].z;
             k += 3;
         }
     }
@@ -226,7 +275,7 @@ function create_mesh(curve_data) {
         transparent: true,
         opacity: 0.1
     });
-    const materialWireframe = new THREE.LineBasicMaterial({ color: 0xffffff }); // Black wireframe
+    const materialWireframe = new THREE.LineBasicMaterial({ color: 0xFFFFf0 }); // Black wireframe
     const mesh = new THREE.Mesh(geometry, materialSurface);
     const wireframe = new THREE.LineSegments(new THREE.WireframeGeometry(geometry), materialWireframe);
 
@@ -235,11 +284,13 @@ function create_mesh(curve_data) {
 function activate_3d() {
     update_3d_view();
 }
-window.activate_3d = activate_3d;
-let animationFrameId = -1;
-
 export function update_3d_view() {
 
+    const display_reference_plane = true;
+    const display_reference_arrows = true;
+    const display_curve = true;
+    let display_specific_lines = true;
+    let curve_data;
 
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0xffffff);
@@ -248,35 +299,56 @@ export function update_3d_view() {
     camera.position.set(100, 100, 1);  // Camera at (10,10,1)
     camera.lookAt(0, 0, 0);          // Looking at (0,0,0)
 
-    const view_container = d3.select("#camera-view")
+    const view_container = d3.select("#view-3d-container")
     view_container.selectAll("*").remove();
-    let tab_is_hidden = view_container.classed("hidden")
+    //let tab_is_hidden = view_container.classed("hidden")
     view_container.classed("hidden", false);
     const width = view_container.node().clientWidth;
     const height = view_container.node().clientHeight;
-    view_container.classed("hidden", tab_is_hidden);
+    //console.log("width=", width, "height=", height);
+    //view_container.classed("hidden", tab_is_hidden);
 
+    //console.log("3dview=",env.get_3d_view());
+    if(env.get_3d_view() == "P/L")
+        curve_data = create_pl_vs_time_and_price_surface();
+    else if(env.get_3d_view() == "Delta")
+        curve_data = create_greek_vs_time_and_price_surface(1);
+    else if(env.get_3d_view() == "Gamma")
+        curve_data = create_greek_vs_time_and_price_surface(2);
+    else if(env.get_3d_view() == "Theta")
+        curve_data = create_greek_vs_time_and_price_surface(3);
+    else if(env.get_3d_view() == "Vega")
+        curve_data = create_greek_vs_time_and_price_surface(4);
+    else if(env.get_3d_view() == "Rho")
+        curve_data = create_greek_vs_time_and_price_surface(5);
+    else {
+        console.log("Error: "+env.get_3d_view()+" not found");
+        return;
+    }
+    display_specific_lines = env.get_3d_view() == "P/L" ? display_specific_lines : false;
     if (!renderer) {
         renderer = new THREE.WebGLRenderer();
         renderer.setSize(width, height);
     }
-    document.getElementById('camera-view').appendChild(renderer.domElement);
+    document.getElementById('view-3d-container').appendChild(renderer.domElement);
 
 
     // create the reference plane XY
-    let reference_plane = create_reference_plane();
-    scene.add(reference_plane);
+    let reference_plane = create_reference_plane(-5);
+    if (display_reference_plane)
+        scene.add(reference_plane);
 
     // create the 3 arrows referencial axes X,Y,Z
-    let ref_arrow = create_reference_arrows();
-    scene.add(ref_arrow);
+    let ref_arrow = create_reference_arrows(-5);
+    if (display_reference_arrows)
+        scene.add(ref_arrow);
 
-    let curve_data = create_curve();
+
     let mesh_data = create_mesh(curve_data);
-
-    scene.add(mesh_data[0]); // mesh surface
-    scene.add(mesh_data[1]); // mesh wireframe
-
+    if (display_curve) {
+        scene.add(mesh_data[0]); // mesh surface
+        scene.add(mesh_data[1]); // mesh wireframe
+    }
 
     // Add light for better visibility
     const light1 = new THREE.DirectionalLight(0xffffff, 1);
@@ -285,24 +357,41 @@ export function update_3d_view() {
     const light2 = new THREE.DirectionalLight(0xffffff, 1);
     light2.position.set(10, 0, 5);
     scene.add(light2);
-    
-    const lines=create_specific_lines()
-    scene.add(lines);
+
+    const lines = create_specific_lines()
+    if (display_specific_lines)
+        scene.add(lines);
+
+    /*
+        const black_material = new THREE.LineBasicMaterial({ color: 0xFF00FF });
+        const p1 = new THREE.Vector3(0, 0, 0)
+        const p2 = new THREE.Vector3(5, 5, 0)
+        const geometry = new THREE.BufferGeometry().setFromPoints([p1, p2]);
+        const line = new THREE.Line(geometry, black_material);
+        scene.add(line);
+    */
 
     function animate() {
-
-        reference_plane.rotation.z = cameraPosition.z_rotation;
-        mesh_data[0].rotation.z = cameraPosition.z_rotation;
-        mesh_data[1].rotation.z = cameraPosition.z_rotation;
-        lines.rotation.z = cameraPosition.z_rotation;
-        ref_arrow.rotation.z = cameraPosition.z_rotation;
+        //        line.rotation.z = cameraPosition.z_rotation;
+        if (display_reference_plane)
+            reference_plane.rotation.z = cameraPosition.z_rotation;
+        if (display_reference_arrows)
+            ref_arrow.rotation.z = cameraPosition.z_rotation;
+        if (display_curve) {
+            mesh_data[0].rotation.z = cameraPosition.z_rotation;
+            mesh_data[1].rotation.z = cameraPosition.z_rotation;
+        }
+        if (display_specific_lines)
+            lines.rotation.z = cameraPosition.z_rotation;
         animationFrameId = requestAnimationFrame(animate);
         camera.position.set(cameraPosition.x, cameraPosition.y, cameraPosition.z);  // Camera at (10,10,1)
         renderer.render(scene, camera);
-        const view_container = d3.select("#camera-view")
+        const view_container = d3.select("#view-3d-container")
         let tab_is_hidden = view_container.classed("hidden")
         if (tab_is_hidden) {
             cancelAnimationFrame(animationFrameId);
+            console.log("cancelAnimationFrame");
+            
             animationFrameId = -1;
             return;
         }

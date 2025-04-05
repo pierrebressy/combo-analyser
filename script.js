@@ -3,6 +3,7 @@ import { is_mode_local, load_local_price, load_local_config, update_remote_confi
 import { Environment } from './configuration.js';
 import { VerticalCursor, HorizontalCursor, TextRect, Line, Knob } from './cursor.js';
 import { update_3d_view, cameraPosition } from './3dview.js';
+import { RadioButton } from './radiobutton.js';
 
 let use_local = false;
 export let env;
@@ -40,43 +41,57 @@ async function setup_global_env(e) {
     }
     return e
 }
+function find_zero_crossing_indices(data) {
+    return data.slice(1).reduce((indices, point, i) => {
+        if (data[i].y * point.y < 0) indices.push(i + 1);
+        return indices;
+    }, []);
+}
 function find_zero_crossings(data) {
     let crossings = [];
+    let zeroCrossingIndices = find_zero_crossing_indices(data);
+    zeroCrossingIndices.forEach(index => {
+        let x1 = data[index - 1].x;
+        let x2 = data[index].x;
+        let y1 = data[index - 1].y;
+        let y2 = data[index].y;
 
-    for (let i = 1; i < data.length; i++) {
-        let y1 = data[i - 1].y;
-        let y2 = data[i].y;
-
-        if (y1 * y2 < 0) { // Sign change detected
-            let x1 = data[i - 1].x;
-            let x2 = data[i].x;
-
-            // Linear interpolation to estimate x where y = 0
-            let xCross = x1 - y1 * (x2 - x1) / (y2 - y1);
-            crossings.push(xCross);
-        }
-    }
-
+        // Linear interpolation to estimate x where y = 0
+        let xCross = x1 - y1 * (x2 - x1) / (y2 - y1);
+        crossings.push(xCross);
+    });
     return crossings;
+}
+export function compute_greeks_data_for_price(greek_index, use_legs_volatility, get_use_real_values, price) {
+
+    const interest_rate_of_combo = env.get_interest_rate_of_combo();
+    const time_for_simulation_of_combo = env.get_time_for_simulation_of_combo();
+    const mean_volatility_of_combo = env.get_mean_volatility_of_combo(get_use_real_values)
+    let greek = 0;
+    env.get_combo_params().legs.forEach(option => {
+        let ov = get_use_real_values ?
+            option.trade_volatility : option.sim_volatility;
+        let v = use_legs_volatility ? ov : mean_volatility_of_combo;
+        let greeks = computeOptionPrice(price, option.strike, interest_rate_of_combo, v, time_for_simulation_of_combo + option.expiration_offset, option.type);
+        greek = greek + option.qty * greeks[greek_index] * env.config.computation.greek_scaler[greek_index];
+    });
+    return { x: price, y: greek }
 }
 function compute_greeks_data(use_legs_volatility) {
 
     const num_greeks = env.get_computation_num_greeks();
     let greeks_data = Array.from({ length: num_greeks }, () => []);
 
-    for (let price = env.get_simul_min_price_of_combo(); price <= env.get_simul_max_price_of_combo(); price += env.get_simul_step_price_of_combo()) {
+    const minPrice = env.get_simul_min_price_of_combo();
+    const maxPrice = env.get_simul_max_price_of_combo();
+    const stepPrice = env.get_simul_step_price_of_combo();
+    const get_use_real_values = env.get_use_real_values();
+    for (let price = minPrice; price <= maxPrice; price = price + stepPrice) {
 
         let greek_index = 0;
         for (greek_index = 0; greek_index < num_greeks; greek_index++) {
-            let greek = 0;
-            env.get_combo_params().legs.forEach(option => {
-                let ov = env.get_use_real_values() ?
-                    option.trade_volatility : option.sim_volatility;
-                let v = use_legs_volatility ? ov : env.get_mean_volatility_of_combo(env.get_use_real_values());
-                let greeks = computeOptionPrice(price, option.strike, env.get_interest_rate_of_combo(), v, env.get_time_for_simulation_of_combo() + option.expiration_offset, option.type);
-                greek = greek + option.qty * greeks[greek_index] * env.config.computation.greek_scaler[greek_index];
-            });
-            greeks_data[greek_index].push({ x: price, y: greek });
+            let data = compute_greeks_data_for_price(greek_index, use_legs_volatility, get_use_real_values, price);
+            greeks_data[greek_index].push(data);
         }
     }
     return greeks_data;
@@ -84,14 +99,17 @@ function compute_greeks_data(use_legs_volatility) {
 export function compute_p_and_l_data_for_price(use_legs_volatility, num_days_left, price) {
 
     let p_and_l_profile = 0;
+    const get_use_real_values = env.get_use_real_values();
+    const interest_rate_of_combo = env.get_interest_rate_of_combo();
+    const simulation_time_to_expiry = env.get_simulation_time_to_expiry();
+    const mean_volatility_of_combo = env.get_mean_volatility_of_combo(get_use_real_values)
     env.get_combo_params().legs.forEach(option => {
-        let ov = env.get_use_real_values() ?
+        let ov = get_use_real_values ?
             option.trade_volatility : option.sim_volatility;
-        let v = use_legs_volatility ? ov : env.get_mean_volatility_of_combo(env.get_use_real_values());
-        //console.log("compute_p_and_l_data_for_price: v=", v);
-        let option_price = computeOptionPrice(underlying_current_price, option.strike, env.get_interest_rate_of_combo(), v, env.get_simulation_time_to_expiry() + option.expiration_offset, option.type);
+        let v = use_legs_volatility ? ov : mean_volatility_of_combo;
+        let option_price = computeOptionPrice(underlying_current_price, option.strike, interest_rate_of_combo, v, simulation_time_to_expiry + option.expiration_offset, option.type);
         let premium = option_price[0];
-        let greeks = computeOptionPrice(price, option.strike, env.get_interest_rate_of_combo(), v, num_days_left + option.expiration_offset, option.type);
+        let greeks = computeOptionPrice(price, option.strike, interest_rate_of_combo, v, num_days_left + option.expiration_offset, option.type);
         p_and_l_profile = p_and_l_profile + option.qty * 100 * (greeks[0] - premium);
     });
 
@@ -99,27 +117,14 @@ export function compute_p_and_l_data_for_price(use_legs_volatility, num_days_lef
 }
 function compute_p_and_l_data(use_legs_volatility, num_days_left) {
 
-    env.get_combo_params().legs.forEach((option, index) => {
-        let ov = env.get_use_real_values() ?
-            option.trade_volatility : option.sim_volatility;
-        let v = use_legs_volatility ? ov : env.get_mean_volatility_of_combo(env.get_use_real_values());
-    });
-
+    const minPrice = env.get_simul_min_price_of_combo();
+    const maxPrice = env.get_simul_max_price_of_combo();
+    const stepPrice = env.get_simul_step_price_of_combo();
 
     let p_and_l_data = [];
-    for (let price = env.get_simul_min_price_of_combo(); price <= env.get_simul_max_price_of_combo(); price += env.get_simul_step_price_of_combo()) {
-        let p_and_l_profile = 0;
-        env.get_combo_params().legs.forEach(option => {
-            let ov = env.get_use_real_values() ?
-                option.trade_volatility : option.sim_volatility;
-            let v = use_legs_volatility ? ov : env.get_mean_volatility_of_combo(env.get_use_real_values());
-            //let option_price = computeOptionPrice(option.strike, option.strike, env.get_interest_rate_of_combo(), v, env.get_simulation_time_to_expiry() + option.expiration_offset, option.type);
-            let option_price = computeOptionPrice(underlying_current_price, option.strike, env.get_interest_rate_of_combo(), v, env.get_simulation_time_to_expiry() + option.expiration_offset, option.type);
-            let premium = option_price[0];
-            let greeks = computeOptionPrice(price, option.strike, env.get_interest_rate_of_combo(), v, num_days_left + option.expiration_offset, option.type);
-            p_and_l_profile = p_and_l_profile + option.qty * 100 * (greeks[0] - premium);
-        });
-        p_and_l_data.push({ x: price, y: p_and_l_profile });
+    for (let price = minPrice; price <= maxPrice; price += stepPrice) {
+        const data = compute_p_and_l_data_for_price(use_legs_volatility, num_days_left, price);
+        p_and_l_data.push(data);
     }
     return p_and_l_data
 }
@@ -137,7 +142,6 @@ function display_combos_list() {
     const dropdown = comboContainer.append("select")
         .attr("id", "comboBox")
         .on("change", function () {
-            console.log("Selected:", this.value);
             env.config.config.combo = this.value;
 
             if (!use_local) {
@@ -298,12 +302,11 @@ function display_checkbox_for_volatility_mode() {
 function svg_cleanup(svg) {
     if (!svg) {
 
-        const container = d3.select("#pl-graph")
+        const container = d3.select("#pl-tab-container")
         let original_state = container.classed("hidden")
         container.classed("hidden", false);
         const width = container.node().clientWidth;
         const height = container.node().clientHeight;
-        console.log("graph-container : width", width, "height", height);
         container.classed("hidden", original_state);
 
         svg = d3.select("#graph-container")
@@ -550,7 +553,6 @@ function display_p_and_l_graph(p_and_l_area, p_and_l_area_height) {
 
     p_and_l_graph.append("g").attr("transform", `translate(0,${scale_p_and_l(0)})`).call(d3.axisBottom(env.get_x_scale())).selectAll(".tick text").remove();
     //p_and_l_graph.attr("clip-path", "url(#clipBox)");
-
     draw_p_and_l(p_and_l_graph, scale_p_and_l);
     add_grid(p_and_l_graph, scale_p_and_l)
     add_y_axis_label(p_and_l_graph, p_and_l_graph_height, "Profit / Loss ($)");
@@ -980,7 +982,6 @@ function add_crosshair() {
 function draw_graph() {
 
     svg = svg_cleanup(svg);
-
     const p_and_l_area_height = env.get_window_p_and_l_ratio() * env.get_window_height() - env.get_window_vspacer_margin();
     const greeks_graph_height = env.get_window_height() - p_and_l_area_height;
     let p_and_l_graph_area = svg
@@ -1167,7 +1168,7 @@ function display_camera_position_sliders() {
     const slider_zzf = camera_position_container.append("input")
         .attr("type", "range")
         .attr("min", 0.1)
-        .attr("max", 30) // Indices as values
+        .attr("max", 10) // Indices as values
         .attr("value", cameraPosition.z_zoom_factor) // Set the initial value
         .attr("step", 0.1) // Discrete steps
         .style("width", "100%")
@@ -1181,19 +1182,13 @@ function display_camera_position_sliders() {
 }
 function update_main_page() {
 
-    const container = d3.select("#pl-graph")
+    const container = d3.select("#pl-tab-container")
     let original_state = container.classed("hidden")
     container.classed("hidden", false);
     let graph_width = container.node().clientWidth;
     let graph_height = container.node().clientHeight;
-    console.log("graph-update_main_page : width", graph_width, "height", graph_height);
     container.classed("hidden", original_state);
 
-
-
-
-    //let graph_width = document.getElementById("graph-container").offsetWidth;
-    //let graph_height = document.getElementById("graph-container").offsetHeight;
     env.set_window_width(graph_width);
     env.set_window_height(graph_height);
 
@@ -1267,94 +1262,215 @@ function update_main_page() {
     display_days_left_slider();
     display_combos_list();
     display_sigma_selector();
-    draw_graph();
     display_camera_position_sliders();
+    draw_graph();
     update_3d_view();
 }
-function create_main_frame(tab_active) {
-    const body = document.body;
+function create_left_container(body) {
 
-    // Create and append the left container
     const leftContainer = document.createElement('div');
     leftContainer.classList.add('left-container');
     leftContainer.id = 'left-container';
-    body.appendChild(leftContainer);
 
-    // Create and append the right container
+    const leftContent = document.createElement('div');
+    const leftHeading = document.createElement('h2');
+    leftHeading.textContent = 'LEFT CONTAINER';
+    const leftParagraph = document.createElement('p');
+    leftParagraph.textContent = 'Here goes your left content.';
+    leftContent.appendChild(leftHeading);
+    leftContent.appendChild(leftParagraph);
+
+    leftContainer.appendChild(leftContent);
+
+    return leftContainer;
+}
+function create_right_container(body, tab_active) {
+
+    // RIGHT MAIN CONTAINER ------------------------------------------------------
     const rightContainer = document.createElement('div');
     rightContainer.classList.add('right-container');
     rightContainer.id = 'right-container';
-    body.appendChild(rightContainer);
 
-    // Create and append the tabs container
-    const tabsContainer = document.createElement('div');
-    tabsContainer.classList.add('tabs');
-    rightContainer.appendChild(tabsContainer);
+    // UPPER RIGHT CONTAINER: TABS SELECTOR CONTAINER ----------------------------
+    const tabsSelectorContainer = document.createElement('div');
+    tabsSelectorContainer.classList.add('tabs-selector-container');
+    tabsSelectorContainer.id = 'tabs-selector-container';
+    rightContainer.appendChild(tabsSelectorContainer);
 
-    // Create and append the "P/L Graph" button
+    // TABS SELECTOR CONTAINER #1: SELECTOR P/L -----------------------------------
     const plButton = document.createElement('button');
-    plButton.classList.add('tab-button', 'active');
+    plButton.classList.add('tab-button');
+    if (tab_active === 'pl-tab-container') {
+        plButton.classList.add('active');
+    }
     plButton.textContent = 'P/L Graph';
-    plButton.onclick = () => showTab('pl-graph');
-    tabsContainer.appendChild(plButton);
+    plButton.onclick = () => showTab(plButton, 'pl-tab-container');
+    tabsSelectorContainer.appendChild(plButton);
 
-    // Create and append the "3D View" button
+    // TABS SELECTOR CONTAINER #2: SELECTOR 3D VIEW ------------------------------
     const viewButton = document.createElement('button');
     viewButton.classList.add('tab-button');
+    if (tab_active === 'view-3d-tab-container') {
+        viewButton.classList.add('active');
+    }
     viewButton.textContent = '3D View';
-    viewButton.onclick = () => showTab('camera-view', window.activate_3d);
-    tabsContainer.appendChild(viewButton);
+    viewButton.onclick = () => showTab(viewButton, 'view-3d-tab-container', window.activate_3d);
+    tabsSelectorContainer.appendChild(viewButton);
 
-    // Create and append the "P/L Graph" tab content
-    const plGraphContent = document.createElement('div');
-    plGraphContent.classList.add('tab-content', tab_active === 'pl-graph' ? 'visible' : 'hidden');
-    plGraphContent.id = 'pl-graph';
+    const activeTab = document.getElementById(tab_active);
+    if (activeTab) {
+        activeTab.classList.remove('hidden');
+    }
+    // ---------------------------------------------------------------------------
+    // LOWER RIGHT CONTAINER: TAB GRAPH CONTAINER --------------------------------
+    const tabContainer = document.createElement('div');
+    tabContainer.classList.add('tab-container');
+    tabContainer.id = 'tab-container';
+    rightContainer.appendChild(tabContainer);
+
+    // TAB P/L
+    const pltabContainer = document.createElement('div');
+    pltabContainer.classList.add('tab-content');
+    pltabContainer.classList.add('pl-tab-container');
+    pltabContainer.id = 'pl-tab-container';
+    let heading = document.createElement('h2');
+    heading.textContent = 'P/L TAB';
+    let paragraph = document.createElement('p');
+    paragraph.textContent = 'Here goes your content.';
+    //pltabContainer.appendChild(heading);
+    //pltabContainer.appendChild(paragraph);
+
+    tabContainer.appendChild(pltabContainer);
+
     const graphContainer = document.createElement('div');
     graphContainer.classList.add('graph-container');
     graphContainer.id = 'graph-container';
-    plGraphContent.appendChild(graphContainer);
-    rightContainer.appendChild(plGraphContent);
+    pltabContainer.appendChild(graphContainer);
 
-    // Create and append the "3D View" tab content (hidden initially)
-    const cameraViewContent = document.createElement('div');
-    cameraViewContent.classList.add('tab-content', tab_active === 'camera-view' ? 'visible' : 'hidden');
-    cameraViewContent.id = 'camera-view';
-    const cameraViewHeading = document.createElement('h2');
-    cameraViewHeading.textContent = '3D View';
-    const cameraViewParagraph = document.createElement('p');
-    cameraViewParagraph.textContent = 'Here goes your 3D visualization.';
-    cameraViewContent.appendChild(cameraViewHeading);
-    cameraViewContent.appendChild(cameraViewParagraph);
-    rightContainer.appendChild(cameraViewContent);
-}
-function showTab(tabId, callback) {
-    // Hide all tabs
-    document.querySelectorAll('.tab-content').forEach(tab => {
-        tab.classList.add('hidden');
-    });
 
-    // Remove "active" class from all buttons
-    document.querySelectorAll('.tab-button').forEach(button => {
-        button.classList.remove('active');
-    });
 
-    // Show the selected tab
-    document.getElementById(tabId).classList.remove('hidden');
 
-    // Highlight the selected tab button
-    event.currentTarget.classList.add('active');
 
-    // Call the callback function if provided
-    if (callback && typeof callback === 'function') {
-        callback(tabId); // Pass tabId or other parameters if needed
+
+
+    // TAB 3D
+    const view3DControlContainer = document.createElement('div');
+    view3DControlContainer.classList.add('tab-content');
+    view3DControlContainer.classList.add('view-3d-control-container');
+    view3DControlContainer.id = 'view-3d-control-container';
+    view3DControlContainer.style.height = '20px'; // ← set the height here
+    heading = document.createElement('h2');
+    heading.textContent = 'View 3D TAB';
+    paragraph = document.createElement('p');
+    paragraph.textContent = 'Here goes your content.';
+    //view3DControlContainer.appendChild(heading);
+    //view3DControlContainer.appendChild(paragraph);
+    let radioGroup = document.createElement('div');
+    radioGroup.id = 'radio-group';
+    let radio1 = new RadioButton('3d-options', 'P/L', handleRadioChange);
+    radio1.appendTo(radioGroup);
+    radio1.radio.checked = true;  // ← This makes it selected
+    //radioGroup.appendChild(document.createElement('br')); // Line break for spacing
+    new RadioButton('3d-options', 'Delta', handleRadioChange).appendTo(radioGroup);
+    new RadioButton('3d-options', 'Gamma', handleRadioChange).appendTo(radioGroup);
+    new RadioButton('3d-options', 'Theta', handleRadioChange).appendTo(radioGroup);
+    new RadioButton('3d-options', 'Vega', handleRadioChange).appendTo(radioGroup);
+    new RadioButton('3d-options', 'Rho', handleRadioChange).appendTo(radioGroup);
+    view3DControlContainer.appendChild(radioGroup);
+
+    tabContainer.appendChild(view3DControlContainer);
+
+    const view3DContainer = document.createElement('div');
+    view3DContainer.classList.add('tab-content');
+    view3DContainer.classList.add('view-3d-container');
+    view3DContainer.id = 'view-3d-container';
+    heading = document.createElement('h2');
+    heading.textContent = 'View 3D Graph';
+    paragraph = document.createElement('p');
+    paragraph.textContent = 'Here goes your content.';
+    view3DContainer.appendChild(heading);
+    view3DContainer.appendChild(paragraph);
+    tabContainer.appendChild(view3DContainer);
+
+    if (tab_active === 'pl-tab-container') {
+        view3DControlContainer.classList.add('hidden');
+        view3DContainer.classList.add('hidden');
     }
+    else {
+        pltabContainer.classList.add('hidden');
+    }
+
+
+    return rightContainer;
+
+}
+function handleRadioChange() {
+    if (this.checked) {
+        env.set_3d_view(this.value);
+        const view_container = d3.select("#view-3d-container")
+        view_container.selectAll("*").remove();
+        update_3d_view();
+    }
+}
+function create_main_frame(tab_active) {
+    const body = document.body;
+    let leftContainer = create_left_container();
+    let rightContainer = create_right_container(body, tab_active);
+    body.appendChild(leftContainer);
+    body.appendChild(rightContainer);
+
+    return;
+}
+function showTab(button, tabId, callback) {
+    // Hide all tabs
+
+    if (tabId === 'pl-tab-container') {
+        document.querySelectorAll('.view-3d-control-container').forEach(tab => {
+            tab.classList.add('hidden');
+        });
+        document.querySelectorAll('.view-3d-container').forEach(tab => {
+            tab.classList.add('hidden');
+        });
+        document.querySelectorAll('.pl-tab-container').forEach(tab => {
+            tab.classList.remove('hidden');
+        });
+    }
+    if (tabId === 'view-3d-tab-container') {
+        document.querySelectorAll('.pl-tab-container').forEach(tab => {
+            tab.classList.add('hidden');
+        });
+        document.querySelectorAll('.view-3d-control-container').forEach(tab => {
+            tab.classList.remove('hidden');
+        });
+        document.querySelectorAll('.view-3d-container').forEach(tab => {
+            tab.classList.remove('hidden');
+        });
+    }
+
+    document.querySelectorAll('.tab-button').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    // Show the selected tab container
+    const activeTab = document.getElementById(tabId);
+    if (activeTab) {
+        activeTab.classList.remove('hidden');
+    }
+
+    // Highlight the selected button
+    button.classList.add('active');
+
+    // Optional callback
+    if (typeof callback === 'function') {
+        callback(tabId);
+    }
+    return;
 }
 
 use_local = await is_mode_local();
 //use_local = true;
 //console.log('State: use_local='+use_local);
 env = await setup_global_env(env);
-console.log('State: env=', env);
+//console.log('State: env=', env);
 
 
 ticker = env.get_ticker_of_combo();

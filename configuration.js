@@ -65,6 +65,14 @@ export class Environment {
         this.combo = this.get_combo_params();
         //console.log("State: env.combo=", this.combo);
 
+        this.set_3d_view("P/L");
+    }
+
+    set_3d_view(value) {
+        this.config.window.view_3d = value;
+    }
+    get_3d_view() {
+        return this.config.window.view_3d;
     }
 
     set_combo_to_tmp(){
