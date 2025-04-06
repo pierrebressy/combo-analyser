@@ -10,7 +10,7 @@ export let cameraPosition = {
     y: 17,
     z: 1,
     fov: 40,
-    z_rotation: 1.8,
+    z_rotation: 50,
     z_zoom_factor: 1,
 };
 const ref_plane_half_size = 5;
@@ -55,23 +55,30 @@ class Generic3DSurface {
         this.matrixData = new Array(this.xrange.length * this.yrange.length);
 
     }
+    get_zero_point() {
+        return {
+            x: this.xscale(0),
+            y: this.yscale(0),
+            z: this.zscale(0)
+        };
+    }
 }
 
 class GreekSurface extends Generic3DSurface {
 
     run(greek_index) {
+        console.log("cameraPosition.z_zoom_factor", cameraPosition.z_zoom_factor);
         let count = 0;
         this.xrange.forEach((x, i) => {
             this.yrange.forEach((y, j) => {
 
                 const use_legs_volatility = false
                 const get_use_real_values = false
-                let z = compute_greeks_data_for_price(greek_index, use_legs_volatility, get_use_real_values, x);
-
+                let z = compute_greeks_data_for_price(greek_index, use_legs_volatility, get_use_real_values, x);  
                 this.matrixData[count] = {
                     x: this.xscale(x),
                     y: this.yscale(y),
-                    z: this.zscale(z.y / cameraPosition.z_zoom_factor)
+                    z: this.zscale(z.y * cameraPosition.z_zoom_factor)
                 };
 
                 count++;
@@ -93,7 +100,7 @@ class PLSurface extends Generic3DSurface {
                 this.matrixData[count] = {
                     x: this.xscale(x),
                     y: -this.yscale(y),
-                    z: this.zscale(z.y / cameraPosition.z_zoom_factor)
+                    z: this.zscale(z.y * cameraPosition.z_zoom_factor)
                 };
 
                 count++;
@@ -164,14 +171,14 @@ function create_pl_vs_time_and_price_surface() {
     surface.set_x_limits(env.get_simul_min_price_of_combo(), env.get_simul_max_price_of_combo(), 20);
     surface.set_y_limits(0, env.get_time_to_expiry_of_combo(), 20);
     surface.prepare_dataset([env.get_pl_at_init_data(), env.get_pl_at_sim_data(), env.get_pl_at_exp_data()]);
-    return surface.run();
+    return [surface.run(), surface.get_zero_point()];
 }
 function create_greek_vs_time_and_price_surface(greek_index) {
     let surface = new GreekSurface();
     surface.set_x_limits(env.get_simul_min_price_of_combo(), env.get_simul_max_price_of_combo(), 20);
     surface.set_y_limits(0, env.get_time_to_expiry_of_combo(), 20);
     surface.prepare_dataset([env.get_greeks_data()[greek_index]]);
-    return surface.run(greek_index);
+    return [surface.run(greek_index), surface.get_zero_point()];
 }
 function create_specific_lines() {
 
@@ -205,8 +212,8 @@ function create_specific_lines() {
         let x = time_to_xscale(0);
         const y1 = price_to_yscale(env.get_pl_at_exp_data()[i].x);
         const y2 = price_to_yscale(env.get_pl_at_exp_data()[i + num_points].x);
-        let z1 = env.get_pl_at_exp_data()[i].y / cameraPosition.z_zoom_factor; // / 30 / cameraPosition.z_zoom_factor;
-        let z2 = env.get_pl_at_exp_data()[i + num_points].y / cameraPosition.z_zoom_factor; // / 30 / cameraPosition.z_zoom_factor;
+        let z1 = env.get_pl_at_exp_data()[i].y * cameraPosition.z_zoom_factor;
+        let z2 = env.get_pl_at_exp_data()[i + num_points].y * cameraPosition.z_zoom_factor;
         let p2 = new THREE.Vector3(x, y1, zscale(z1))
         let p1 = new THREE.Vector3(x, y2, zscale(z2))
         let geometry = new THREE.BufferGeometry().setFromPoints([p1, p2]);
@@ -214,8 +221,8 @@ function create_specific_lines() {
         lines.add(line);
 
         x = time_to_xscale(env.get_time_for_simulation_of_combo());
-        z1 = env.get_pl_at_sim_data()[i].y / cameraPosition.z_zoom_factor; // / 30 / cameraPosition.z_zoom_factor;
-        z2 = env.get_pl_at_sim_data()[i + num_points].y / cameraPosition.z_zoom_factor; // / 30 / cameraPosition.z_zoom_factor;
+        z1 = env.get_pl_at_sim_data()[i].y * cameraPosition.z_zoom_factor;
+        z2 = env.get_pl_at_sim_data()[i + num_points].y * cameraPosition.z_zoom_factor;
 
         p1 = new THREE.Vector3(x, y1, zscale(z1))
         p2 = new THREE.Vector3(x, y2, zscale(z2))
@@ -224,8 +231,8 @@ function create_specific_lines() {
         lines.add(line);
 
         x = time_to_xscale(env.get_time_to_expiry_of_combo());
-        z1 = env.get_pl_at_init_data()[i].y / cameraPosition.z_zoom_factor; // / 30 / cameraPosition.z_zoom_factor;
-        z2 = env.get_pl_at_init_data()[i + num_points].y / cameraPosition.z_zoom_factor; // / 30 / cameraPosition.z_zoom_factor;
+        z1 = env.get_pl_at_init_data()[i].y * cameraPosition.z_zoom_factor;
+        z2 = env.get_pl_at_init_data()[i + num_points].y * cameraPosition.z_zoom_factor;
 
         p1 = new THREE.Vector3(x, y1, zscale(z1))
         p2 = new THREE.Vector3(x, y2, zscale(z2))
@@ -289,11 +296,12 @@ export function update_3d_view() {
     const display_reference_plane = true;
     const display_reference_arrows = true;
     const display_curve = true;
-    let display_specific_lines = true;
+    let display_specific_lines = false;
     let curve_data;
+    let zero_point;
 
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0xffffff);
+    scene.background = new THREE.Color(0xffffee);
     const camera = new THREE.PerspectiveCamera(cameraPosition.fov, window.innerWidth / window.innerHeight, 0.1, 100);
     camera.up.set(0, 0, 1);          // Make Z the "up" direction
     camera.position.set(100, 100, 1);  // Camera at (10,10,1)
@@ -305,22 +313,20 @@ export function update_3d_view() {
     view_container.classed("hidden", false);
     const width = view_container.node().clientWidth;
     const height = view_container.node().clientHeight;
-    //console.log("width=", width, "height=", height);
     //view_container.classed("hidden", tab_is_hidden);
-
     //console.log("3dview=",env.get_3d_view());
     if(env.get_3d_view() == "P/L")
-        curve_data = create_pl_vs_time_and_price_surface();
+        [curve_data, zero_point] = create_pl_vs_time_and_price_surface();
     else if(env.get_3d_view() == "Delta")
-        curve_data = create_greek_vs_time_and_price_surface(1);
+        [curve_data, zero_point] = create_greek_vs_time_and_price_surface(1);
     else if(env.get_3d_view() == "Gamma")
-        curve_data = create_greek_vs_time_and_price_surface(2);
+        [curve_data, zero_point] = create_greek_vs_time_and_price_surface(2);
     else if(env.get_3d_view() == "Theta")
-        curve_data = create_greek_vs_time_and_price_surface(3);
+        [curve_data, zero_point] = create_greek_vs_time_and_price_surface(3);
     else if(env.get_3d_view() == "Vega")
-        curve_data = create_greek_vs_time_and_price_surface(4);
+        [curve_data, zero_point] = create_greek_vs_time_and_price_surface(4);
     else if(env.get_3d_view() == "Rho")
-        curve_data = create_greek_vs_time_and_price_surface(5);
+        [curve_data, zero_point] = create_greek_vs_time_and_price_surface(5);
     else {
         console.log("Error: "+env.get_3d_view()+" not found");
         return;
@@ -334,7 +340,7 @@ export function update_3d_view() {
 
 
     // create the reference plane XY
-    let reference_plane = create_reference_plane(-5);
+    let reference_plane = create_reference_plane(zero_point.z);
     if (display_reference_plane)
         scene.add(reference_plane);
 
@@ -371,18 +377,78 @@ export function update_3d_view() {
         scene.add(line);
     */
 
+
+        const pivot_1 = new THREE.Object3D();
+        scene.add(pivot_1);        
+        const canvas_1 = document.createElement('canvas');
+        canvas_1.width = 256;
+        canvas_1.height = 64;
+        const ctx_1 = canvas_1.getContext('2d');
+        ctx_1.font = '48px Arial';
+        ctx_1.fillStyle = 'green';
+        ctx_1.fillText('Price', canvas_1.width/2, 32);
+        const texture_1 = new THREE.CanvasTexture(canvas_1);
+        const material_1 = new THREE.SpriteMaterial({ map: texture_1, transparent: true });
+        const sprite_1 = new THREE.Sprite(material_1);
+        sprite_1.scale.set(2, .5, 1); // Adjust as needed
+        sprite_1.position.set(0, 5, zero_point.z); // Offset from center (so it orbits)
+        pivot_1.add(sprite_1);
+                
+        const pivot_2 = new THREE.Object3D();
+        scene.add(pivot_2);        
+        const canvas_2 = document.createElement('canvas');
+        canvas_2.width = 256;
+        canvas_2.height = 64;
+        const ctx_2 = canvas_2.getContext('2d');
+        ctx_2.font = '48px Arial';
+        ctx_2.fillStyle = 'red';
+        ctx_2.fillText('Days', canvas_2.width/2, 32);
+        const texture_2 = new THREE.CanvasTexture(canvas_2);
+        const material_2 = new THREE.SpriteMaterial({ map: texture_2, transparent: true });
+        const sprite_2 = new THREE.Sprite(material_2);
+        sprite_2.scale.set(2, .5, 1); // Adjust as needed
+        sprite_2.position.set(5, 0, zero_point.z); // Offset from center (so it orbits)
+        pivot_2.add(sprite_2);
+                
+        const pivot_3 = new THREE.Object3D();
+        scene.add(pivot_3);        
+        const canvas_3 = document.createElement('canvas');
+        canvas_3.width = 256;
+        canvas_3.height = 64;
+        const ctx_3 = canvas_3.getContext('2d');
+        ctx_3.font = '48px Arial';
+        ctx_3.fillStyle = 'blue';
+        ctx_3.fillText(env.get_3d_view(), canvas_3.width/2, 32);
+        const texture_3 = new THREE.CanvasTexture(canvas_3);
+        const material_3 = new THREE.SpriteMaterial({ map: texture_3, transparent: true });
+        const sprite_3 = new THREE.Sprite(material_3);
+        sprite_3.scale.set(2, .5, 1); // Adjust as needed
+        sprite_3.position.set(0, 0, 1); // Offset from center (so it orbits)
+        pivot_3.add(sprite_3);
+                
+
+
+
+
+
+
+
+
     function animate() {
+        const z_angle = cameraPosition.z_rotation / 180 * Math.PI;
+        pivot_1.rotation.z =z_angle;
+        pivot_2.rotation.z =z_angle;
         //        line.rotation.z = cameraPosition.z_rotation;
         if (display_reference_plane)
-            reference_plane.rotation.z = cameraPosition.z_rotation;
+            reference_plane.rotation.z = z_angle;
         if (display_reference_arrows)
-            ref_arrow.rotation.z = cameraPosition.z_rotation;
+            ref_arrow.rotation.z = z_angle;
         if (display_curve) {
-            mesh_data[0].rotation.z = cameraPosition.z_rotation;
-            mesh_data[1].rotation.z = cameraPosition.z_rotation;
+            mesh_data[0].rotation.z = z_angle;
+            mesh_data[1].rotation.z = z_angle;
         }
         if (display_specific_lines)
-            lines.rotation.z = cameraPosition.z_rotation;
+            lines.rotation.z = z_angle;
         animationFrameId = requestAnimationFrame(animate);
         camera.position.set(cameraPosition.x, cameraPosition.y, cameraPosition.z);  // Camera at (10,10,1)
         renderer.render(scene, camera);

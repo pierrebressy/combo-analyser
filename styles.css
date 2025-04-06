@@ -12,6 +12,7 @@ body {
     font-size: 12px;
     height: 97vh;
 }
+
 .right-container {
     width: 80%;
     background-color: #00000011;
@@ -20,11 +21,12 @@ body {
     font-size: 12px;
     height: 97vh;
 }
+
 .tabs-container {
     display: flex;
     height: 40hv;
     border-bottom: 2px solid #ccc;
-  }
+}
 
 .graph-container {
     width: 100%;
@@ -82,6 +84,7 @@ body {
     font-family: Menlo, monospace;
     font-size: 12px;
 }
+
 .per-leg-volatility-container {
     opacity: 1;
     height: auto;
@@ -99,6 +102,7 @@ body {
     font-family: Menlo, monospace;
     font-size: 12px;
 }
+
 .checkbox-container {
     background-color: rgba(144, 238, 144, 0.2);
     padding: 10px;
@@ -134,6 +138,7 @@ body {
     font-family: Menlo, monospace;
     font-size: 12px;
 }
+
 .camera-position-container {
     background-color: rgba(135, 102, 255, 0.459);
     padding: 10px;
@@ -331,38 +336,57 @@ body {
 
 
 
-    /* Tab buttons */
-    .tabs {
-        display: flex;
-        height: 5hv;
-        border-bottom: 2px solid #ccc;
-      }
-  
-      .tab-button {
-        flex: 1;
-        padding: 10px;
-        cursor: pointer;
-        background: #ddd;
-        border: none;
-        border-radius: 5px 5px 0 0;
-        font-size: 16px;
-        text-align: center;
-      }
-  
-      .tab-button.active {
-        background: #fff;
-        border-bottom: 2px solid white;
-      }
-  
-      /* Tab content */
-      .tab-content {
-        padding: 0px;
-        background: white;
-        border-radius: 0 0 5px 5px;
-        height: 90vh;
-    }
-  
-      .hidden {
-        display: none;
-      }
-  
+/* Tab buttons */
+.tabs {
+    display: flex;
+    height: 5hv;
+    border-bottom: 2px solid #ccc;
+}
+
+.tab-button {
+    flex: 1;
+    padding: 10px;
+    cursor: pointer;
+    background: #ddd;
+    border: none;
+    border-radius: 5px 5px 0 0;
+    font-size: 16px;
+    text-align: center;
+}
+
+.tab-button.active {
+    background: #fff;
+    border-bottom: 2px solid white;
+}
+
+/* Tab content */
+.tab-content {
+    padding: 0px;
+    background: white;
+    border-radius: 0 0 5px 5px;
+    height: 70vh;
+    /*        height: 70vh;*/
+}
+
+.hidden {
+    display: none;
+}
+
+.tabs-selector-container-style {
+    padding: 0px;
+    background: rgb(255, 255, 255);
+    border-radius: 0 0 5px 5px;
+    height: 40px;
+}
+.tabs-view-3d-control-container-style {
+    padding: 0px;
+    background: rgb(255, 255, 255);
+    border-radius: 0 0 5px 5px;
+    height: 60px;
+}
+.view-3d-container-style {
+    padding: 0px;
+    background: rgb(255, 255, 255);
+    border-radius: 0 0 5px 5px;
+    height: 82vh;
+} 

@@ -1064,7 +1064,7 @@ function display_sigma_selector() {
         .text(d => d);
 
 }
-function display_camera_position_sliders() {
+function UNUSED_display_camera_position_sliders() {
     const camera_position_container = d3.select("#camera-position-container")
     camera_position_container.selectAll("*").remove();
 
@@ -1247,9 +1247,9 @@ function update_main_page() {
 
     d3.select("#left-container").append("div").append("br")
 
-    const camera_container = d3.select("#left-container").append("div")
-        .attr("class", "camera-position-container")
-        .attr("id", "camera-position-container");
+    //const camera_container = d3.select("#left-container").append("div")
+    //    .attr("class", "camera-position-container")
+    //    .attr("id", "camera-position-container");
 
 
 
@@ -1262,7 +1262,7 @@ function update_main_page() {
     display_days_left_slider();
     display_combos_list();
     display_sigma_selector();
-    display_camera_position_sliders();
+    //display_camera_position_sliders();
     draw_graph();
     update_3d_view();
 }
@@ -1294,6 +1294,7 @@ function create_right_container(body, tab_active) {
     // UPPER RIGHT CONTAINER: TABS SELECTOR CONTAINER ----------------------------
     const tabsSelectorContainer = document.createElement('div');
     tabsSelectorContainer.classList.add('tabs-selector-container');
+    tabsSelectorContainer.classList.add('tabs-selector-container-style');
     tabsSelectorContainer.id = 'tabs-selector-container';
     rightContainer.appendChild(tabsSelectorContainer);
 
@@ -1330,7 +1331,7 @@ function create_right_container(body, tab_active) {
 
     // TAB P/L
     const pltabContainer = document.createElement('div');
-    pltabContainer.classList.add('tab-content');
+    //pltabContainer.classList.add('tab-content');
     pltabContainer.classList.add('pl-tab-container');
     pltabContainer.id = 'pl-tab-container';
     let heading = document.createElement('h2');
@@ -1355,10 +1356,11 @@ function create_right_container(body, tab_active) {
 
     // TAB 3D
     const view3DControlContainer = document.createElement('div');
-    view3DControlContainer.classList.add('tab-content');
+    //view3DControlContainer.classList.add('tab-content');
+    view3DControlContainer.classList.add('tabs-view-3d-control-container-style');
     view3DControlContainer.classList.add('view-3d-control-container');
     view3DControlContainer.id = 'view-3d-control-container';
-    view3DControlContainer.style.height = '20px'; // ← set the height here
+    //view3DControlContainer.style.height = '20px'; // ← set the height here
     heading = document.createElement('h2');
     heading.textContent = 'View 3D TAB';
     paragraph = document.createElement('p');
@@ -1378,11 +1380,109 @@ function create_right_container(body, tab_active) {
     new RadioButton('3d-options', 'Rho', handleRadioChange).appendTo(radioGroup);
     view3DControlContainer.appendChild(radioGroup);
 
+
+    let zoomGroup = document.createElement('div');
+    zoomGroup.style.display = "flex";
+    zoomGroup.style.alignItems = "bottom";
+    zoomGroup.style.gap = "5px"; // Optional spacing between label and slider
+
+    const sliderZRotContainer = document.createElement("div");
+    sliderZRotContainer.style.display = "flex";
+    sliderZRotContainer.style.alignItems = "bottom";
+    sliderZRotContainer.style.gap = "10px"; // Optional spacing between label and slider
+    const slider_zrotation = document.createElement("input");
+    slider_zrotation.setAttribute("type", "range");
+    slider_zrotation.setAttribute("min", -180);
+    slider_zrotation.setAttribute("max", 180); // Indices as values
+    slider_zrotation.setAttribute("value", cameraPosition.z_rotation); // Set the initial value
+    slider_zrotation.setAttribute("step", 1); // Discrete steps
+    slider_zrotation.style.width = "50%";
+        slider_zrotation.style.marginBottom = "20px"; // Space for labels
+    slider_zrotation.addEventListener("input", function () {
+        cameraPosition.z_rotation = this.value;
+        d3.select("#camera-position-zrot-label").text("zrot=" + this.value);
+        update_3d_view();
+    });
+    const slider_zrotation_label = document.createElement("text");
+    slider_zrotation_label.setAttribute("class", "checkbox-title");
+    slider_zrotation_label.setAttribute("id", "camera-position-zrot-label");
+    slider_zrotation_label.textContent = "zrot=" + cameraPosition.z_rotation;
+    slider_zrotation_label.style.display = "inline-block";
+    slider_zrotation_label.style.width = "55px"; // 👈 fixed space
+    sliderZRotContainer.appendChild(slider_zrotation_label);
+    sliderZRotContainer.appendChild(slider_zrotation);
+    zoomGroup.appendChild(sliderZRotContainer);
+    view3DControlContainer.appendChild(zoomGroup);
+
+    const sliderZoomContainer = document.createElement("div");
+    sliderZoomContainer.style.display = "flex";
+    sliderZoomContainer.style.alignItems = "bottom";
+    sliderZoomContainer.style.gap = "10px"; // Optional spacing between label and slider
+    const slider_zoom = document.createElement("input");
+    slider_zoom.setAttribute("type", "range");
+    slider_zoom.setAttribute("min", 0.1);
+    slider_zoom.setAttribute("max", 10); // Indices as values
+    slider_zoom.setAttribute("value", cameraPosition.z_zoom_factor); // Set the initial value
+    slider_zoom.setAttribute("step", 0.1); // Discrete steps
+    slider_zoom.style.width = "50%";
+    slider_zoom.style.marginBottom = "20px"; // Space for labels
+    slider_zoom.addEventListener("input", function () {
+        cameraPosition.z_zoom_factor = this.value;
+        d3.select("#camera-position-zoom-label").text("Z x" + this.value);
+        update_3d_view();
+    });
+    const slider_zoom_label = document.createElement("text");
+    slider_zoom_label.setAttribute("class", "checkbox-title");
+    slider_zoom_label.setAttribute("id", "camera-position-zoom-label");
+    slider_zoom_label.textContent = "Z x" + cameraPosition.z_zoom_factor;
+    slider_zoom_label.style.display = "inline-block";
+    slider_zoom_label.style.width = "55px"; // 👈 fixed space
+    sliderZoomContainer.appendChild(slider_zoom_label);
+    sliderZoomContainer.appendChild(slider_zoom);
+    zoomGroup.appendChild(sliderZoomContainer);
+
+
+    const sliderZPosContainer = document.createElement("div");
+    sliderZPosContainer.style.display = "flex";
+    sliderZPosContainer.style.alignItems = "bottom";
+    sliderZPosContainer.style.gap = "10px"; // Optional spacing between label and slider
+    const slider_zpos = document.createElement("input");
+    slider_zpos.setAttribute("type", "range");
+    slider_zpos.setAttribute("min", -20);
+    slider_zpos.setAttribute("max", 20); // Indices as values
+    slider_zpos.setAttribute("value", cameraPosition.z); // Set the initial value
+    slider_zpos.setAttribute("step", 0.1); // Discrete steps
+    slider_zpos.style.width = "50%";
+    slider_zpos.style.marginBottom = "20px"; // Space for labels
+    slider_zpos.addEventListener("input", function () {
+        cameraPosition.z = this.value;
+        d3.select("#camera-position-zpos-label").text("z=" + this.value);
+        update_3d_view();
+    });
+    const slider_zpos_label = document.createElement("text");
+    slider_zpos_label.setAttribute("class", "checkbox-title");
+    slider_zpos_label.setAttribute("id", "camera-position-zpos-label");
+    slider_zpos_label.textContent = "z=" + cameraPosition.z;
+    slider_zpos_label.style.display = "inline-block";
+    slider_zpos_label.style.width = "55px"; // 👈 fixed space
+    sliderZPosContainer.appendChild(slider_zpos_label);
+    sliderZPosContainer.appendChild(slider_zpos);
+    zoomGroup.appendChild(sliderZPosContainer);
+
+
+
+    view3DControlContainer.appendChild(zoomGroup);
+
+
+
+
+
+
     tabContainer.appendChild(view3DControlContainer);
 
     const view3DContainer = document.createElement('div');
-    view3DContainer.classList.add('tab-content');
     view3DContainer.classList.add('view-3d-container');
+    view3DContainer.classList.add('view-3d-container-style');
     view3DContainer.id = 'view-3d-container';
     heading = document.createElement('h2');
     heading.textContent = 'View 3D Graph';
@@ -1391,6 +1491,9 @@ function create_right_container(body, tab_active) {
     view3DContainer.appendChild(heading);
     view3DContainer.appendChild(paragraph);
     tabContainer.appendChild(view3DContainer);
+
+
+
 
     if (tab_active === 'pl-tab-container') {
         view3DControlContainer.classList.add('hidden');
