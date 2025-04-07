@@ -9,6 +9,7 @@ export class RadioButton {
         this.radio.name = this.name;
         this.radio.value = this.value;
         this.label = document.createElement('label');
+        this.label.className = 'std-text';
         this.label.htmlFor = this.id;
         this.label.textContent = this.value;
         this.radio.addEventListener('change', handleRadioChange);

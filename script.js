@@ -5,6 +5,8 @@ import { VerticalCursor, HorizontalCursor, TextRect, Line, Knob } from './cursor
 import { update_3d_view, cameraPosition } from './3dview.js';
 import { RadioButton } from './radiobutton.js';
 
+export let dark_mode = true;
+
 let use_local = false;
 export let env;
 let ticker;
@@ -162,6 +164,7 @@ function display_combos_list() {
         .attr("value", d => d)
         .attr("selected", d => d === env.config.config.combo ? "selected" : null);
     comboContainer.insert("label", "#comboBox")
+        .attr("class", "std-text")
         .text("Choose combo: ");
 
 }
@@ -276,6 +279,7 @@ function display_checkbox_for_volatility_mode() {
         .attr("checked", volatility_is_per_leg ? "checked" : null);
     volatility_main_container.append("label")
         .attr("for", "myCheckbox2")
+        .attr("class", "std-text")
         .text(" Volatility by leg");
     if (volatility_is_per_leg) {
         per_leg_volatility_container.style("display", "block"); // Show the new container
@@ -302,14 +306,14 @@ function display_checkbox_for_volatility_mode() {
 function svg_cleanup(svg) {
     if (!svg) {
 
-        const container = d3.select("#pl-tab-container")
+        const container = d3.select("#pl-container")
         let original_state = container.classed("hidden")
         container.classed("hidden", false);
         const width = container.node().clientWidth;
         const height = container.node().clientHeight;
         container.classed("hidden", original_state);
 
-        svg = d3.select("#graph-container")
+        svg = d3.select("#pl-container")
             .append("svg")
             .attr("width", "100%")
             .attr("height", "100%")
@@ -333,7 +337,7 @@ function draw_p_and_l(graph, scale) {
 
     green_gradient.append("stop")
         .attr("offset", "0%")
-        .attr("stop-color", "white");
+        .style("stop-color", "var(--gradient-start)");
 
     green_gradient.append("stop")
         .attr("offset", "100%")
@@ -347,7 +351,7 @@ function draw_p_and_l(graph, scale) {
 
     red_gradient.append("stop")
         .attr("offset", "0%")
-        .attr("stop-color", "white");
+        .style("stop-color", "var(--gradient-start)");
 
     red_gradient.append("stop")
         .attr("offset", "100%")
@@ -385,7 +389,7 @@ function draw_p_and_l(graph, scale) {
     graph.append("path")
         .datum(env.get_pl_at_exp_data())
         .attr("fill", "none")
-        .attr("stroke", "black")
+        .attr("stroke", "var(--exp-path-color)")
         .attr("stroke-width", 2)
         .attr("d", d3.line()
             .x(d => env.get_x_scale()(d.x))
@@ -445,13 +449,14 @@ function draw_p_and_l(graph, scale) {
 }
 function add_grid(graph, y_scale) {
 
-    const xAxis = d3.axisBottom(env.get_x_scale())
-        .ticks(5); // Number of ticks
+    graph
+        .append("g")
+        .attr("class", "x-axis")
+        .attr("transform", `translate(0,${y_scale(0)})`) // Positioning at the bottom
+        .call(d3.axisBottom(env.get_x_scale()))
+        .selectAll(".tick text")
+        .remove();
 
-    y_scale(0)
-    graph.append("g")
-        .attr("transform", `translate(0,${y_scale(y_scale.domain()[0])})`) // Positioning at the bottom
-        .call(xAxis);
 
     const y_axis_grid = d3.axisLeft(y_scale)
         .tickSize(-env.get_window_width() + env.get_window_left_margin() + env.get_window_right_margin())
@@ -462,12 +467,13 @@ function add_grid(graph, y_scale) {
         .attr("class", "y-grid")
         .call(y_axis_grid)
         .selectAll("line")
-        .attr("stroke", "lightgray")
+        .attr("stroke", "var(--horizontal-grid-color)")
         .attr("stroke-opacity", 0.7)
         .attr("stroke-dasharray", "4,4");
 }
 function add_y_axis_label(graph, graph_height, label) {
     graph.append("text")
+        .attr("class", "y-label-std-text")             // Add your custom class
         .attr("transform", "rotate(-90)")  // Rotate text for Y-axis
         .attr("x", -graph_height / 2)            // Center the label
         .attr("y", -env.get_window_left_margin() + 15)      // Position left of Y-axis
@@ -488,31 +494,31 @@ function draw_one_sigma_area(svg, underlying_current_price, p_and_l_graph_height
         .attr("x", env.get_window_left_margin() + env.get_x_scale()(underlying_current_price) - 30)
         .attr("y", env.get_window_top_margin() + 20)
         .attr("font-family", "Menlo, monospace")  // Set font to Menlo
-        .attr("fill", "black")
+        .attr("fill", "var(--text-color)")
         .text(sigma_text);
     svg.append("text")
         .attr("x", env.get_window_left_margin() + env.get_x_scale()(underlying_current_price - sigma_factor * sigma) - 15)
         .attr("y", env.get_window_top_margin() + 15)
         .attr("font-family", "Menlo, monospace")  // Set font to Menlo
-        .attr("fill", "black")
+        .attr("fill", "var(--text-color)")
         .text(`-${sigma_factor.toFixed(1)}σ`);
     svg.append("text")
         .attr("x", env.get_window_left_margin() + env.get_x_scale()(underlying_current_price - sigma_factor * sigma) - 15)
         .attr("y", env.get_window_top_margin() + 30)
         .attr("font-family", "Menlo, monospace")  // Set font to Menlo
-        .attr("fill", "black")
+        .attr("fill", "var(--text-color)")
         .text(price_less_sigma_text);
     svg.append("text")
         .attr("x", env.get_window_left_margin() + env.get_x_scale()(underlying_current_price + sigma_factor * sigma) - 15)
         .attr("y", env.get_window_top_margin() + 15)
         .attr("font-family", "Menlo, monospace")  // Set font to Menlo
-        .attr("fill", "black")
+        .attr("fill", "var(--text-color)")
         .text(`+${sigma_factor.toFixed(1)}σ`);
     svg.append("text")
         .attr("x", env.get_window_left_margin() + env.get_x_scale()(underlying_current_price + sigma_factor * sigma) - 15)
         .attr("y", env.get_window_top_margin() + 30)
         .attr("font-family", "Menlo, monospace")  // Set font to Menlo
-        .attr("fill", "black")
+        .attr("fill", "var(--text-color)")
         .text(price_plus_sigma_text);
 
     svg.append("rect")
@@ -521,8 +527,7 @@ function draw_one_sigma_area(svg, underlying_current_price, p_and_l_graph_height
         .attr("width", env.get_x_scale()(underlying_current_price + sigma_factor * sigma) - env.get_x_scale()(underlying_current_price - sigma_factor * sigma))
         .attr("height", p_and_l_graph_height)
         .attr("font-family", "Menlo, monospace")  // Set font to Menlo
-        .attr("fill", "blue")
-        .attr("opacity", 0.07);
+        .attr("fill", "var(--sigma-area-color)")
 }
 function display_p_and_l_graph(p_and_l_area, p_and_l_area_height) {
 
@@ -547,9 +552,11 @@ function display_p_and_l_graph(p_and_l_area, p_and_l_area_height) {
         .attr("y", 0)
         .attr("width", p_and_l_graph_width)
         .attr("height", p_and_l_graph_height)
-        .attr("fill", "#ffffff");
+        .attr("fill", "var(--bg-right)");
 
-    p_and_l_graph.append("g").call(d3.axisLeft(scale_p_and_l));
+    p_and_l_graph.append("g")
+        .attr("class", "y-axis")
+        .call(d3.axisLeft(scale_p_and_l));
 
     p_and_l_graph.append("g").attr("transform", `translate(0,${scale_p_and_l(0)})`).call(d3.axisBottom(env.get_x_scale())).selectAll(".tick text").remove();
     //p_and_l_graph.attr("clip-path", "url(#clipBox)");
@@ -623,7 +630,7 @@ function draw_greek(graph, scale, data) {
     graph.append("path")
         .datum(data)
         .attr("fill", "none")
-        .attr("stroke", "black")
+        .attr("stroke", "var(--exp-path-color)")
         .attr("stroke-width", 2)
         .attr("d", d3.line()
             .x(d => env.get_x_scale()(d.x))
@@ -654,10 +661,29 @@ function display_greeks_graph(greeks_graph_area, greeks_graphs_height, p_and_l_g
         top_position += index * (greek_graph_height + env.get_window_greeks_vspacer_margin());
         greek_graph.attr("transform", `translate(${env.get_window_left_margin()}, ${top_position})`);
         greek_graph.attr("width", env.get_window_width() - env.get_window_left_margin());
-        greek_graph.append("g").call(d3.axisLeft(scale_greek).ticks(5));
-        greek_graph.append("g").attr("transform", `translate(0,${scale_greek(0)})`).call(d3.axisBottom(env.get_x_scale())).selectAll(".tick text").remove();
 
+        // add Y-axis
+        //greek_graph.append("g").call(d3.axisLeft(scale_greek).ticks(5))
+        //.attr("class", "y-axis-greek")  // <== Custom class for styling
+        //.attr("class", "y-axis")
+        greek_graph
+            .append("g")
+            .attr("class", "y-axis-greek")  // <== Custom class for styling
+            .call(d3.axisLeft(scale_greek).ticks(2));
+
+
+        // Add X-axis
+        greek_graph
+            .append("g")
+            .attr("class", "x-axis")
+            .attr("transform", `translate(0,${scale_greek(0)})`)
+            .call(d3.axisBottom(env.get_x_scale()))
+            .selectAll(".tick text")
+            .remove();
+
+        // Add y main label
         greek_graph.append("text")
+            .attr("class", "y-label-std-text")             // Add your custom class
             .attr("transform", "rotate(-90)")  // Rotate text for Y-axis
             .attr("x", -greek_graph_height / 2)            // Center the label
             .attr("y", -env.get_window_left_margin() + 15)      // Position left of Y-axis
@@ -845,6 +871,43 @@ function display_current_price(svg) {
 
 
 }
+function display_theme_buttons() {
+    const theme_container = d3.select("#theme-container")
+    theme_container.selectAll("*").remove();
+    theme_container.append("p")
+        .attr("class", "checkbox-title")
+        .text("Theme");
+    const checkbox = theme_container.append("input")
+        .attr("type", "checkbox")
+        .attr("id", "myCheckbox")
+        .attr("name", "Dark Mode")
+        .attr("checked", dark_mode ? "checked" : null);
+    theme_container.append("label")
+        .attr("for", "myCheckbox")
+        .attr("class", "std-text")
+        .text(" Dark Mode");
+    if (dark_mode) {
+        d3.select("body").classed("dark-mode", true);
+        d3.select("body").classed("light-mode", false);
+    } else {
+        d3.select("body").classed("dark-mode", false);
+        d3.select("body").classed("light-mode", true);
+    }
+
+    checkbox.on("change", function () {
+        if (this.checked) {
+            dark_mode= true;
+            d3.select("body").classed("dark-mode", true);
+            d3.select("body").classed("light-mode", false);
+        } else {
+            dark_mode= false;
+            d3.select("body").classed("dark-mode", false);
+            d3.select("body").classed("light-mode", true);
+        }
+        update_3d_view();
+
+    });
+}
 function display_local_status() {
 
     const local_status_container = d3.select("#local-status-container")
@@ -873,6 +936,7 @@ function display_local_status() {
         .attr("name", "autosaveCheckbox");
     d3.select("#auto-save-container")
         .append("label")
+        .attr("class", "std-text")
         .attr("for", "autosaveCheckbox")
         .text(" Auto-save");
     // Event listener to detect changes
@@ -907,7 +971,7 @@ function add_crosshair() {
         .attr("stroke-width", 1)
         .attr("stroke-dasharray", "4,4");
 
-    pl_at_expiration_cursor = new VerticalCursor(svg, env.get_pl_at_exp_data(), scale_p_and_l, "pl-exp", "black");
+    pl_at_expiration_cursor = new VerticalCursor(svg, env.get_pl_at_exp_data(), scale_p_and_l, "pl-exp", "#808080");
     pl_at_initial_cursor = new VerticalCursor(svg, env.get_pl_at_init_data(), scale_p_and_l, "pl-init", "orange");
     pl_at_sim_cursor = new VerticalCursor(svg, env.get_pl_at_sim_data(), scale_p_and_l, "pl-sim", "green");
     price_cursor = new HorizontalCursor(svg, env.get_pl_at_sim_data(), scale_p_and_l, "price", "blue");
@@ -1056,6 +1120,7 @@ function display_sigma_selector() {
         .data(sigma_factors)
         .enter()
         .append("div")
+        .attr("class", "std-text")
         .style("position", "absolute")
         .style("left", (d, i) => `calc(${(i / (sigma_factors.length - 1)) * 95}% + 0px)`) // Center the text
         .style("text-align", "center")
@@ -1182,7 +1247,7 @@ function UNUSED_display_camera_position_sliders() {
 }
 function update_main_page() {
 
-    const container = d3.select("#pl-tab-container")
+    const container = d3.select("#pl-container")
     let original_state = container.classed("hidden")
     container.classed("hidden", false);
     let graph_width = container.node().clientWidth;
@@ -1194,6 +1259,10 @@ function update_main_page() {
 
     let left_container = d3.select("#left-container");
     left_container.selectAll("*").remove();
+
+    const theme_container = d3.select("#left-container").append("div")
+        .attr("class", "theme-container")
+        .attr("id", "theme-container");
 
     const local_status_container = d3.select("#left-container").append("div")
         .attr("class", "local-status-container")
@@ -1235,7 +1304,7 @@ function update_main_page() {
     const combo_templater_container = d3.select("#left-container").append("div")
         .attr("class", "combo-templater-container")
         .attr("id", "combo-templater-container");
-
+ 
     d3.select("#left-container").append("div").append("br")
     */
 
@@ -1252,9 +1321,10 @@ function update_main_page() {
     //    .attr("id", "camera-position-container");
 
 
+    //document.body.classList.toggle('dark-theme');
 
 
-
+    display_theme_buttons();
     display_local_status();
     display_checkbox_for_volatility_mode();
     display_days_left_slider();
@@ -1284,6 +1354,242 @@ function create_left_container(body) {
 
     return leftContainer;
 }
+
+function add_view3d_control_sliders(view3d_controler_container) {
+    let zoomGroup = document.createElement('div');
+    zoomGroup.style.display = "flex";
+    zoomGroup.style.alignItems = "bottom";
+    zoomGroup.style.gap = "5px"; // Optional spacing between label and slider
+
+    const sliderZRotContainer = document.createElement("div");
+    sliderZRotContainer.style.display = "flex";
+    sliderZRotContainer.style.alignItems = "bottom";
+    sliderZRotContainer.style.gap = "10px"; // Optional spacing between label and slider
+    const slider_zrotation = document.createElement("input");
+    slider_zrotation.setAttribute("type", "range");
+    slider_zrotation.setAttribute("min", -180);
+    slider_zrotation.setAttribute("max", 180); // Indices as values
+    slider_zrotation.setAttribute("value", cameraPosition.z_rotation); // Set the initial value
+    slider_zrotation.setAttribute("step", 1); // Discrete steps
+    slider_zrotation.style.width = "50%";
+    slider_zrotation.style.marginBottom = "20px"; // Space for labels
+    slider_zrotation.addEventListener("input", function () {
+        cameraPosition.z_rotation = this.value;
+        d3.select("#camera-position-zrot-label").text("zrot=" + this.value);
+        update_3d_view();
+    });
+    const slider_zrotation_label = document.createElement("text");
+    slider_zrotation_label.setAttribute("class", "checkbox-title");
+    slider_zrotation_label.setAttribute("id", "camera-position-zrot-label");
+    slider_zrotation_label.textContent = "zrot=" + cameraPosition.z_rotation;
+    slider_zrotation_label.style.display = "inline-block";
+    slider_zrotation_label.style.width = "55px"; // 👈 fixed space
+    sliderZRotContainer.appendChild(slider_zrotation_label);
+    sliderZRotContainer.appendChild(slider_zrotation);
+    zoomGroup.appendChild(sliderZRotContainer);
+    view3d_controler_container.appendChild(zoomGroup);
+
+    const sliderZoomContainer = document.createElement("div");
+    sliderZoomContainer.style.display = "flex";
+    sliderZoomContainer.style.alignItems = "bottom";
+    sliderZoomContainer.style.gap = "10px"; // Optional spacing between label and slider
+    const slider_zoom = document.createElement("input");
+    slider_zoom.setAttribute("type", "range");
+    slider_zoom.setAttribute("min", 0.1);
+    slider_zoom.setAttribute("max", 10); // Indices as values
+    slider_zoom.setAttribute("value", cameraPosition.z_zoom_factor); // Set the initial value
+    slider_zoom.setAttribute("step", 0.1); // Discrete steps
+    slider_zoom.style.width = "50%";
+    slider_zoom.style.marginBottom = "20px"; // Space for labels
+    slider_zoom.addEventListener("input", function () {
+        cameraPosition.z_zoom_factor = this.value;
+        d3.select("#camera-position-zoom-label").text("Z x" + this.value);
+        update_3d_view();
+    });
+    const slider_zoom_label = document.createElement("text");
+    slider_zoom_label.setAttribute("class", "checkbox-title");
+    slider_zoom_label.setAttribute("id", "camera-position-zoom-label");
+    slider_zoom_label.textContent = "Z x" + cameraPosition.z_zoom_factor;
+    slider_zoom_label.style.display = "inline-block";
+    slider_zoom_label.style.width = "55px"; // 👈 fixed space
+    sliderZoomContainer.appendChild(slider_zoom_label);
+    sliderZoomContainer.appendChild(slider_zoom);
+    zoomGroup.appendChild(sliderZoomContainer);
+
+
+    const sliderZPosContainer = document.createElement("div");
+    sliderZPosContainer.style.display = "flex";
+    sliderZPosContainer.style.alignItems = "bottom";
+    sliderZPosContainer.style.gap = "10px"; // Optional spacing between label and slider
+    const slider_zpos = document.createElement("input");
+    slider_zpos.setAttribute("type", "range");
+    slider_zpos.setAttribute("min", -20);
+    slider_zpos.setAttribute("max", 20); // Indices as values
+    slider_zpos.setAttribute("value", cameraPosition.z); // Set the initial value
+    slider_zpos.setAttribute("step", 0.1); // Discrete steps
+    slider_zpos.style.width = "50%";
+    slider_zpos.style.marginBottom = "20px"; // Space for labels
+    slider_zpos.addEventListener("input", function () {
+        cameraPosition.z = this.value;
+        d3.select("#camera-position-zpos-label").text("z=" + this.value);
+        update_3d_view();
+    });
+    const slider_zpos_label = document.createElement("text");
+    slider_zpos_label.setAttribute("class", "checkbox-title");
+    slider_zpos_label.setAttribute("id", "camera-position-zpos-label");
+    slider_zpos_label.textContent = "z=" + cameraPosition.z;
+    slider_zpos_label.style.display = "inline-block";
+    slider_zpos_label.style.width = "55px"; // 👈 fixed space
+    sliderZPosContainer.appendChild(slider_zpos_label);
+    sliderZPosContainer.appendChild(slider_zpos);
+    zoomGroup.appendChild(sliderZPosContainer);
+    view3d_controler_container.appendChild(zoomGroup);
+}
+
+function add_view3d_control_radio(view3d_controler_container) {
+    let radioGroup = document.createElement('div');
+    radioGroup.id = 'radio-group';
+    let radio1 = new RadioButton('3d-options', 'P/L', handleRadioChange);
+    radio1.appendTo(radioGroup);
+    radio1.radio.checked = true;  // ← This makes it selected
+    //radioGroup.appendChild(document.createElement('br')); // Line break for spacing
+    new RadioButton('3d-options', 'Delta', handleRadioChange).appendTo(radioGroup);
+    new RadioButton('3d-options', 'Gamma', handleRadioChange).appendTo(radioGroup);
+    new RadioButton('3d-options', 'Theta', handleRadioChange).appendTo(radioGroup);
+    new RadioButton('3d-options', 'Vega', handleRadioChange).appendTo(radioGroup);
+    new RadioButton('3d-options', 'Rho', handleRadioChange).appendTo(radioGroup);
+    view3d_controler_container.appendChild(radioGroup);
+}
+
+function add_view3d_controler_container_in_view3d_container(view3d_container) {
+    const view3d_controler_container = document.createElement('div');
+    view3d_controler_container.classList.add('view3d-controler-container');
+    view3d_controler_container.id = 'view3d-controler-container';
+    let heading = document.createElement('h2');
+    heading.classList.add('std-text');
+    heading.textContent = 'VIEW 3D CONTROLLER';
+    let paragraph = document.createElement('p');
+    paragraph.classList.add('std-text');
+    paragraph.textContent = 'Here goes your content.';
+    //view3d_controler_container.appendChild(heading);
+    //view3d_controler_container.appendChild(paragraph);
+
+    view3d_container.appendChild(view3d_controler_container);
+
+    add_view3d_control_radio(view3d_controler_container);
+    add_view3d_control_sliders(view3d_controler_container);
+
+}
+function add_view3d_gragh_container_in_view3d_container(view3d_container) {
+    const view3d_graph_container = document.createElement('div');
+    view3d_graph_container.classList.add('view3d-graph-container');
+    view3d_graph_container.id = 'view3d-graph-container';
+    let heading = document.createElement('h2');
+    heading.classList.add('std-text');
+    heading.textContent = 'VIEW 3D GRAPH';
+    let paragraph = document.createElement('p');
+    paragraph.classList.add('std-text');
+    paragraph.textContent = 'Here goes your content.';
+    //view3d_graph_container.appendChild(heading);
+    //view3d_graph_container.appendChild(paragraph);
+
+    view3d_container.appendChild(view3d_graph_container);
+}
+
+function add_view3d_container_in_tab_container(tab_container) {
+    const view3d_container = document.createElement('div');
+    view3d_container.classList.add('view3d-container');
+    view3d_container.id = 'view3d-container';
+    let heading = document.createElement('h2');
+    heading.classList.add('std-text');
+    heading.textContent = 'VIEW 3D';
+    let paragraph = document.createElement('p');
+    paragraph.classList.add('std-text');
+    paragraph.textContent = 'Here goes your content.';
+    //view3d_container.appendChild(heading);
+    //view3d_container.appendChild(paragraph);
+
+    tab_container.appendChild(view3d_container);
+
+    add_view3d_controler_container_in_view3d_container(view3d_container);
+    add_view3d_gragh_container_in_view3d_container(view3d_container);
+}
+
+function add_pl_container_in_tab_container(tab_container) {
+    const pl_container = document.createElement('div');
+    pl_container.classList.add('pl-container');
+    pl_container.id = 'pl-container';
+    let heading = document.createElement('h2');
+    heading.classList.add('std-text');
+    heading.textContent = 'P/L TAB';
+    let paragraph = document.createElement('p');
+    paragraph.classList.add('std-text');
+    paragraph.textContent = 'Here goes your content.';
+    //pl_container.appendChild(heading);
+    //pl_container.appendChild(paragraph);
+
+    tab_container.appendChild(pl_container);
+
+}
+function add_tab_container_in_right_container(right_container) {
+    const tab_container = document.createElement('div');
+    tab_container.classList.add('tab-container');
+    tab_container.id = 'tab-container';
+    right_container.appendChild(tab_container);
+
+    add_pl_container_in_tab_container(tab_container);
+    add_view3d_container_in_tab_container(tab_container);
+}
+
+function add_tab_selector2_in_tabs_selector_container(tabs_selector_container, tab_active) {
+    const viewButton = document.createElement('button');
+    viewButton.classList.add('tab-button');
+    if (tab_active === 'view3d-tab-container') {
+        viewButton.classList.add('active');
+    }
+    viewButton.textContent = '3D View';
+    viewButton.onclick = () => showTab(viewButton, 'view3d-tab-container', window.activate_3d);
+    tabs_selector_container.appendChild(viewButton);
+}
+
+function add_tab_selector1_in_tabs_selector_container(tabs_selector_container, tab_active) {
+    const plButton = document.createElement('button');
+    plButton.classList.add('tab-button');
+    if (tab_active === 'pl-tab-container') {
+        plButton.classList.add('active');
+    }
+    plButton.textContent = 'P/L Graph';
+    plButton.onclick = () => showTab(plButton, 'pl-tab-container');
+    tabs_selector_container.appendChild(plButton);
+}
+
+function add_tabs_selector_container_in_right_container(right_container, tab_active) {
+    const tabs_selector_container = document.createElement('div');
+    tabs_selector_container.classList.add('tabs-selector-container');
+    tabs_selector_container.id = 'tabs-selector-container';
+    right_container.appendChild(tabs_selector_container);
+    add_tab_selector1_in_tabs_selector_container(tabs_selector_container, tab_active);
+    add_tab_selector2_in_tabs_selector_container(tabs_selector_container, tab_active);
+    const activeTab = document.getElementById(tab_active);
+    if (activeTab) {
+        activeTab.classList.remove('hidden');
+    }
+
+}
+
+function create_right_container_new(body, tab_active) {
+
+    const right_container = document.createElement('div');
+    right_container.classList.add('right-container');
+    right_container.id = 'right-container';
+
+    add_tabs_selector_container_in_right_container(right_container, tab_active);
+    add_tab_container_in_right_container(right_container);
+
+    return right_container;
+
+}
+/*
 function create_right_container(body, tab_active) {
 
     // RIGHT MAIN CONTAINER ------------------------------------------------------
@@ -1298,7 +1604,7 @@ function create_right_container(body, tab_active) {
     tabsSelectorContainer.id = 'tabs-selector-container';
     rightContainer.appendChild(tabsSelectorContainer);
 
-    // TABS SELECTOR CONTAINER #1: SELECTOR P/L -----------------------------------
+    //TABS SELECTOR CONTAINER #1: SELECTOR P/L -----------------------------------
     const plButton = document.createElement('button');
     plButton.classList.add('tab-button');
     if (tab_active === 'pl-tab-container') {
@@ -1308,7 +1614,7 @@ function create_right_container(body, tab_active) {
     plButton.onclick = () => showTab(plButton, 'pl-tab-container');
     tabsSelectorContainer.appendChild(plButton);
 
-    // TABS SELECTOR CONTAINER #2: SELECTOR 3D VIEW ------------------------------
+    //TABS SELECTOR CONTAINER #2: SELECTOR 3D VIEW ------------------------------
     const viewButton = document.createElement('button');
     viewButton.classList.add('tab-button');
     if (tab_active === 'view-3d-tab-container') {
@@ -1322,6 +1628,7 @@ function create_right_container(body, tab_active) {
     if (activeTab) {
         activeTab.classList.remove('hidden');
     }
+
     // ---------------------------------------------------------------------------
     // LOWER RIGHT CONTAINER: TAB GRAPH CONTAINER --------------------------------
     const tabContainer = document.createElement('div');
@@ -1397,7 +1704,7 @@ function create_right_container(body, tab_active) {
     slider_zrotation.setAttribute("value", cameraPosition.z_rotation); // Set the initial value
     slider_zrotation.setAttribute("step", 1); // Discrete steps
     slider_zrotation.style.width = "50%";
-        slider_zrotation.style.marginBottom = "20px"; // Space for labels
+    slider_zrotation.style.marginBottom = "20px"; // Space for labels
     slider_zrotation.addEventListener("input", function () {
         cameraPosition.z_rotation = this.value;
         d3.select("#camera-position-zrot-label").text("zrot=" + this.value);
@@ -1507,45 +1814,59 @@ function create_right_container(body, tab_active) {
     return rightContainer;
 
 }
+*/
 function handleRadioChange() {
     if (this.checked) {
         env.set_3d_view(this.value);
-        const view_container = d3.select("#view-3d-container")
-        view_container.selectAll("*").remove();
         update_3d_view();
     }
 }
 function create_main_frame(tab_active) {
     const body = document.body;
     let leftContainer = create_left_container();
-    let rightContainer = create_right_container(body, tab_active);
+    let rightContainer = create_right_container_new(body, tab_active);
     body.appendChild(leftContainer);
     body.appendChild(rightContainer);
+
+    console.log("tab_active = ",tab_active); 
+    if (tab_active === 'pl-tab-container') {
+        document.querySelectorAll('.view3d-container').forEach(tab => {
+            tab.classList.add('hidden');
+        });
+        document.querySelectorAll('.pl-container').forEach(tab => {
+            tab.classList.remove('hidden');
+        });
+    }
+    if (tab_active === 'view3d-tab-container') {
+        document.querySelectorAll('.pl-container').forEach(tab => {
+            tab.classList.add('hidden');
+        });
+        document.querySelectorAll('.view3d-container').forEach(tab => {
+            tab.classList.remove('hidden');
+        });
+    }
+
+
 
     return;
 }
 function showTab(button, tabId, callback) {
     // Hide all tabs
+    console.log("showTab: tabId = ",tabId); 
 
     if (tabId === 'pl-tab-container') {
-        document.querySelectorAll('.view-3d-control-container').forEach(tab => {
+        document.querySelectorAll('.view3d-container').forEach(tab => {
             tab.classList.add('hidden');
         });
-        document.querySelectorAll('.view-3d-container').forEach(tab => {
-            tab.classList.add('hidden');
-        });
-        document.querySelectorAll('.pl-tab-container').forEach(tab => {
+        document.querySelectorAll('.pl-container').forEach(tab => {
             tab.classList.remove('hidden');
         });
     }
-    if (tabId === 'view-3d-tab-container') {
-        document.querySelectorAll('.pl-tab-container').forEach(tab => {
+    if (tabId === 'view3d-tab-container') {
+        document.querySelectorAll('.pl-container').forEach(tab => {
             tab.classList.add('hidden');
         });
-        document.querySelectorAll('.view-3d-control-container').forEach(tab => {
-            tab.classList.remove('hidden');
-        });
-        document.querySelectorAll('.view-3d-container').forEach(tab => {
+        document.querySelectorAll('.view3d-container').forEach(tab => {
             tab.classList.remove('hidden');
         });
     }

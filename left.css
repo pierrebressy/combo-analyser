@@ -1,0 +1,178 @@
+.left-container {
+    width: 20%;
+    min-width: 300px;
+    background-color: var(--bg-left);
+    /*background-color: #00890b11;*/
+    padding: 6px;
+    font-family: Menlo, monospace;
+    font-size: 12px;
+    height: 97vh;
+}
+
+
+.local-status-container {
+    background-color: var(--bg-local-status);
+    padding: 10px;
+    border-radius: 5px;
+    width: 100%;
+    /* Make it take the full width of its parent */
+    box-sizing: border-box;
+    /* Ensure padding doesn't exceed width */
+    font-family: Menlo, monospace;
+    font-size: 12px;
+}
+
+.combo-list-container {
+    background-color: var(--bg-combo-list);
+    padding: 10px;
+    border-radius: 5px;
+    width: 100%;
+    /* Make it take the full width of its parent */
+    box-sizing: border-box;
+    /* Ensure padding doesn't exceed width */
+    font-family: Menlo, monospace;
+    font-size: 12px;
+}
+
+.days-left-container {
+    background-color: var(--bg-days-left);
+    padding: 10px;
+    border-radius: 5px;
+    width: 100%;
+    /* Make it take the full width of its parent */
+    box-sizing: border-box;
+    /* Ensure padding doesn't exceed width */
+    font-family: Menlo, monospace;
+    font-size: 12px;
+}
+
+.volatility-main-container {
+    background-color: var(--bg-volatility-main);
+    padding: 10px;
+    border-radius: 5px;
+    width: 100%;
+    /* Make it take the full width of its parent */
+    box-sizing: border-box;
+    /* Ensure padding doesn't exceed width */
+    font-family: Menlo, monospace;
+    font-size: 12px;
+}
+
+.per-leg-volatility-container {
+    opacity: 1;
+    height: auto;
+    padding: 10px;
+    background-color: var(--bg-per-leg-volatility);
+    font-family: Menlo, monospace;
+    font-size: 12px;
+}
+
+.mean-volatility-container {
+    opacity: 1;
+    padding: 10px;
+    height: auto;
+    background-color: var(--bg-mean-volatility);
+    font-family: Menlo, monospace;
+    font-size: 12px;
+}
+
+
+.combo-templater-container {
+    background-color: var(--bg-combo-templater);
+    padding: 10px;
+    border-radius: 5px;
+    width: 100%;
+    /* Make it take the full width of its parent */
+    box-sizing: border-box;
+    /* Ensure padding doesn't exceed width */
+    font-family: Menlo, monospace;
+    font-size: 12px;
+}
+
+.sigma-selector-container {
+    background-color: var(--bg-sigma-selector);
+    padding: 10px;
+    border-radius: 5px;
+    width: 100%;
+    /* Make it take the full width of its parent */
+    box-sizing: border-box;
+    /* Ensure padding doesn't exceed width */
+    font-family: Menlo, monospace;
+    font-size: 12px;
+}
+
+.camera-position-container {
+    background-color: rgba(135, 102, 255, 0.459);
+    padding: 10px;
+    border-radius: 5px;
+    width: 100%;
+    /* Make it take the full width of its parent */
+    box-sizing: border-box;
+    /* Ensure padding doesn't exceed width */
+    font-family: Menlo, monospace;
+    font-size: 12px;
+}
+
+
+.checkbox-title {
+    font-weight: bold;
+    margin: 0 0 5px 0;
+    /* Remove top margin, keep a small bottom margin */
+    display: block;
+    font-family: Menlo, monospace;
+    font-size: 12px;
+    color: var(--text-color);
+}
+.checkbox-text-active {
+    margin: 0 0 5px 0;
+    /* Remove top margin, keep a small bottom margin */
+    display: block;
+    /*color: #000000;*/
+    color: var(--text-active-color);
+    font-family: Menlo, monospace;
+    font-size: 12px;
+}
+
+.checkbox-text-inactive {
+    margin: 0 0 5px 0;
+    /* Remove top margin, keep a small bottom margin */
+    display: block;
+    /*color: #BBBBBB;*/
+    color: var(--text-inactive-color);
+    font-family: Menlo, monospace;
+    font-size: 12px;
+}
+
+
+.context-container {
+    height: 20%;
+    padding: 5px;
+    background-color: #b8ffe7;
+    font-family: Menlo, monospace;
+    font-size: 12px;
+}
+
+.combo-templates-container {
+    height: 20%;
+    padding: 5px;
+    background-color: #ffc593;
+    font-family: Menlo, monospace;
+    font-size: 12px;
+}
+
+.knob-container {
+    height: 20%;
+    padding: 5px;
+    background-color: #eaf494;
+    font-family: Menlo, monospace;
+    font-size: 12px;
+}
+
+
+.slider-reverse {
+    width: 100%;
+    transform: scaleX(-1);
+    /* Flip the slider horizontally */
+}
+
+

@@ -1,0 +1,66 @@
+.graph-container-unused {
+    width: 100%;
+    background-color: var(--bg-right);
+    padding: 0px;
+    font-family: Menlo, monospace;
+    font-size: 12px;
+    height: 90vh;
+}
+.tabs-container {
+    display: flex;
+    height: 40hv;
+    border-bottom: 2px solid #ccc;
+}
+
+.tabs-selector-container-style {
+    padding: 0px;
+    background: var(--bg-tabs-selector);
+    border-radius: 0 0 5px 5px;
+    height: 40px;
+}
+.tabs-view-3d-control-container-style {
+    padding: 0px;
+    background-color: var(--bg-right);
+    border-radius: 0 0 5px 5px;
+    height: 60px;
+}
+.view-3d-container-style {
+    padding: 0px;
+    background-color: var(--bg-right);
+    border-radius: 0 0 5px 5px;
+    height: 82vh;
+} 
+
+
+.checkbox-container {
+    background-color: rgba(144, 238, 144, 0.2);
+    padding: 10px;
+    border-radius: 5px;
+    width: 100%;
+    /* Make it take the full width of its parent */
+    box-sizing: border-box;
+    /* Ensure padding doesn't exceed width */
+    font-family: Menlo, monospace;
+    font-size: 12px;
+}
+
+
+.checkbox-text-active {
+    margin: 0 0 5px 0;
+    /* Remove top margin, keep a small bottom margin */
+    display: block;
+    /*color: #000000;*/
+    color: var(--text-active-color);
+    font-family: Menlo, monospace;
+    font-size: 12px;
+}
+
+.checkbox-text-inactive {
+    margin: 0 0 5px 0;
+    /* Remove top margin, keep a small bottom margin */
+    display: block;
+    /*color: #BBBBBB;*/
+    color: var(--text-inactive-color);
+    font-family: Menlo, monospace;
+    font-size: 12px;
+}
