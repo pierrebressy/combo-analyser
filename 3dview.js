@@ -1,4 +1,5 @@
-import { compute_p_and_l_data_for_price, compute_greeks_data_for_price, env, dark_mode, addLog } from './script.js';
+import { compute_p_and_l_data_for_price, compute_greeks_data_for_price, env, dark_mode } from './script.js';
+import { addLog } from './log.js';
 
 export let x_camera = 20;
 export let y_camera = 20;
@@ -350,7 +351,7 @@ function create_mesh_color_heatmap(curve_data) {
 function activate_3d() {
     update_3d_view();
 }
-export function update_3d_view_ref() {
+export function UNUSED_update_3d_view_ref() {
     const view_container = d3.select("#view3d-graph-container")
     view_container.selectAll("*").remove();
 
@@ -415,9 +416,10 @@ function cleanupThree() {
     scene = null;
     camera = null;
 }
+
 export function update_3d_view() {
-    const display_reference_plane = false;
-    const display_reference_arrows = false;
+    const display_reference_plane = true;
+    const display_reference_arrows = true;
     const display_curve = true;
     let display_specific_lines = true;
     let curve_data;
@@ -426,14 +428,9 @@ export function update_3d_view() {
     cleanupThree();
 
     const container = document.getElementById('view3d-graph-container');
-
     // Create a canvas renderer and attach it to the container
     scene = new THREE.Scene();
 
-    function getCssVar(varName, fallback = '#000000') {
-        const value = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
-        return value || fallback;
-    }
     scene.background = new THREE.Color(dark_mode ? '#1e1e1e' : '#ffffee');
     camera = new THREE.PerspectiveCamera(cameraPosition.fov, window.innerWidth / window.innerHeight, 0.1, 100);
     camera.up.set(0, 0, 1);          // Make Z the "up" direction
@@ -443,7 +440,6 @@ export function update_3d_view() {
     cameraPosition.x = cameraPosition.dist*Math.cos(theta)*Math.cos(alpha);
     cameraPosition.y = cameraPosition.dist*Math.sin(theta)*Math.cos(alpha);
     cameraPosition.z = cameraPosition.dist*Math.sin(alpha);
-
 
     camera.position.set(cameraPosition.x, cameraPosition.y, cameraPosition.z);  // Camera at (10,10,1)
     camera.lookAt(0, 0, 0);          // Looking at (0,0,0)
@@ -491,7 +487,7 @@ export function update_3d_view() {
     const lines = create_specific_lines()
     if (display_specific_lines)
         scene.add(lines);
-/*
+
     const pivot_1 = new THREE.Object3D();
     scene.add(pivot_1);
     const canvas_1 = document.createElement('canvas');
@@ -540,7 +536,7 @@ export function update_3d_view() {
     sprite_3.position.set(0, 0, zero_point.z); // Offset from center (so it orbits)
     pivot_3.add(sprite_3);
 
-*/
+
     renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(container.clientWidth, container.clientHeight);
     container.appendChild(renderer.domElement);
@@ -561,7 +557,7 @@ export function update_3d_view() {
     if (display_specific_lines)
         lines.rotation.z = z_angle;
 */
-    addLog(`update_3d_view, ${cameraPosition.x} ${cameraPosition.y} ${cameraPosition.z}`);
+    //addLog(`update_3d_view, ${cameraPosition.x} ${cameraPosition.y} ${cameraPosition.z}`);
 
     camera.position.set(cameraPosition.x, cameraPosition.y, cameraPosition.z);
 //    addLog(`update_3d_view, z_angle ${z_angle}`);

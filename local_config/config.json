@@ -787,7 +787,9 @@
         "p_and_l_ratio": 0.5,
         "width": 1339.2734375,
         "zoom": 1.5,
-        "tab_active1": "pl-tab-container",
-        "tab_active": "view3d-tab-container"
+        "tab_active1": "P/L Graph",
+        "tab_active2": "3D View",
+        "tab_active3": "Logs",
+        "tab_active": "3D View"
     }
 }

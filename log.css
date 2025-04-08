@@ -10,3 +10,16 @@
     width: 100%;
     overflow-y: scroll;
 } 
+
+.clear-log-btn {
+    background-color: #444;
+    color: white;
+    border: none;
+    padding: 4px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  .clear-log-btn:hover {
+    background-color: #666;
+  }
+  

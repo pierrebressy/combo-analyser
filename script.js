@@ -4,9 +4,11 @@ import { Environment } from './configuration.js';
 import { VerticalCursor, HorizontalCursor, TextRect, Line, Knob } from './cursor.js';
 import { update_3d_view, cameraPosition } from './3dview.js';
 import { RadioButton } from './radiobutton.js';
+import { addLog, add_log_container_in_tab_container } from './log.js';
+import { test_iv } from './iv.js';
+import { TabsManager } from './tabs_manager.js';
 
 export let dark_mode = true;
-let log_container = null;
 
 let use_local = false;
 export let env;
@@ -26,7 +28,7 @@ export let pl_at_sim_cursor;
 let price_cursor;
 let sigma_factor = 1.;
 let memo_price_at_mouse_down = 0;
-
+let tabs_manager;
 
 function reloadWithParam(key, value) {
     const url = new URL(window.location);
@@ -640,9 +642,8 @@ function draw_greek(graph, scale, data) {
         );
 
 }
-function display_greeks_graph(greeks_graph_area, greeks_graphs_height, p_and_l_graph_height) {
+function display_greeks_graph(greeks_graph_area, greeks_graphs_height) {
     let num_greeks_to_display = env.config.graph.greeks.ids.length;
-    //const greek_graph_height = Math.round((greeks_graphs_height - (num_greeks_to_display - 1) * env.get_window_greeks_vspacer_margin()) / num_greeks_to_display);
     const greek_graph_height = Math.round(
         (greeks_graphs_height - env.get_window_greeks_vspacer_margin() * (num_greeks_to_display + 1)) / num_greeks_to_display
     );
@@ -658,15 +659,12 @@ function display_greeks_graph(greeks_graph_area, greeks_graphs_height, p_and_l_g
             .domain([min_greek - padding_greek, max_greek + padding_greek])
             .range([greek_graph_height, 0]);
         let greek_graph = greeks_graph_area.append("g").attr("class", "greek_graph");
-        let top_position = env.get_window_top_margin();// + p_and_l_graph_height + env.get_window_vspacer_margin();
+        let top_position = env.get_window_top_margin();
         top_position += index * (greek_graph_height + env.get_window_greeks_vspacer_margin());
         greek_graph.attr("transform", `translate(${env.get_window_left_margin()}, ${top_position})`);
         greek_graph.attr("width", env.get_window_width() - env.get_window_left_margin());
 
         // add Y-axis
-        //greek_graph.append("g").call(d3.axisLeft(scale_greek).ticks(5))
-        //.attr("class", "y-axis-greek")  // <== Custom class for styling
-        //.attr("class", "y-axis")
         greek_graph
             .append("g")
             .attr("class", "y-axis-greek")  // <== Custom class for styling
@@ -753,6 +751,7 @@ function display_strike_buttons() {
                     option.strike = Math.round(newStrike * 2) / 2; // Round to nearest 0.5
                     //option.strike = (newStrike);
                     combo_changed = true;
+                    addLog('strike='+(option.strike.toFixed(2)), {warning: true});
                     draw_graph();
                 })
             )
@@ -793,6 +792,7 @@ function display_strike_buttons() {
                         let option = env.get_combo_params().legs[current_index - 1];
                         option.qty = parseInt(this.value);
                         combo_changed = true;
+                        addLog('qty='+(option.qty.toFixed(0)), {warning: true});
                         draw_graph();
                     });
                 let tr2 = t.append("tr");
@@ -810,6 +810,7 @@ function display_strike_buttons() {
                         let option = env.get_combo_params().legs[current_index - 1];
                         option.expiration_offset = parseInt(this.value);
                         combo_changed = true;
+                        addLog('expiration_offset='+(option.expiration_offset.toFixed(0)), {warning: true});
                         draw_graph();
                     });
 
@@ -1066,7 +1067,7 @@ function draw_graph() {
 
     // display the data
     display_p_and_l_graph(p_and_l_graph_area, p_and_l_area_height);
-    display_greeks_graph(greeks_graph_area, greeks_graph_height, p_and_l_area_height);
+    display_greeks_graph(greeks_graph_area, greeks_graph_height);
 
 
     display_strike_buttons();
@@ -1130,7 +1131,6 @@ function display_sigma_selector() {
         .text(d => d);
 
 }
-
 function update_main_page() {
 
     const container = d3.select("#pl-container")
@@ -1240,7 +1240,6 @@ function create_left_container(body) {
 
     return leftContainer;
 }
-
 function add_view3d_control_sliders(view3d_controler_container) {
     let zoomGroup = document.createElement('div');
     zoomGroup.style.display = "flex";
@@ -1375,7 +1374,6 @@ function add_view3d_control_sliders(view3d_controler_container) {
 
 
 }
-
 function add_view3d_control_radio(view3d_controler_container) {
     let radioGroup = document.createElement('div');
     radioGroup.id = 'radio-group';
@@ -1390,7 +1388,6 @@ function add_view3d_control_radio(view3d_controler_container) {
     new RadioButton('3d-options', 'Rho', handleRadioChange).appendTo(radioGroup);
     view3d_controler_container.appendChild(radioGroup);
 }
-
 function add_view3d_controler_container_in_view3d_container(view3d_container) {
     const view3d_controler_container = document.createElement('div');
     view3d_controler_container.classList.add('view3d-controler-container');
@@ -1425,129 +1422,23 @@ function add_view3d_gragh_container_in_view3d_container(view3d_container) {
 
     view3d_container.appendChild(view3d_graph_container);
 }
-function add_view3d_container_in_tab_container(tab_container) {
-    const view3d_container = document.createElement('div');
-    view3d_container.classList.add('view3d-container');
-    view3d_container.id = 'view3d-container';
-    let heading = document.createElement('h2');
-    heading.classList.add('std-text');
-    heading.textContent = 'VIEW 3D';
-    let paragraph = document.createElement('p');
-    paragraph.classList.add('std-text');
-    paragraph.textContent = 'Here goes your content.';
-    //view3d_container.appendChild(heading);
-    //view3d_container.appendChild(paragraph);
-
-    tab_container.appendChild(view3d_container);
-
-    add_view3d_controler_container_in_view3d_container(view3d_container);
-    add_view3d_gragh_container_in_view3d_container(view3d_container);
-}
-function add_pl_container_in_tab_container(tab_container) {
-    const pl_container = document.createElement('div');
-    pl_container.classList.add('pl-container');
-    pl_container.id = 'pl-container';
-    let heading = document.createElement('h2');
-    heading.classList.add('std-text');
-    heading.textContent = 'P/L TAB';
-    let paragraph = document.createElement('p');
-    paragraph.classList.add('std-text');
-    paragraph.textContent = 'Here goes your content.';
-    //pl_container.appendChild(heading);
-    //pl_container.appendChild(paragraph);
-
-    tab_container.appendChild(pl_container);
-
-}
-function add_log_container_in_tab_container(tab_container) {
-    log_container = document.createElement('div');
-    log_container.classList.add('log-container');
-    log_container.id = 'log-container';
-    let heading = document.createElement('h2');
-    heading.classList.add('std-text');
-    heading.textContent = 'LOG';
-    let paragraph = document.createElement('p');
-    paragraph.classList.add('std-text');
-    paragraph.textContent = 'Here goes your content.';
-    log_container.appendChild(heading);
-    log_container.appendChild(paragraph);
-
-    tab_container.appendChild(log_container);
-
-}
-export function addLog(message) {
-    if (log_container === null) {
-        console.error("Log container is not initialized.");
-        return;
-    }
-    const logMessage = document.createElement('div');  // Create a new div for each log message
-    logMessage.textContent = message;  // Set the text content of the log message
-    logMessage.style.margin = '5px 0';  // Add some spacing between messages
-    logMessage.style.color = 'white';  // You can customize the color of the log messages
-    log_container.appendChild(logMessage);  // Append the new log message to the container
-}
-function add_tab_container_in_right_container(right_container) {
-    const tab_container = document.createElement('div');
-    tab_container.classList.add('tab-container');
-    tab_container.id = 'tab-container';
-    right_container.appendChild(tab_container);
-
-    add_pl_container_in_tab_container(tab_container);
-    add_view3d_container_in_tab_container(tab_container);
-    add_log_container_in_tab_container(tab_container);
-}
-function add_tab_selector3_in_tabs_selector_container(tabs_selector_container, tab_active) {
-    const viewButton = document.createElement('button');
-    viewButton.classList.add('tab-button');
-    if (tab_active === 'log-tab-container') {
-        viewButton.classList.add('active');
-    }
-    viewButton.textContent = 'Logs';
-    viewButton.onclick = () => showTab(viewButton, 'log-tab-container', window.activate_3d);
-    tabs_selector_container.appendChild(viewButton);
-}
-function add_tab_selector2_in_tabs_selector_container(tabs_selector_container, tab_active) {
-    const viewButton = document.createElement('button');
-    viewButton.classList.add('tab-button');
-    if (tab_active === 'view3d-tab-container') {
-        viewButton.classList.add('active');
-    }
-    viewButton.textContent = '3D View';
-    viewButton.onclick = () => showTab(viewButton, 'view3d-tab-container', window.activate_3d);
-    tabs_selector_container.appendChild(viewButton);
-}
-function add_tab_selector1_in_tabs_selector_container(tabs_selector_container, tab_active) {
-    const plButton = document.createElement('button');
-    plButton.classList.add('tab-button');
-    if (tab_active === 'pl-tab-container') {
-        plButton.classList.add('active');
-    }
-    plButton.textContent = 'P/L Graph';
-    plButton.onclick = () => showTab(plButton, 'pl-tab-container');
-    tabs_selector_container.appendChild(plButton);
-}
-function add_tabs_selector_container_in_right_container(right_container, tab_active) {
-    const tabs_selector_container = document.createElement('div');
-    tabs_selector_container.classList.add('tabs-selector-container');
-    tabs_selector_container.id = 'tabs-selector-container';
-    right_container.appendChild(tabs_selector_container);
-    add_tab_selector1_in_tabs_selector_container(tabs_selector_container, tab_active);
-    add_tab_selector2_in_tabs_selector_container(tabs_selector_container, tab_active);
-    add_tab_selector3_in_tabs_selector_container(tabs_selector_container, tab_active);
-    const activeTab = document.getElementById(tab_active);
-    if (activeTab) {
-        activeTab.classList.remove('hidden');
-    }
-
-}
-function create_right_container_new(body, tab_active) {
-
+function create_right_container(tab_active) {
+    let container;
     const right_container = document.createElement('div');
     right_container.classList.add('right-container');
     right_container.id = 'right-container';
 
-    add_tabs_selector_container_in_right_container(right_container, tab_active);
-    add_tab_container_in_right_container(right_container);
+    tabs_manager = new TabsManager(right_container, tab_active);
+
+    container = tabs_manager.add_tab('P/L Graph', 'pl-tab-container', 'pl-container');
+    container = tabs_manager.add_tab('3D View', 'view3d-tab-container', 'view3d-container', update_3d_view);
+    add_view3d_controler_container_in_view3d_container(container);
+    add_view3d_gragh_container_in_view3d_container(container);
+
+    container = tabs_manager.add_tab('Logs', 'log-tab-container', 'log-container');
+    add_log_container_in_tab_container(container);
+
+    container = tabs_manager.add_tab('Test', 'test-tab-container', 'test-container');
 
     return right_container;
 
@@ -1561,102 +1452,9 @@ function handleRadioChange() {
 function create_main_frame(tab_active) {
     const body = document.body;
     let leftContainer = create_left_container();
-    let rightContainer = create_right_container_new(body, tab_active);
+    let rightContainer = create_right_container(tab_active);
     body.appendChild(leftContainer);
     body.appendChild(rightContainer);
-
-    console.log("tab_active = ", tab_active);
-    if (tab_active === 'pl-tab-container') {
-        document.querySelectorAll('.view3d-container').forEach(tab => {
-            tab.classList.add('hidden');
-        });
-        document.querySelectorAll('.log-container').forEach(tab => {
-            tab.classList.add('hidden');
-        });
-        document.querySelectorAll('.pl-container').forEach(tab => {
-            tab.classList.remove('hidden');
-        });
-    }
-    if (tab_active === 'view3d-tab-container') {
-        document.querySelectorAll('.pl-container').forEach(tab => {
-            tab.classList.add('hidden');
-        });
-        document.querySelectorAll('.log-container').forEach(tab => {
-            tab.classList.add('hidden');
-        });
-        document.querySelectorAll('.view3d-container').forEach(tab => {
-            tab.classList.remove('hidden');
-        });
-    }
-    if (tab_active === 'log-tab-container') {
-        document.querySelectorAll('.pl-container').forEach(tab => {
-            tab.classList.add('hidden');
-        });
-        document.querySelectorAll('.view3d-container').forEach(tab => {
-            tab.classList.add('hidden');
-        });
-        document.querySelectorAll('.log-container').forEach(tab => {
-            tab.classList.remove('hidden');
-        });
-    }
-
-
-
-    return;
-}
-function showTab(button, tabId, callback) {
-
-
-    if (tabId === 'pl-tab-container') {
-        document.querySelectorAll('.pl-container').forEach(tab => {
-            tab.classList.remove('hidden');
-        });
-        document.querySelectorAll('.view3d-container').forEach(tab => {
-            tab.classList.add('hidden');
-        });
-        document.querySelectorAll('.log-container').forEach(tab => {
-            tab.classList.add('hidden');
-        });
-    }
-    if (tabId === 'view3d-tab-container') {
-        document.querySelectorAll('.pl-container').forEach(tab => {
-            tab.classList.add('hidden');
-        });
-        document.querySelectorAll('.view3d-container').forEach(tab => {
-            tab.classList.remove('hidden');
-        });
-        document.querySelectorAll('.log-container').forEach(tab => {
-            tab.classList.add('hidden');
-        });
-    }
-    if (tabId === 'log-tab-container') {
-        document.querySelectorAll('.pl-container').forEach(tab => {
-            tab.classList.add('hidden');
-        });
-        document.querySelectorAll('.view3d-container').forEach(tab => {
-            tab.classList.add('hidden');
-        });
-        document.querySelectorAll('.log-container').forEach(tab => {
-            tab.classList.remove('hidden');
-        });
-    }
-
-    document.querySelectorAll('.tab-button').forEach(btn => {
-        btn.classList.remove('active');
-    });
-    // Show the selected tab container
-    const activeTab = document.getElementById(tabId);
-    if (activeTab) {
-        activeTab.classList.remove('hidden');
-    }
-
-    // Highlight the selected button
-    button.classList.add('active');
-
-    // Optional callback
-    if (typeof callback === 'function') {
-        callback(tabId);
-    }
     return;
 }
 
@@ -1677,6 +1475,9 @@ underlying_current_price = env.get_underlying_current_price().price;
 
 create_main_frame(env.config.window.tab_active);
 
-window.addEventListener("resize", update_main_page);
 update_main_page();
+window.addEventListener("resize", update_main_page);
 
+addLog('State: use_local='+use_local, {warning: true});
+
+test_iv();
