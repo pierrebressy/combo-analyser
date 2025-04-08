@@ -1,16 +1,11 @@
 export function days_difference(d1,d2) {
     const given_date_1 = new Date(d1);
     const given_date_2 = new Date(d2);
-    //console.log("[days_difference]");
-    //console.log("give_date_1:", given_date_1);
-    //console.log("given_date_2:", given_date_2);
     // Compute difference in milliseconds
     const diffTime = given_date_2 - given_date_1;
     
     // Convert to days
     let diff_days = -Math.floor(diffTime / (1000 * 60 * 60 * 24));
-    //console.log("diff_days:", diff_days);
-    //console.log("---");
     return diff_days;
 }
 export function days_difference_with_today(d) {
@@ -54,12 +49,8 @@ export function normalCDF(x) {
 }
 
 export function normalCDF2(x) {
-    //return (1.0 + Math.erf(x / Math.sqrt(2))) / 2.0;
     return (1.0 + erf(x / Math.sqrt(2))) / 2.0;
 }
-
-
-
 
 export function computeOptionPrice(price = 0., strike = 0., interest_rate = 0., volatility = 0., num_days_left = 0., option_type = 'call') {
     ///console.log("computeOptionPrice");

@@ -6,6 +6,7 @@ import { update_3d_view, cameraPosition } from './3dview.js';
 import { RadioButton } from './radiobutton.js';
 
 export let dark_mode = true;
+let log_container = null;
 
 let use_local = false;
 export let env;
@@ -896,11 +897,11 @@ function display_theme_buttons() {
 
     checkbox.on("change", function () {
         if (this.checked) {
-            dark_mode= true;
+            dark_mode = true;
             d3.select("body").classed("dark-mode", true);
             d3.select("body").classed("light-mode", false);
         } else {
-            dark_mode= false;
+            dark_mode = false;
             d3.select("body").classed("dark-mode", false);
             d3.select("body").classed("light-mode", true);
         }
@@ -1129,122 +1130,7 @@ function display_sigma_selector() {
         .text(d => d);
 
 }
-function UNUSED_display_camera_position_sliders() {
-    const camera_position_container = d3.select("#camera-position-container")
-    camera_position_container.selectAll("*").remove();
 
-    /*
-        camera_position_container.append("p")
-            .attr("class", "checkbox-title")
-            .text("Camera Position");
-    
-        camera_position_container.append("p")
-            .attr("class", "checkbox-title")
-            .attr("id", "camera-position-x-label")
-            .text("x=" + cameraPosition.x);
-        const slider_x = camera_position_container.append("input")
-            .attr("type", "range")
-            .attr("min", 0)
-            .attr("max", 40) // Indices as values
-            .attr("value", cameraPosition.x) // Set the initial value
-            .attr("step", 1) // Discrete steps
-            .style("width", "100%")
-            .style("margin-bottom", "20px") // Space for labels
-            .on("input", function () {
-                cameraPosition.x = this.value;
-                d3.select("#camera-position-x-label").text("x=" + cameraPosition.x);
-                update_3d_view();
-            });
-        camera_position_container.append("p")
-            .attr("class", "checkbox-title")
-            .attr("id", "camera-position-y-label")
-            .text("y=" + cameraPosition.y);
-        const slider_y = camera_position_container.append("input")
-            .attr("type", "range")
-            .attr("min", 0)
-            .attr("max", 40) // Indices as values
-            .attr("value", cameraPosition.y) // Set the initial value
-            .attr("step", 1) // Discrete steps
-            .style("width", "100%")
-            .style("margin-bottom", "20px") // Space for labels
-            .on("input", function () {
-                cameraPosition.y = this.value;
-                d3.select("#camera-position-y-label").text("y=" + cameraPosition.y);
-                update_3d_view();
-            });
-        camera_position_container.append("p")
-            .attr("class", "checkbox-title")
-            .attr("id", "camera-position-z-label")
-            .text("z=" + cameraPosition.z);
-        const slider_z = camera_position_container.append("input")
-            .attr("type", "range")
-            .attr("min", -40)
-            .attr("max", 40) // Indices as values
-            .attr("value", cameraPosition.z) // Set the initial value
-            .attr("step", 1) // Discrete steps
-            .style("width", "100%")
-            .style("margin-bottom", "20px") // Space for labels
-            .on("input", function () {
-                cameraPosition.z = this.value;
-                d3.select("#camera-position-z-label").text("z=" + cameraPosition.z);
-                update_3d_view();
-            });
-    */
-    camera_position_container.append("p")
-        .attr("class", "checkbox-title")
-        .attr("id", "camera-position-fov-label")
-        .text("fov=" + cameraPosition.fov);
-    const slider_fov = camera_position_container.append("input")
-        .attr("type", "range")
-        .attr("min", 1)
-        .attr("max", 120) // Indices as values
-        .attr("value", cameraPosition.fov) // Set the initial value
-        .attr("step", 1) // Discrete steps
-        .style("width", "100%")
-        .style("margin-bottom", "20px") // Space for labels
-        .on("input", function () {
-            cameraPosition.fov = this.value;
-            d3.select("#camera-position-fov-label").text("fov=" + cameraPosition.fov);
-            update_3d_view();
-        });
-
-    camera_position_container.append("p")
-        .attr("class", "checkbox-title")
-        .attr("id", "camera-position-zrot-label")
-        .text("zrot=" + cameraPosition.z_rotation);
-    const slider_zrotation = camera_position_container.append("input")
-        .attr("type", "range")
-        .attr("min", -4)
-        .attr("max", 4) // Indices as values
-        .attr("value", cameraPosition.z_rotation) // Set the initial value
-        .attr("step", 0.01) // Discrete steps
-        .style("width", "100%")
-        .style("margin-bottom", "20px") // Space for labels
-        .on("input", function () {
-            cameraPosition.z_rotation = this.value;
-            d3.select("#camera-position-zrot-label").text("zrot=" + cameraPosition.z_rotation);
-            update_3d_view();
-        });
-
-    camera_position_container.append("p")
-        .attr("class", "checkbox-title")
-        .attr("id", "camera-position-zzf-label")
-        .text("Vzoom=" + cameraPosition.z_zoom_factor);
-    const slider_zzf = camera_position_container.append("input")
-        .attr("type", "range")
-        .attr("min", 0.1)
-        .attr("max", 10) // Indices as values
-        .attr("value", cameraPosition.z_zoom_factor) // Set the initial value
-        .attr("step", 0.1) // Discrete steps
-        .style("width", "100%")
-        .style("margin-bottom", "20px") // Space for labels
-        .on("input", function () {
-            cameraPosition.z_zoom_factor = this.value;
-            d3.select("#camera-position-zzf-label").text("Vzoom=" + cameraPosition.z_zoom_factor);
-            update_3d_view();
-        });
-
-}
 function update_main_page() {
 
     const container = d3.select("#pl-container")
@@ -1361,33 +1247,96 @@ function add_view3d_control_sliders(view3d_controler_container) {
     zoomGroup.style.alignItems = "bottom";
     zoomGroup.style.gap = "5px"; // Optional spacing between label and slider
 
+
+    const sliderCamDistContainer = document.createElement("div");
+    sliderCamDistContainer.style.display = "flex";
+    sliderCamDistContainer.style.alignItems = "bottom";
+    sliderCamDistContainer.style.gap = "10px"; // Optional spacing between label and slider
+    const slider_cam_dist = document.createElement("input");
+    slider_cam_dist.setAttribute("type", "range");
+    slider_cam_dist.setAttribute("min", 2);
+    slider_cam_dist.setAttribute("max", 100); // Indices as values
+    slider_cam_dist.setAttribute("value", cameraPosition.dist); // Set the initial value
+    slider_cam_dist.setAttribute("step", 1); // Discrete steps
+    slider_cam_dist.style.width = "50%";
+    slider_cam_dist.style.marginBottom = "20px"; // Space for labels
+    slider_cam_dist.addEventListener("input", function () {
+        cameraPosition.dist = this.value;
+        d3.select("#camera-position-zpos-label").text("dist=" + this.value);
+        update_3d_view();
+    });
+    const slider_cam_dist_label = document.createElement("text");
+    slider_cam_dist_label.setAttribute("class", "checkbox-title");
+    slider_cam_dist_label.setAttribute("id", "camera-position-zpos-label");
+    slider_cam_dist_label.textContent = "dist=" + cameraPosition.dist;
+    slider_cam_dist_label.style.display = "inline-block";
+    slider_cam_dist_label.style.width = "55px"; // 👈 fixed space
+    sliderCamDistContainer.appendChild(slider_cam_dist_label);
+    sliderCamDistContainer.appendChild(slider_cam_dist);
+    zoomGroup.appendChild(sliderCamDistContainer);
+    view3d_controler_container.appendChild(zoomGroup);
+
+
+
     const sliderZRotContainer = document.createElement("div");
     sliderZRotContainer.style.display = "flex";
     sliderZRotContainer.style.alignItems = "bottom";
     sliderZRotContainer.style.gap = "10px"; // Optional spacing between label and slider
     const slider_zrotation = document.createElement("input");
     slider_zrotation.setAttribute("type", "range");
-    slider_zrotation.setAttribute("min", -180);
-    slider_zrotation.setAttribute("max", 180); // Indices as values
+    slider_zrotation.setAttribute("min", -360);
+    slider_zrotation.setAttribute("max", 360); // Indices as values
     slider_zrotation.setAttribute("value", cameraPosition.z_rotation); // Set the initial value
     slider_zrotation.setAttribute("step", 1); // Discrete steps
     slider_zrotation.style.width = "50%";
     slider_zrotation.style.marginBottom = "20px"; // Space for labels
     slider_zrotation.addEventListener("input", function () {
         cameraPosition.z_rotation = this.value;
-        d3.select("#camera-position-zrot-label").text("zrot=" + this.value);
+        d3.select("#camera-position-zrot-label").text("θ=" + this.value + "°");
         update_3d_view();
     });
     const slider_zrotation_label = document.createElement("text");
     slider_zrotation_label.setAttribute("class", "checkbox-title");
     slider_zrotation_label.setAttribute("id", "camera-position-zrot-label");
-    slider_zrotation_label.textContent = "zrot=" + cameraPosition.z_rotation;
+    slider_zrotation_label.textContent = "θ=" + cameraPosition.z_rotation + "°";
     slider_zrotation_label.style.display = "inline-block";
     slider_zrotation_label.style.width = "55px"; // 👈 fixed space
     sliderZRotContainer.appendChild(slider_zrotation_label);
     sliderZRotContainer.appendChild(slider_zrotation);
     zoomGroup.appendChild(sliderZRotContainer);
     view3d_controler_container.appendChild(zoomGroup);
+
+
+
+
+    const sliderViewAngleContainer = document.createElement("div");
+    sliderViewAngleContainer.style.display = "flex";
+    sliderViewAngleContainer.style.alignItems = "bottom";
+    sliderViewAngleContainer.style.gap = "10px"; // Optional spacing between label and slider
+    const slider_view_angle = document.createElement("input");
+    slider_view_angle.setAttribute("type", "range");
+    slider_view_angle.setAttribute("min", -90);
+    slider_view_angle.setAttribute("max", 90); // Indices as values
+    slider_view_angle.setAttribute("value", cameraPosition.view_angle); // Set the initial value
+    slider_view_angle.setAttribute("step", 1); // Discrete steps
+    slider_view_angle.style.width = "50%";
+    slider_view_angle.style.marginBottom = "20px"; // Space for labels
+    slider_view_angle.addEventListener("input", function () {
+        cameraPosition.view_angle = this.value;
+        d3.select("#camera-view-angle-label").text("α=" + this.value + "°");
+        update_3d_view();
+    });
+    const slider_view_angle_label = document.createElement("text");
+    slider_view_angle_label.setAttribute("class", "checkbox-title");
+    slider_view_angle_label.setAttribute("id", "camera-view-angle-label");
+    slider_view_angle_label.textContent = "α=" + cameraPosition.view_angle + "°";
+    slider_view_angle_label.style.display = "inline-block";
+    slider_view_angle_label.style.width = "55px"; // 👈 fixed space
+    sliderViewAngleContainer.appendChild(slider_view_angle_label);
+    sliderViewAngleContainer.appendChild(slider_view_angle);
+    zoomGroup.appendChild(sliderViewAngleContainer);
+    view3d_controler_container.appendChild(zoomGroup);
+
 
     const sliderZoomContainer = document.createElement("div");
     sliderZoomContainer.style.display = "flex";
@@ -1417,33 +1366,14 @@ function add_view3d_control_sliders(view3d_controler_container) {
     zoomGroup.appendChild(sliderZoomContainer);
 
 
-    const sliderZPosContainer = document.createElement("div");
-    sliderZPosContainer.style.display = "flex";
-    sliderZPosContainer.style.alignItems = "bottom";
-    sliderZPosContainer.style.gap = "10px"; // Optional spacing between label and slider
-    const slider_zpos = document.createElement("input");
-    slider_zpos.setAttribute("type", "range");
-    slider_zpos.setAttribute("min", -20);
-    slider_zpos.setAttribute("max", 20); // Indices as values
-    slider_zpos.setAttribute("value", cameraPosition.z); // Set the initial value
-    slider_zpos.setAttribute("step", 0.1); // Discrete steps
-    slider_zpos.style.width = "50%";
-    slider_zpos.style.marginBottom = "20px"; // Space for labels
-    slider_zpos.addEventListener("input", function () {
-        cameraPosition.z = this.value;
-        d3.select("#camera-position-zpos-label").text("z=" + this.value);
-        update_3d_view();
-    });
-    const slider_zpos_label = document.createElement("text");
-    slider_zpos_label.setAttribute("class", "checkbox-title");
-    slider_zpos_label.setAttribute("id", "camera-position-zpos-label");
-    slider_zpos_label.textContent = "z=" + cameraPosition.z;
-    slider_zpos_label.style.display = "inline-block";
-    slider_zpos_label.style.width = "55px"; // 👈 fixed space
-    sliderZPosContainer.appendChild(slider_zpos_label);
-    sliderZPosContainer.appendChild(slider_zpos);
-    zoomGroup.appendChild(sliderZPosContainer);
-    view3d_controler_container.appendChild(zoomGroup);
+
+
+
+
+
+
+
+
 }
 
 function add_view3d_control_radio(view3d_controler_container) {
@@ -1495,7 +1425,6 @@ function add_view3d_gragh_container_in_view3d_container(view3d_container) {
 
     view3d_container.appendChild(view3d_graph_container);
 }
-
 function add_view3d_container_in_tab_container(tab_container) {
     const view3d_container = document.createElement('div');
     view3d_container.classList.add('view3d-container');
@@ -1514,7 +1443,6 @@ function add_view3d_container_in_tab_container(tab_container) {
     add_view3d_controler_container_in_view3d_container(view3d_container);
     add_view3d_gragh_container_in_view3d_container(view3d_container);
 }
-
 function add_pl_container_in_tab_container(tab_container) {
     const pl_container = document.createElement('div');
     pl_container.classList.add('pl-container');
@@ -1531,6 +1459,33 @@ function add_pl_container_in_tab_container(tab_container) {
     tab_container.appendChild(pl_container);
 
 }
+function add_log_container_in_tab_container(tab_container) {
+    log_container = document.createElement('div');
+    log_container.classList.add('log-container');
+    log_container.id = 'log-container';
+    let heading = document.createElement('h2');
+    heading.classList.add('std-text');
+    heading.textContent = 'LOG';
+    let paragraph = document.createElement('p');
+    paragraph.classList.add('std-text');
+    paragraph.textContent = 'Here goes your content.';
+    log_container.appendChild(heading);
+    log_container.appendChild(paragraph);
+
+    tab_container.appendChild(log_container);
+
+}
+export function addLog(message) {
+    if (log_container === null) {
+        console.error("Log container is not initialized.");
+        return;
+    }
+    const logMessage = document.createElement('div');  // Create a new div for each log message
+    logMessage.textContent = message;  // Set the text content of the log message
+    logMessage.style.margin = '5px 0';  // Add some spacing between messages
+    logMessage.style.color = 'white';  // You can customize the color of the log messages
+    log_container.appendChild(logMessage);  // Append the new log message to the container
+}
 function add_tab_container_in_right_container(right_container) {
     const tab_container = document.createElement('div');
     tab_container.classList.add('tab-container');
@@ -1539,8 +1494,18 @@ function add_tab_container_in_right_container(right_container) {
 
     add_pl_container_in_tab_container(tab_container);
     add_view3d_container_in_tab_container(tab_container);
+    add_log_container_in_tab_container(tab_container);
 }
-
+function add_tab_selector3_in_tabs_selector_container(tabs_selector_container, tab_active) {
+    const viewButton = document.createElement('button');
+    viewButton.classList.add('tab-button');
+    if (tab_active === 'log-tab-container') {
+        viewButton.classList.add('active');
+    }
+    viewButton.textContent = 'Logs';
+    viewButton.onclick = () => showTab(viewButton, 'log-tab-container', window.activate_3d);
+    tabs_selector_container.appendChild(viewButton);
+}
 function add_tab_selector2_in_tabs_selector_container(tabs_selector_container, tab_active) {
     const viewButton = document.createElement('button');
     viewButton.classList.add('tab-button');
@@ -1551,7 +1516,6 @@ function add_tab_selector2_in_tabs_selector_container(tabs_selector_container, t
     viewButton.onclick = () => showTab(viewButton, 'view3d-tab-container', window.activate_3d);
     tabs_selector_container.appendChild(viewButton);
 }
-
 function add_tab_selector1_in_tabs_selector_container(tabs_selector_container, tab_active) {
     const plButton = document.createElement('button');
     plButton.classList.add('tab-button');
@@ -1562,7 +1526,6 @@ function add_tab_selector1_in_tabs_selector_container(tabs_selector_container, t
     plButton.onclick = () => showTab(plButton, 'pl-tab-container');
     tabs_selector_container.appendChild(plButton);
 }
-
 function add_tabs_selector_container_in_right_container(right_container, tab_active) {
     const tabs_selector_container = document.createElement('div');
     tabs_selector_container.classList.add('tabs-selector-container');
@@ -1570,13 +1533,13 @@ function add_tabs_selector_container_in_right_container(right_container, tab_act
     right_container.appendChild(tabs_selector_container);
     add_tab_selector1_in_tabs_selector_container(tabs_selector_container, tab_active);
     add_tab_selector2_in_tabs_selector_container(tabs_selector_container, tab_active);
+    add_tab_selector3_in_tabs_selector_container(tabs_selector_container, tab_active);
     const activeTab = document.getElementById(tab_active);
     if (activeTab) {
         activeTab.classList.remove('hidden');
     }
 
 }
-
 function create_right_container_new(body, tab_active) {
 
     const right_container = document.createElement('div');
@@ -1589,232 +1552,6 @@ function create_right_container_new(body, tab_active) {
     return right_container;
 
 }
-/*
-function create_right_container(body, tab_active) {
-
-    // RIGHT MAIN CONTAINER ------------------------------------------------------
-    const rightContainer = document.createElement('div');
-    rightContainer.classList.add('right-container');
-    rightContainer.id = 'right-container';
-
-    // UPPER RIGHT CONTAINER: TABS SELECTOR CONTAINER ----------------------------
-    const tabsSelectorContainer = document.createElement('div');
-    tabsSelectorContainer.classList.add('tabs-selector-container');
-    tabsSelectorContainer.classList.add('tabs-selector-container-style');
-    tabsSelectorContainer.id = 'tabs-selector-container';
-    rightContainer.appendChild(tabsSelectorContainer);
-
-    //TABS SELECTOR CONTAINER #1: SELECTOR P/L -----------------------------------
-    const plButton = document.createElement('button');
-    plButton.classList.add('tab-button');
-    if (tab_active === 'pl-tab-container') {
-        plButton.classList.add('active');
-    }
-    plButton.textContent = 'P/L Graph';
-    plButton.onclick = () => showTab(plButton, 'pl-tab-container');
-    tabsSelectorContainer.appendChild(plButton);
-
-    //TABS SELECTOR CONTAINER #2: SELECTOR 3D VIEW ------------------------------
-    const viewButton = document.createElement('button');
-    viewButton.classList.add('tab-button');
-    if (tab_active === 'view-3d-tab-container') {
-        viewButton.classList.add('active');
-    }
-    viewButton.textContent = '3D View';
-    viewButton.onclick = () => showTab(viewButton, 'view-3d-tab-container', window.activate_3d);
-    tabsSelectorContainer.appendChild(viewButton);
-
-    const activeTab = document.getElementById(tab_active);
-    if (activeTab) {
-        activeTab.classList.remove('hidden');
-    }
-
-    // ---------------------------------------------------------------------------
-    // LOWER RIGHT CONTAINER: TAB GRAPH CONTAINER --------------------------------
-    const tabContainer = document.createElement('div');
-    tabContainer.classList.add('tab-container');
-    tabContainer.id = 'tab-container';
-    rightContainer.appendChild(tabContainer);
-
-    // TAB P/L
-    const pltabContainer = document.createElement('div');
-    //pltabContainer.classList.add('tab-content');
-    pltabContainer.classList.add('pl-tab-container');
-    pltabContainer.id = 'pl-tab-container';
-    let heading = document.createElement('h2');
-    heading.textContent = 'P/L TAB';
-    let paragraph = document.createElement('p');
-    paragraph.textContent = 'Here goes your content.';
-    //pltabContainer.appendChild(heading);
-    //pltabContainer.appendChild(paragraph);
-
-    tabContainer.appendChild(pltabContainer);
-
-    const graphContainer = document.createElement('div');
-    graphContainer.classList.add('graph-container');
-    graphContainer.id = 'graph-container';
-    pltabContainer.appendChild(graphContainer);
-
-
-
-
-
-
-
-    // TAB 3D
-    const view3DControlContainer = document.createElement('div');
-    //view3DControlContainer.classList.add('tab-content');
-    view3DControlContainer.classList.add('tabs-view-3d-control-container-style');
-    view3DControlContainer.classList.add('view-3d-control-container');
-    view3DControlContainer.id = 'view-3d-control-container';
-    //view3DControlContainer.style.height = '20px'; // ← set the height here
-    heading = document.createElement('h2');
-    heading.textContent = 'View 3D TAB';
-    paragraph = document.createElement('p');
-    paragraph.textContent = 'Here goes your content.';
-    //view3DControlContainer.appendChild(heading);
-    //view3DControlContainer.appendChild(paragraph);
-    let radioGroup = document.createElement('div');
-    radioGroup.id = 'radio-group';
-    let radio1 = new RadioButton('3d-options', 'P/L', handleRadioChange);
-    radio1.appendTo(radioGroup);
-    radio1.radio.checked = true;  // ← This makes it selected
-    //radioGroup.appendChild(document.createElement('br')); // Line break for spacing
-    new RadioButton('3d-options', 'Delta', handleRadioChange).appendTo(radioGroup);
-    new RadioButton('3d-options', 'Gamma', handleRadioChange).appendTo(radioGroup);
-    new RadioButton('3d-options', 'Theta', handleRadioChange).appendTo(radioGroup);
-    new RadioButton('3d-options', 'Vega', handleRadioChange).appendTo(radioGroup);
-    new RadioButton('3d-options', 'Rho', handleRadioChange).appendTo(radioGroup);
-    view3DControlContainer.appendChild(radioGroup);
-
-
-    let zoomGroup = document.createElement('div');
-    zoomGroup.style.display = "flex";
-    zoomGroup.style.alignItems = "bottom";
-    zoomGroup.style.gap = "5px"; // Optional spacing between label and slider
-
-    const sliderZRotContainer = document.createElement("div");
-    sliderZRotContainer.style.display = "flex";
-    sliderZRotContainer.style.alignItems = "bottom";
-    sliderZRotContainer.style.gap = "10px"; // Optional spacing between label and slider
-    const slider_zrotation = document.createElement("input");
-    slider_zrotation.setAttribute("type", "range");
-    slider_zrotation.setAttribute("min", -180);
-    slider_zrotation.setAttribute("max", 180); // Indices as values
-    slider_zrotation.setAttribute("value", cameraPosition.z_rotation); // Set the initial value
-    slider_zrotation.setAttribute("step", 1); // Discrete steps
-    slider_zrotation.style.width = "50%";
-    slider_zrotation.style.marginBottom = "20px"; // Space for labels
-    slider_zrotation.addEventListener("input", function () {
-        cameraPosition.z_rotation = this.value;
-        d3.select("#camera-position-zrot-label").text("zrot=" + this.value);
-        update_3d_view();
-    });
-    const slider_zrotation_label = document.createElement("text");
-    slider_zrotation_label.setAttribute("class", "checkbox-title");
-    slider_zrotation_label.setAttribute("id", "camera-position-zrot-label");
-    slider_zrotation_label.textContent = "zrot=" + cameraPosition.z_rotation;
-    slider_zrotation_label.style.display = "inline-block";
-    slider_zrotation_label.style.width = "55px"; // 👈 fixed space
-    sliderZRotContainer.appendChild(slider_zrotation_label);
-    sliderZRotContainer.appendChild(slider_zrotation);
-    zoomGroup.appendChild(sliderZRotContainer);
-    view3DControlContainer.appendChild(zoomGroup);
-
-    const sliderZoomContainer = document.createElement("div");
-    sliderZoomContainer.style.display = "flex";
-    sliderZoomContainer.style.alignItems = "bottom";
-    sliderZoomContainer.style.gap = "10px"; // Optional spacing between label and slider
-    const slider_zoom = document.createElement("input");
-    slider_zoom.setAttribute("type", "range");
-    slider_zoom.setAttribute("min", 0.1);
-    slider_zoom.setAttribute("max", 10); // Indices as values
-    slider_zoom.setAttribute("value", cameraPosition.z_zoom_factor); // Set the initial value
-    slider_zoom.setAttribute("step", 0.1); // Discrete steps
-    slider_zoom.style.width = "50%";
-    slider_zoom.style.marginBottom = "20px"; // Space for labels
-    slider_zoom.addEventListener("input", function () {
-        cameraPosition.z_zoom_factor = this.value;
-        d3.select("#camera-position-zoom-label").text("Z x" + this.value);
-        update_3d_view();
-    });
-    const slider_zoom_label = document.createElement("text");
-    slider_zoom_label.setAttribute("class", "checkbox-title");
-    slider_zoom_label.setAttribute("id", "camera-position-zoom-label");
-    slider_zoom_label.textContent = "Z x" + cameraPosition.z_zoom_factor;
-    slider_zoom_label.style.display = "inline-block";
-    slider_zoom_label.style.width = "55px"; // 👈 fixed space
-    sliderZoomContainer.appendChild(slider_zoom_label);
-    sliderZoomContainer.appendChild(slider_zoom);
-    zoomGroup.appendChild(sliderZoomContainer);
-
-
-    const sliderZPosContainer = document.createElement("div");
-    sliderZPosContainer.style.display = "flex";
-    sliderZPosContainer.style.alignItems = "bottom";
-    sliderZPosContainer.style.gap = "10px"; // Optional spacing between label and slider
-    const slider_zpos = document.createElement("input");
-    slider_zpos.setAttribute("type", "range");
-    slider_zpos.setAttribute("min", -20);
-    slider_zpos.setAttribute("max", 20); // Indices as values
-    slider_zpos.setAttribute("value", cameraPosition.z); // Set the initial value
-    slider_zpos.setAttribute("step", 0.1); // Discrete steps
-    slider_zpos.style.width = "50%";
-    slider_zpos.style.marginBottom = "20px"; // Space for labels
-    slider_zpos.addEventListener("input", function () {
-        cameraPosition.z = this.value;
-        d3.select("#camera-position-zpos-label").text("z=" + this.value);
-        update_3d_view();
-    });
-    const slider_zpos_label = document.createElement("text");
-    slider_zpos_label.setAttribute("class", "checkbox-title");
-    slider_zpos_label.setAttribute("id", "camera-position-zpos-label");
-    slider_zpos_label.textContent = "z=" + cameraPosition.z;
-    slider_zpos_label.style.display = "inline-block";
-    slider_zpos_label.style.width = "55px"; // 👈 fixed space
-    sliderZPosContainer.appendChild(slider_zpos_label);
-    sliderZPosContainer.appendChild(slider_zpos);
-    zoomGroup.appendChild(sliderZPosContainer);
-
-
-
-    view3DControlContainer.appendChild(zoomGroup);
-
-
-
-
-
-
-    tabContainer.appendChild(view3DControlContainer);
-
-    const view3DContainer = document.createElement('div');
-    view3DContainer.classList.add('view-3d-container');
-    view3DContainer.classList.add('view-3d-container-style');
-    view3DContainer.id = 'view-3d-container';
-    heading = document.createElement('h2');
-    heading.textContent = 'View 3D Graph';
-    paragraph = document.createElement('p');
-    paragraph.textContent = 'Here goes your content.';
-    view3DContainer.appendChild(heading);
-    view3DContainer.appendChild(paragraph);
-    tabContainer.appendChild(view3DContainer);
-
-
-
-
-    if (tab_active === 'pl-tab-container') {
-        view3DControlContainer.classList.add('hidden');
-        view3DContainer.classList.add('hidden');
-    }
-    else {
-        pltabContainer.classList.add('hidden');
-    }
-
-
-    return rightContainer;
-
-}
-*/
 function handleRadioChange() {
     if (this.checked) {
         env.set_3d_view(this.value);
@@ -1828,9 +1565,12 @@ function create_main_frame(tab_active) {
     body.appendChild(leftContainer);
     body.appendChild(rightContainer);
 
-    console.log("tab_active = ",tab_active); 
+    console.log("tab_active = ", tab_active);
     if (tab_active === 'pl-tab-container') {
         document.querySelectorAll('.view3d-container').forEach(tab => {
+            tab.classList.add('hidden');
+        });
+        document.querySelectorAll('.log-container').forEach(tab => {
             tab.classList.add('hidden');
         });
         document.querySelectorAll('.pl-container').forEach(tab => {
@@ -1841,7 +1581,21 @@ function create_main_frame(tab_active) {
         document.querySelectorAll('.pl-container').forEach(tab => {
             tab.classList.add('hidden');
         });
+        document.querySelectorAll('.log-container').forEach(tab => {
+            tab.classList.add('hidden');
+        });
         document.querySelectorAll('.view3d-container').forEach(tab => {
+            tab.classList.remove('hidden');
+        });
+    }
+    if (tab_active === 'log-tab-container') {
+        document.querySelectorAll('.pl-container').forEach(tab => {
+            tab.classList.add('hidden');
+        });
+        document.querySelectorAll('.view3d-container').forEach(tab => {
+            tab.classList.add('hidden');
+        });
+        document.querySelectorAll('.log-container').forEach(tab => {
             tab.classList.remove('hidden');
         });
     }
@@ -1851,15 +1605,17 @@ function create_main_frame(tab_active) {
     return;
 }
 function showTab(button, tabId, callback) {
-    // Hide all tabs
-    console.log("showTab: tabId = ",tabId); 
+
 
     if (tabId === 'pl-tab-container') {
+        document.querySelectorAll('.pl-container').forEach(tab => {
+            tab.classList.remove('hidden');
+        });
         document.querySelectorAll('.view3d-container').forEach(tab => {
             tab.classList.add('hidden');
         });
-        document.querySelectorAll('.pl-container').forEach(tab => {
-            tab.classList.remove('hidden');
+        document.querySelectorAll('.log-container').forEach(tab => {
+            tab.classList.add('hidden');
         });
     }
     if (tabId === 'view3d-tab-container') {
@@ -1867,6 +1623,20 @@ function showTab(button, tabId, callback) {
             tab.classList.add('hidden');
         });
         document.querySelectorAll('.view3d-container').forEach(tab => {
+            tab.classList.remove('hidden');
+        });
+        document.querySelectorAll('.log-container').forEach(tab => {
+            tab.classList.add('hidden');
+        });
+    }
+    if (tabId === 'log-tab-container') {
+        document.querySelectorAll('.pl-container').forEach(tab => {
+            tab.classList.add('hidden');
+        });
+        document.querySelectorAll('.view3d-container').forEach(tab => {
+            tab.classList.add('hidden');
+        });
+        document.querySelectorAll('.log-container').forEach(tab => {
             tab.classList.remove('hidden');
         });
     }
