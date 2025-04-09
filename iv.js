@@ -1,71 +1,50 @@
 import { addLog } from './log.js';
 import { normalCDF } from './functions.js';
 
+function d1(sigma, S, K, T, r) {
+  return (Math.log(S / K) + (r + 0.5 * sigma * sigma) * T) / (sigma * Math.sqrt(T));
+}
+
 function blackScholesPrice(S, K, T, r, sigma, optionType) {
   const d1 = (Math.log(S / K) + (r + 0.5 * sigma * sigma) * T) / (sigma * Math.sqrt(T));
   const d2 = d1 - sigma * Math.sqrt(T);
 
   if (optionType === "call") {
-      return S * normalCDF(d1) - K * Math.exp(-r * T) * normalCDF(d2);
+    return S * normalCDF(d1) - K * Math.exp(-r * T) * normalCDF(d2);
   } else if (optionType === "put") {
-      return K * Math.exp(-r * T) * normalCDF(-d2) - S * normalCDF(-d1);
+    return K * Math.exp(-r * T) * normalCDF(-d2) - S * normalCDF(-d1);
   } else {
-      throw new Error("Invalid option type");
+    throw new Error("Invalid option type");
   }
 }
 
-function impliedVolatility(S, K, T, r, marketPrice, optionType) {
+function impliedVolatility_BS(S, K, T, r, marketPrice, optionType) {
   let sigma = 0.2; // Initial guess for volatility
   const tolerance = 1e-4; // Acceptable error
   const maxIterations = 100;
 
   for (let i = 0; i < maxIterations; i++) {
-      let price = blackScholesPrice(S, K, T, r, sigma, optionType);
-      let vega = S * Math.sqrt(T) * normalCDF(d1(sigma, S, K, T, r)); // Vega: Sensitivity to volatility
-      
-      let priceDiff = price - marketPrice;
-      addLog("sigma: ", sigma.toFixed(5));
-      
-      if (Math.abs(priceDiff) < tolerance) {
-        addLog("iterations: ", i);
-          return sigma;
-      }
-      
-      sigma = sigma - priceDiff / vega; // Update sigma (volatility) using Newton's method
+    let price = blackScholesPrice(S, K, T, r, sigma, optionType);
+    let vega = S * Math.sqrt(T) * normalCDF(d1(sigma, S, K, T, r)); // Vega: Sensitivity to volatility
+
+    let priceDiff = price - marketPrice;
+    addLog("sigma: ", sigma.toFixed(5));
+
+    if (Math.abs(priceDiff) < tolerance) {
+      addLog("iterations: ", i);
+      return sigma;
+    }
+
+    sigma = sigma - priceDiff / vega; // Update sigma (volatility) using Newton's method
   }
-  
+
   throw new Error("Implied volatility calculation did not converge");
 }
 
-
-function impliedVolatilityV2(S, K, T, r, marketPrice, optionType) {
-  let sigma_min = 0.2;
-  let sigma_max = 1.0;
-  const tolerance = 1e-4; // Acceptable error
-  const maxIterations = 100;
-  let sigma_step=(sigma_max-sigma_min)/maxIterations; 
-  let sigma=sigma_min;
-
-  for (let i = 0; i < maxIterations; i++) {
-      let price = blackScholesPrice(S, K, T, r, sigma, optionType);
-      let priceDiff = price - marketPrice;
-      addLog("sigma: ", sigma.toFixed(5), "price: ", price.toFixed(2), priceDiff.toFixed(2));
-      if (Math.abs(priceDiff) < tolerance) {
-        addLog("iterations: ", i);
-          return sigma;
-      }
-      sigma += sigma_step;
-
-  }
-  return 0;
-}
-
-
-
-function impliedVolatilityV3(S, K, T, r, marketPrice, optionType) {
+function impliedVolatility_BS_dicho(S, K, T, r, marketPrice, optionType) {
   let sigma_left = 0.0001;
   let sigma_right = 2.0;
-  let sigma_center=0.5*(sigma_left+sigma_right);
+  let sigma_center = 0.5 * (sigma_left + sigma_right);
   const tolerance = 1e-4; // Acceptable error
   const maxIterations = 100;
 
@@ -75,22 +54,22 @@ function impliedVolatilityV3(S, K, T, r, marketPrice, optionType) {
     let price_center = blackScholesPrice(S, K, T, r, sigma_center, optionType);
     let price_right = blackScholesPrice(S, K, T, r, sigma_right, optionType);
 
-    addLog("iteration:   ",i,   "marketPrice:   ", marketPrice.toFixed(2));
-    addLog("sigma_left:   ", sigma_left.toFixed(5),   "price_left:   ", price_left.toFixed(2));
-    addLog("sigma_center: ", sigma_center.toFixed(5), "price_center: ", price_center.toFixed(2));
-    addLog("sigma_right:  ", sigma_right.toFixed(5),  "price_right:  ", price_right.toFixed(2));
+    //addLog("iteration:   ", i, "marketPrice:   ", marketPrice.toFixed(2));
+    //addLog("sigma_left:   ", sigma_left.toFixed(5), "price_left:   ", price_left.toFixed(2));
+    //addLog("sigma_center: ", sigma_center.toFixed(5), "price_center: ", price_center.toFixed(2));
+    //addLog("sigma_right:  ", sigma_right.toFixed(5), "price_right:  ", price_right.toFixed(2));
     let priceDiff = price_center - marketPrice;
     if (Math.abs(priceDiff) < tolerance) {
       addLog("iterations: ", i);
       return sigma_center;
     }
-    if(price_left < marketPrice && marketPrice<price_center) {
-      sigma_right=sigma_center;
-      sigma_center=0.5*(sigma_left+sigma_right);
+    if (price_left < marketPrice && marketPrice < price_center) {
+      sigma_right = sigma_center;
+      sigma_center = 0.5 * (sigma_left + sigma_right);
     }
-    else if(price_center < marketPrice && marketPrice<price_right) {
-      sigma_left=sigma_center;
-      sigma_center=0.5*(sigma_left+sigma_right);
+    else if (price_center < marketPrice && marketPrice < price_right) {
+      sigma_left = sigma_center;
+      sigma_center = 0.5 * (sigma_left + sigma_right);
     }
     else {
       break;
@@ -100,31 +79,97 @@ function impliedVolatilityV3(S, K, T, r, marketPrice, optionType) {
   return 0;
 }
 
+export function hestonMonteCarlo(params, S0, K, T, r, q, numPaths, numSteps) {
+  const { v0, theta, kappa, sigma, rho } = params;
+  const dt = T / numSteps;
+  let payoffs = 0;
 
+  // Monte Carlo loop
+  for (let i = 0; i < numPaths; i++) {
+    let S = S0;
+    let v = v0;
 
-function d1(sigma, S, K, T, r) {
-  return (Math.log(S / K) + (r + 0.5 * sigma * sigma) * T) / (sigma * Math.sqrt(T));
+    // Simulate the asset price and volatility process
+    for (let j = 0; j < numSteps; j++) {
+      const dzS = Math.random() * Math.sqrt(dt);  // Standard normal random variable for asset price
+      const dzV = rho * dzS + Math.sqrt(1 - rho * rho) * Math.random() * Math.sqrt(dt);  // Volatility random shock
+
+      // Euler-Maruyama discretization for the Heston model
+      v = Math.max(v + kappa * (theta - v) * dt + sigma * Math.sqrt(v) * dzV, 0);  // Ensure v > 0 (volatility must be positive)
+      S = S * Math.exp((r - q - 0.5 * v) * dt + Math.sqrt(v) * dzS);  // Asset price process
+    }
+
+    // Compute payoff for the option (European call)
+    const payoff = Math.max(S - K, 0);  // Call option payoff
+    payoffs += Math.exp(-r * T) * payoff;  // Discount the payoff at maturity
+  }
+
+  // Return the average price of the option
+  return payoffs / numPaths;
 }
+
+function impliedVolatility_MonteCarlo(targetPrice, params, S0, K, T, r, q, numPaths, numSteps) {
+  let tol = 1e-3;
+  let maxIter = 30;
+  let low = 0.0001;
+  let high = 1.0;
+  let impliedVol = (low + high) / 2;
+
+  for (let i = 0; i < maxIter; i++) {
+    params.v0 = impliedVol;
+    params.theta = impliedVol; // on suppose theta = v0
+    const price = hestonMonteCarlo(params, S0, K, T, r, q, numPaths, numSteps);
+    const diff = price - targetPrice;
+
+    if (Math.abs(diff) < tol) {
+      addLog("iterations: ", i);
+      return impliedVol;
+    }
+
+    if (diff > 0) {
+      high = impliedVol;
+    } else {
+      low = impliedVol;
+    }
+
+    impliedVol = (low + high) / 2;
+  }
+
+  return impliedVol;
+}
+
+
+
 
 export function test_iv() {
   const tickerPrice = 181.46;   // S
   const strikePrice = 170;   // K
   const optionType = "call"; // "call" or "put"
   const optionPrice = 17.83;     // Market price of the option
-  const timeToExpiration = 18/365.; // Time to expiration in years
+  const timeToExpiration = 18 / 365.; // Time to expiration in years
   const riskFreeRate = 0.03; // Annualized risk-free rate
   addLog("Ticker price: ", tickerPrice.toFixed(2));
   addLog("Strike price: ", strikePrice.toFixed(2));
   addLog("Option price: ", optionPrice.toFixed(2));
-  addLog("Expiration:   ", (365*timeToExpiration).toFixed(1)," days");
+  addLog("Expiration:   ", (365 * timeToExpiration).toFixed(1), " days");
+
+  let iv = impliedVolatility_BS(tickerPrice, strikePrice, timeToExpiration, riskFreeRate, optionPrice, optionType);
+  addLog("impliedVolatility_BS => IV = ", (100 * iv).toFixed(2), " %");
+
+  iv = impliedVolatility_BS_dicho(tickerPrice, strikePrice, timeToExpiration, riskFreeRate, optionPrice, optionType);
+  addLog("impliedVolatility_BS dicho=> IV = ", (100 * iv).toFixed(2), " %");
+
+
+
+  const params = {
+    v0: 0.04,
+    theta: 0.04,
+    kappa: 1.5,
+    sigma: 0.3,
+    rho: -0.7
+  };
   
-  let iv = impliedVolatility(tickerPrice, strikePrice, timeToExpiration, riskFreeRate, optionPrice, optionType);
-  addLog("=> IV = ", (100*iv).toFixed(2)," %");
-
-  iv = impliedVolatilityV2(tickerPrice, strikePrice, timeToExpiration, riskFreeRate, optionPrice, optionType);
-  addLog("=> IV = ", (100*iv).toFixed(2)," %");
-
-  iv = impliedVolatilityV3(tickerPrice, strikePrice, timeToExpiration, riskFreeRate, optionPrice, optionType);
-  addLog("=> IV = ", (100*iv).toFixed(2)," %");
-
+  const impliedVol = impliedVolatility_MonteCarlo(optionPrice, params, tickerPrice, strikePrice, timeToExpiration, 0.05, 0.02, 10000, 100);
+  addLog("Volatilité implicite estimée :", impliedVol.toFixed(4));
+  
 }

@@ -9,7 +9,9 @@ import { test_iv } from './iv.js';
 import { TabsManager } from './tabs_manager.js';
 
 export let dark_mode = true;
-
+export let two_colors_cmap = true;
+export let show_hplane = true;
+export let show_3dbox = true;
 let use_local = false;
 export let env;
 let ticker;
@@ -751,7 +753,7 @@ function display_strike_buttons() {
                     option.strike = Math.round(newStrike * 2) / 2; // Round to nearest 0.5
                     //option.strike = (newStrike);
                     combo_changed = true;
-                    addLog('strike='+(option.strike.toFixed(2)), {warning: true});
+                    addLog('strike=' + (option.strike.toFixed(2)), { warning: true });
                     draw_graph();
                 })
             )
@@ -792,7 +794,7 @@ function display_strike_buttons() {
                         let option = env.get_combo_params().legs[current_index - 1];
                         option.qty = parseInt(this.value);
                         combo_changed = true;
-                        addLog('qty='+(option.qty.toFixed(0)), {warning: true});
+                        addLog('qty=' + (option.qty.toFixed(0)), { warning: true });
                         draw_graph();
                     });
                 let tr2 = t.append("tr");
@@ -810,7 +812,7 @@ function display_strike_buttons() {
                         let option = env.get_combo_params().legs[current_index - 1];
                         option.expiration_offset = parseInt(this.value);
                         combo_changed = true;
-                        addLog('expiration_offset='+(option.expiration_offset.toFixed(0)), {warning: true});
+                        addLog('expiration_offset=' + (option.expiration_offset.toFixed(0)), { warning: true });
                         draw_graph();
                     });
 
@@ -1365,11 +1367,64 @@ function add_view3d_control_sliders(view3d_controler_container) {
     zoomGroup.appendChild(sliderZoomContainer);
 
 
+    const showHplaneContainer = document.createElement("div");
+    showHplaneContainer.setAttribute("class", "simple_checkbox")
+    const showHplane_label = document.createElement("text");
+    showHplane_label.setAttribute("class", "std-text")
+    showHplane_label.textContent = "Plane  ";
+    const showHplane_checkbox = document.createElement("input");
+    showHplane_checkbox.setAttribute("type", "checkbox");
+    showHplane_checkbox.setAttribute("id", "show-hplane-container");
+    showHplane_checkbox.setAttribute("name", "show-hplane-container");
+    showHplane_checkbox.checked = show_hplane;
+    showHplane_checkbox.addEventListener("change", function () {
+        show_hplane = this.checked;
+        update_3d_view();
+    });
+    showHplaneContainer.appendChild(showHplane_label);
+    showHplaneContainer.appendChild(showHplane_checkbox);
+    zoomGroup.appendChild(showHplaneContainer);
+
+    const show3DBoxContainer = document.createElement("div");
+    show3DBoxContainer.setAttribute("class", "simple_checkbox")
+    const show3DBox_label = document.createElement("text");
+    show3DBox_label.setAttribute("class", "std-text")
+    show3DBox_label.textContent = "3DBox ";
+    const show3DBox_checkbox = document.createElement("input");
+    show3DBox_checkbox.setAttribute("type", "checkbox");
+    show3DBox_checkbox.setAttribute("id", "show-3dbox-container");
+    show3DBox_checkbox.setAttribute("name", "show-3dbox-container");
+    show3DBox_checkbox.checked = show_3dbox;
+    show3DBox_checkbox.addEventListener("change", function () {
+        show_3dbox = this.checked;
+        update_3d_view();
+    });
+    show3DBoxContainer.appendChild(show3DBox_label);
+    show3DBoxContainer.appendChild(show3DBox_checkbox);
+    zoomGroup.appendChild(show3DBoxContainer);
+
+    const cmapStyleContainer = document.createElement("div");
+    cmapStyleContainer.setAttribute("class", "simple_checkbox")
+    const cmapStyle_label = document.createElement("text");
+    cmapStyle_label.setAttribute("class", "std-text")
+    cmapStyle_label.textContent = "R+G ";
+    const cmapStyle_checkbox = document.createElement("input");
+    cmapStyle_checkbox.setAttribute("type", "checkbox");
+    cmapStyle_checkbox.setAttribute("id", "cmap-style-container");
+    cmapStyle_checkbox.setAttribute("name", "cmap-style-container");
+    cmapStyle_checkbox.checked = show_3dbox;
+    cmapStyle_checkbox.addEventListener("change", function () {
+        two_colors_cmap = this.checked;
+        update_3d_view();
+    });
+    cmapStyleContainer.appendChild(cmapStyle_label);
+    cmapStyleContainer.appendChild(cmapStyle_checkbox);
+    zoomGroup.appendChild(cmapStyleContainer);
 
 
 
 
-
+    two_colors_cmap
 
 
 
@@ -1478,6 +1533,6 @@ create_main_frame(env.config.window.tab_active);
 update_main_page();
 window.addEventListener("resize", update_main_page);
 
-addLog('State: use_local='+use_local, {warning: true});
+addLog('State: use_local=' + use_local, { warning: true });
 
 test_iv();

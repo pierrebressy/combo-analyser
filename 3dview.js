@@ -1,5 +1,6 @@
-import { compute_p_and_l_data_for_price, compute_greeks_data_for_price, env, dark_mode } from './script.js';
+import { compute_p_and_l_data_for_price, compute_greeks_data_for_price, env } from './script.js';
 import { addLog } from './log.js';
+import { dark_mode, show_hplane, show_3dbox, two_colors_cmap } from './script.js';
 
 export let x_camera = 20;
 export let y_camera = 20;
@@ -8,14 +9,14 @@ export let z_camera = 5;
 export let cameraPosition = {
     x: 17,
     y: 17,
-    dist: 20,
+    dist: 50,
     z: 1.4,
     fov: 40,
-    z_rotation: 45,
+    z_rotation: 30,
     z_zoom_factor: 0.7,
-    view_angle: 11
+    view_angle: 30
 };
-const ref_plane_half_size = 5;
+const ref_plane_half_size = 10;
 window.activate_3d = activate_3d;
 let animationId = null;
 let renderer = null;
@@ -73,7 +74,7 @@ class Generic3DSurface {
 class GreekSurface extends Generic3DSurface {
 
     run(greek_index) {
-        console.log("cameraPosition.z_zoom_factor", cameraPosition.z_zoom_factor);
+        //console.log("cameraPosition.z_zoom_factor", cameraPosition.z_zoom_factor);
         let count = 0;
         this.xrange.forEach((x, i) => {
             this.yrange.forEach((y, j) => {
@@ -117,6 +118,71 @@ class PLSurface extends Generic3DSurface {
 }
 
 
+function create_3dbox(z) {
+    let reference_plane = new THREE.Group();
+    let plane_color = 0x505050; // Gray color
+    let points;
+    let geometry;
+    let material;
+    let line;
+    let z_offset = z - Math.floor(z);
+    //console.log("z_offset", z_offset);
+    for (let i = -ref_plane_half_size; i <= ref_plane_half_size; i += 1) {
+
+        points = [
+            new THREE.Vector3(ref_plane_half_size, -ref_plane_half_size, i + z_offset),  // Starting point
+            new THREE.Vector3(-ref_plane_half_size, -ref_plane_half_size, i + z_offset),  // Starting point
+            new THREE.Vector3(-ref_plane_half_size, ref_plane_half_size, i + z_offset),  // Starting point
+        ];
+
+        // Create a geometry for the line
+        geometry = new THREE.BufferGeometry().setFromPoints(points);
+
+        if (Math.abs((i + z_offset) - z) < 0.3)
+            plane_color = 0xFFFFFF;
+        else
+            plane_color = 0x505050;
+        // Create a material for the line (red)
+        material = new THREE.LineBasicMaterial({ color: plane_color });
+        plane_color = 0x505050;
+
+        // Create the line using the geometry and material
+        line = new THREE.Line(geometry, material);
+        reference_plane.add(line);  // Add the cube mesh
+
+        points = [
+            new THREE.Vector3(-ref_plane_half_size, i, -ref_plane_half_size + z_offset),  // Starting point
+            new THREE.Vector3(-ref_plane_half_size, i, ref_plane_half_size + z_offset),  // Starting point
+        ];
+
+        // Create a geometry for the line
+        geometry = new THREE.BufferGeometry().setFromPoints(points);
+
+        // Create a material for the line (red)
+        material = new THREE.LineBasicMaterial({ color: plane_color });
+
+        // Create the line using the geometry and material
+        line = new THREE.Line(geometry, material);
+        reference_plane.add(line);  // Add the cube mesh
+
+        points = [
+            new THREE.Vector3(i, -ref_plane_half_size, -ref_plane_half_size + z_offset),  // Starting point
+            new THREE.Vector3(i, -ref_plane_half_size, ref_plane_half_size + z_offset),  // Starting point
+        ];
+
+        // Create a geometry for the line
+        geometry = new THREE.BufferGeometry().setFromPoints(points);
+
+        // Create a material for the line (red)
+        material = new THREE.LineBasicMaterial({ color: plane_color });
+
+        // Create the line using the geometry and material
+        line = new THREE.Line(geometry, material);
+        reference_plane.add(line);  // Add the cube mesh
+
+    }
+    return reference_plane;
+}
 function create_reference_plane(z) {
     let reference_plane = new THREE.Group();
     let plane_color = 0xa0a0a0; // Gray color
@@ -249,7 +315,7 @@ function create_specific_lines() {
     const black_line = new MeshLine();
     black_line.setGeometry(black_geometry);
     const black_material = new MeshLineMaterial({
-        color: new THREE.Color( dark_mode ? 0xffffff : 0x000000 ),
+        color: new THREE.Color(dark_mode ? 0xffffff : 0x000000),
         lineWidth: 0.1, // real visible width!
         transparent: true,
         depthTest: false
@@ -285,7 +351,7 @@ function create_specific_lines() {
 
     return lines;
 }
-function create_mesh_color_heatmap(curve_data) {
+function create_mesh_color_heatmap(curve_data, z) {
 
     let priceRange = curve_data[0];
     let timeRange = curve_data[1];
@@ -307,7 +373,6 @@ function create_mesh_color_heatmap(curve_data) {
     const zValues = matrixData.map(p => p.z);
     const zMin = Math.min(...zValues);
     const zMax = Math.max(...zValues);
-
     let k = 0;
     for (let i = 0; i < widthSeg; i++) {
         for (let j = 0; j < heightSeg; j++) {
@@ -320,9 +385,15 @@ function create_mesh_color_heatmap(curve_data) {
             positions[k + 2] = point.z;
 
             // Normalize Z and convert to color
-            const zNorm = (point.z - zMin) / (zMax - zMin); // [0, 1]
             const color = new THREE.Color();
-            color.setHSL((1 - zNorm) * 0.7, 1.0, 0.5); // 0.7 (blue) → 0 (red)
+            if (two_colors_cmap) {
+                const zNorm = (point.z - zMin) / (zMax - zMin); // [0, 1]
+                color.setHSL((zNorm) * 0.33, 1.0, 0.5); // green (0.33) → red (0)
+            }
+            else {
+                const zNorm = (point.z - zMin) / (zMax - zMin); // [0, 1]
+                color.setHSL((1 - zNorm) * 0.7, 1.0, 0.5); // 0.7 (blue) → 0 (red)    
+            }
 
             colorArray[k + 0] = color.r;
             colorArray[k + 1] = color.g;
@@ -417,9 +488,10 @@ function cleanupThree() {
     camera = null;
 }
 
+
 export function update_3d_view() {
-    const display_reference_plane = true;
-    const display_reference_arrows = true;
+    const display_reference_plane = show_hplane;
+    const display_reference_arrows = show_hplane;
     const display_curve = true;
     let display_specific_lines = true;
     let curve_data;
@@ -435,15 +507,15 @@ export function update_3d_view() {
     camera = new THREE.PerspectiveCamera(cameraPosition.fov, window.innerWidth / window.innerHeight, 0.1, 100);
     camera.up.set(0, 0, 1);          // Make Z the "up" direction
 
-    let theta=cameraPosition.z_rotation / 180.0 * Math.PI;
-    let alpha= cameraPosition.view_angle / 180.0 * Math.PI;
-    cameraPosition.x = cameraPosition.dist*Math.cos(theta)*Math.cos(alpha);
-    cameraPosition.y = cameraPosition.dist*Math.sin(theta)*Math.cos(alpha);
-    cameraPosition.z = cameraPosition.dist*Math.sin(alpha);
+    let theta = cameraPosition.z_rotation / 180.0 * Math.PI;
+    let alpha = cameraPosition.view_angle / 180.0 * Math.PI;
+    cameraPosition.x = cameraPosition.dist * Math.cos(theta) * Math.cos(alpha);
+    cameraPosition.y = cameraPosition.dist * Math.sin(theta) * Math.cos(alpha);
+    cameraPosition.z = cameraPosition.dist * Math.sin(alpha);
 
     camera.position.set(cameraPosition.x, cameraPosition.y, cameraPosition.z);  // Camera at (10,10,1)
     camera.lookAt(0, 0, 0);          // Looking at (0,0,0)
-    
+
     if (env.get_3d_view() == "P/L")
         [curve_data, zero_point] = create_pl_vs_time_and_price_surface();
     else if (env.get_3d_view() == "Delta")
@@ -460,7 +532,8 @@ export function update_3d_view() {
         console.log("Error: " + env.get_3d_view() + " not found");
         return;
     }
-
+    //console.log(zero_point)
+    //console.log(curve_data)
     display_specific_lines = env.get_3d_view() == "P/L" ? display_specific_lines : false;
 
     // create the reference plane XY
@@ -468,13 +541,19 @@ export function update_3d_view() {
     if (display_reference_plane)
         scene.add(reference_plane);
 
+    // create the reference plane XY
+    let box3d = create_3dbox(zero_point.z);
+    if (show_3dbox)
+        scene.add(box3d);
+
     // create the 3 arrows referencial axes X,Y,Z
     let ref_arrow = create_reference_arrows(zero_point.z);
     if (display_reference_arrows)
         scene.add(ref_arrow);
 
 
-    let mesh_data = create_mesh_color_heatmap(curve_data);
+
+    let mesh_data = create_mesh_color_heatmap(curve_data, zero_point.z);
     if (display_curve) {
         scene.add(mesh_data[0]); // mesh surface
         //scene.add(mesh_data[1]); // mesh wireframe
@@ -488,53 +567,67 @@ export function update_3d_view() {
     if (display_specific_lines)
         scene.add(lines);
 
-    const pivot_1 = new THREE.Object3D();
-    scene.add(pivot_1);
-    const canvas_1 = document.createElement('canvas');
-    canvas_1.width = 256;
-    canvas_1.height = 64;
-    const ctx_1 = canvas_1.getContext('2d');
-    ctx_1.font = '48px Arial';
-    ctx_1.fillStyle = 'green';
-    ctx_1.fillText('Price', canvas_1.width / 2, 32);
-    const texture_1 = new THREE.CanvasTexture(canvas_1);
-    const material_1 = new THREE.SpriteMaterial({ map: texture_1, transparent: true });
-    const sprite_1 = new THREE.Sprite(material_1);
-    sprite_1.scale.set(2, .5, 1); // Adjust as needed
-    sprite_1.position.set(0, 5, zero_point.z); // Offset from center (so it orbits)
-    pivot_1.add(sprite_1);
+    if (display_reference_arrows) {
 
-    const pivot_2 = new THREE.Object3D();
-    scene.add(pivot_2);
-    const canvas_2 = document.createElement('canvas');
-    canvas_2.width = 256;
-    canvas_2.height = 64;
-    const ctx_2 = canvas_2.getContext('2d');
-    ctx_2.font = '48px Arial';
-    ctx_2.fillStyle = 'red';
-    ctx_2.fillText('Days', canvas_2.width / 2, 32);
-    const texture_2 = new THREE.CanvasTexture(canvas_2);
-    const material_2 = new THREE.SpriteMaterial({ map: texture_2, transparent: true });
-    const sprite_2 = new THREE.Sprite(material_2);
-    sprite_2.scale.set(2, .5, 1); // Adjust as needed
-    sprite_2.position.set(5, 0, zero_point.z); // Offset from center (so it orbits)
-    pivot_2.add(sprite_2);
+        const pivot_1 = new THREE.Object3D();
+        scene.add(pivot_1);
+        const canvas_1 = document.createElement('canvas');
+        canvas_1.width = 256;
+        canvas_1.height = 64;
+        const ctx_1 = canvas_1.getContext('2d');
+        ctx_1.font = '48px Arial';
+        ctx_1.fillStyle = 'green';
+        ctx_1.fillText('Price', canvas_1.width / 2, 32);
+        const texture_1 = new THREE.CanvasTexture(canvas_1);
+        const material_1 = new THREE.SpriteMaterial({ map: texture_1, transparent: true });
+        const sprite_1 = new THREE.Sprite(material_1);
+        sprite_1.scale.set(2, .5, 1); // Adjust as needed
+        sprite_1.position.set(0, 5, zero_point.z); // Offset from center (so it orbits)
+        pivot_1.add(sprite_1);
 
-    const pivot_3 = new THREE.Object3D();
-    scene.add(pivot_3);
-    const canvas_3 = document.createElement('canvas');
-    canvas_3.width = 256;
-    canvas_3.height = 64;
-    const ctx_3 = canvas_3.getContext('2d');
-    ctx_3.font = '48px Arial';
-    ctx_3.fillStyle = 'blue';
-    ctx_3.fillText(env.get_3d_view(), canvas_3.width / 2, 32);
-    const texture_3 = new THREE.CanvasTexture(canvas_3);
-    const material_3 = new THREE.SpriteMaterial({ map: texture_3, transparent: true });
-    const sprite_3 = new THREE.Sprite(material_3);
-    sprite_3.scale.set(2, .5, 1); // Adjust as needed
-    sprite_3.position.set(0, 0, zero_point.z); // Offset from center (so it orbits)
-    pivot_3.add(sprite_3);
+        const pivot_2 = new THREE.Object3D();
+        scene.add(pivot_2);
+        const canvas_2 = document.createElement('canvas');
+        canvas_2.width = 256;
+        canvas_2.height = 64;
+        const ctx_2 = canvas_2.getContext('2d');
+        ctx_2.font = '48px Arial';
+        ctx_2.fillStyle = 'red';
+        ctx_2.fillText('Days', canvas_2.width / 2, 32);
+        const texture_2 = new THREE.CanvasTexture(canvas_2);
+        const material_2 = new THREE.SpriteMaterial({ map: texture_2, transparent: true });
+        const sprite_2 = new THREE.Sprite(material_2);
+        sprite_2.scale.set(2, .5, 1); // Adjust as needed
+        sprite_2.position.set(5, 0, zero_point.z); // Offset from center (so it orbits)
+        pivot_2.add(sprite_2);
+
+        const pivot_3 = new THREE.Object3D();
+        scene.add(pivot_3);
+        const canvas_3 = document.createElement('canvas');
+        canvas_3.width = 256;
+        canvas_3.height = 64;
+        const ctx_3 = canvas_3.getContext('2d');
+        ctx_3.font = '48px Arial';
+        ctx_3.fillStyle = 'blue';
+        ctx_3.fillText(env.get_3d_view(), canvas_3.width / 2, 32);
+        const texture_3 = new THREE.CanvasTexture(canvas_3);
+        const material_3 = new THREE.SpriteMaterial({ map: texture_3, transparent: true });
+        const sprite_3 = new THREE.Sprite(material_3);
+        sprite_3.scale.set(2, .5, 1); // Adjust as needed
+        sprite_3.position.set(0, 0, zero_point.z); // Offset from center (so it orbits)
+        pivot_3.add(sprite_3);
+    }
+
+
+    const raycaster = new THREE.Raycaster();
+    const mouse = new THREE.Vector2();
+    const planeZ = new THREE.Plane(new THREE.Vector3(0, 0, zero_point.z), -zero_point.z); // z = 0
+    const planeHelper = new THREE.PlaneHelper(planeZ, 2 * ref_plane_half_size, 0xadd8e6); // size, color (light blue)
+    scene.add(planeHelper);
+
+
+
+
 
 
     renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -543,24 +636,8 @@ export function update_3d_view() {
 
 
 
-/*    const z_angle = cameraPosition.z_rotation / 180 * Math.PI;
-    pivot_1.rotation.z = z_angle;
-    pivot_2.rotation.z = z_angle;
-    if (display_reference_plane)
-        reference_plane.rotation.z = z_angle;
-    if (display_reference_arrows)
-        ref_arrow.rotation.z = z_angle;
-    if (display_curve) {
-        mesh_data[0].rotation.z = z_angle;
-        //mesh_data[1].rotation.z = z_angle;
-    }
-    if (display_specific_lines)
-        lines.rotation.z = z_angle;
-*/
-    //addLog(`update_3d_view, ${cameraPosition.x} ${cameraPosition.y} ${cameraPosition.z}`);
 
     camera.position.set(cameraPosition.x, cameraPosition.y, cameraPosition.z);
-//    addLog(`update_3d_view, z_angle ${z_angle}`);
 
     renderer.render(scene, camera);
 

@@ -538,27 +538,43 @@
             "legs": [
                 {
                     "expiration_offset": 0,
+                    "qty": -1,
+                    "sim_volatility": 0.558,
+                    "strike": 5195,
+                    "trade_volatility": 0.558,
+                    "type": "call"
+                },
+                {
+                    "expiration_offset": 7,
                     "qty": 1,
-                    "sim_volatility": 0.3,
-                    "strike": 240,
-                    "trade_volatility": 0.3,
+                    "sim_volatility": 0.428,
+                    "strike": 5305,
+                    "trade_volatility": 0.428,
+                    "type": "call"
+                },
+                {
+                    "expiration_offset": 1,
+                    "qty": 1,
+                    "sim_volatility": 0.458,
+                    "strike": 5480,
+                    "trade_volatility": 0.458,
                     "type": "call"
                 }
             ],
-            "name": "Test",
+            "name": "TMP",
             "simulation": {
                 "expiration_offset": 0,
                 "interest_rate": 0,
-                "max_price": 300,
-                "mean_volatility": 0.3,
-                "min_price": 200,
+                "max_price": 5600,
+                "mean_volatility": 0.481,
+                "min_price": 4300,
                 "step": 1,
-                "time_for_simulation": 15,
-                "time_to_expiry": 37
+                "time_for_simulation": 8,
+                "time_to_expiry": 3
             },
-            "ticker": "AAPL",
+            "ticker": "^SPX",
             "trade": {
-                "expiration_date": "2025-04-17",
+                "expiration_date": "2025-04-22",
                 "mean_volatility": 0.3,
                 "trade_open_by": "2025-03-03"
             }

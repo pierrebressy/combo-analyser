@@ -113,6 +113,12 @@
     font-size: 12px;
 }
 
+.simple_checkbox {
+    background-color: var(--bg-main);
+    width: 100px;
+}
+
+
 
 .checkbox-title {
     font-weight: bold;
