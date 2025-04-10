@@ -17,7 +17,8 @@ export async function is_mode_local() {
 
 export async function load_local_price(ticker) {
     try {
-        const response = await fetch(local_prices_file); // Fetch the config file
+        const url = `${local_prices_file}?t=${Date.now()}`; // Append timestamp to bust cache
+        const response = await fetch(url, { cache: "no-store" }); // Optional: explicit cache control
         if (!response.ok) throw new Error("Failed to load ",local_prices_file);
 
         let local_prices = await response.json(); // Parse JSON and store in local_config
@@ -30,7 +31,8 @@ export async function load_local_price(ticker) {
 
 export async function load_local_config() {
     try {
-        const response = await fetch(local_config_file); // Fetch the config file
+        const url = `${local_config_file}?t=${Date.now()}`; // Append timestamp to bust cache
+        const response = await fetch(url, { cache: "no-store" }); // Optional: explicit cache control
         if (!response.ok) throw new Error("Failed to load ",local_config_file);
 
         let local_config = await response.json(); // Parse JSON and store in local_config

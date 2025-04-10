@@ -760,11 +760,14 @@
                 "Gamma \ud835\udeaa",
                 "Theta \ud835\udeaf",
                 "Vega \ud835\udfb6",
-                "Rho \ud835\udfba"
+                "Rho \ud835\udfba",
+                "Intrinsic Value",
+                "Time Value",
+                "Option Price"
             ]
         }
     },
-    "underlying_current_price": {
+    "UNUSED_underlying_current_price": {
         "price": 224.1999969482422,
         "source": "live",
         "ticker": "AAPL"
@@ -806,6 +809,6 @@
         "tab_active1": "P/L Graph",
         "tab_active2": "3D View",
         "tab_active3": "Logs",
-        "tab_active": "3D View"
+        "tab_active": "P/L Graph"
     }
 }

@@ -1,6 +1,6 @@
-import { compute_p_and_l_data_for_price, compute_greeks_data_for_price, env } from './script.js';
+import { compute_p_and_l_data_for_price, compute_greeks_data_for_price, env } from './main_script.js';
 import { addLog } from './log.js';
-import { dark_mode, show_hplane, show_3dbox, two_colors_cmap } from './script.js';
+import { dark_mode, show_hplane, show_3dbox, two_colors_cmap } from './main_script.js';
 
 export let x_camera = 20;
 export let y_camera = 20;

@@ -1,0 +1,18 @@
+export let dark_mode = true;
+export let use_local = false;
+export let env;
+export let ticker;
+export let price;
+export let volatility_is_per_leg;
+export let auto_save = true;
+export let simulated_underlying_price_changed = false;
+export let underlying_current_price = 0;
+export let svg;
+export let scale_p_and_l;
+export let combo_changed = false;
+export let pl_at_expiration_cursor;
+export let pl_at_initial_cursor;
+export let pl_at_sim_cursor;
+export let price_cursor;
+export let sigma_factor = 1.;
+export let memo_price_at_mouse_down = 0;

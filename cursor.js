@@ -213,6 +213,33 @@ export class TextRect {
     }
 }
 
+export class TextRectPlus extends TextRect {
+    constructor(svg, name, fill, value) {
+        super(svg, name, fill);
+        // add a small purple disk on the upper right corner, radidius 5
+        this.group = svg.append("g");
+        if(value) {
+            this.disk = this.group.append("circle")
+            .attr("r", 5)
+            .attr("fill", "purple");
+        
+        this.label = this.group.append("text")
+            .attr("text-anchor", "middle")
+            .attr("dominant-baseline", "middle")
+            .attr("fill", "white")
+            .attr("font-size", "8px")
+            .text(value);
+        }
+        
+        
+    }
+    set_rect_position(x, y) {
+        this.rect_element.attr("transform", `translate(${x}, ${y})`);
+        this.group.attr("transform", `translate(${x}, ${y+20})`);
+    }
+
+}
+
 class Cursor {
 
     constructor(svg, data, yscale, name, fill) {
