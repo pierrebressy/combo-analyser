@@ -67,7 +67,9 @@ export class Environment {
 
         this.set_3d_view("P/L");
     }
-
+    set_combo(combo) {
+        this.config.config.combo = combo;
+    }
     set_3d_view(value) {
         this.config.window.view_3d = value;
     }

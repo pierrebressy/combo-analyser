@@ -6,7 +6,7 @@ import { update_3d_view } from './3dview.js';
 import { addLog } from './log.js';
 import { test_iv } from './iv.js';
 import { create_main_frame } from './frame.js';
-import {display_sigma_selector, display_days_left_slider, display_combos_list} from './frame.js';
+import {display_sigma_selector, display_days_left_slider} from './frame.js';
 import {display_volatility_sliders, display_checkbox_for_volatility_mode} from './frame.js';
 
 
@@ -989,6 +989,37 @@ export function draw_graph() {
     add_crosshair();
 
     update_3d_view();
+}
+function display_combos_list() {
+
+    const comboContainer = d3.select("#combo-list-container")
+    comboContainer.selectAll("*").remove();
+    const dropdown = comboContainer.append("select")
+        .attr("id", "comboBox")
+        .on("change", function () {
+            //env.config.config.combo = this.value;
+            env.set_combo(this.value);
+            if (!use_local) {
+                update_remote_config(env.config);
+                console.log("Remote config updated", env.config);
+                env = 0
+            }
+            location.reload();
+            console.log("reloadWithParam combo=", this.value);
+            reloadWithParam("combo", this.value);
+
+        });
+    dropdown.selectAll("option")
+        .data(env.get_combos())
+        .enter()
+        .append("option")
+        .text(d => d)
+        .attr("value", d => d)
+        .attr("selected", d => d === env.config.config.combo ? "selected" : null);
+    comboContainer.insert("label", "#comboBox")
+        .attr("class", "std-text")
+        .text("Choose combo: ");
+
 }
 
 function update_main_page() {
