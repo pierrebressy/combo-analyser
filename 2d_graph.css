@@ -1,0 +1,176 @@
+.pl-container {
+    background-color: var(--bg-right);
+    width: 100%;
+    background-color: var(--bg-right);
+    padding: 0px;
+    font-family: Menlo, monospace;
+    font-size: 12px;
+    height: 90vh;
+}
+
+.floating-window {
+    position: absolute;
+    background: white;
+    border: 1px solid #ccc;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+    padding: 10px;
+    display: none;
+    z-index: 1000;
+    font-family: Menlo, monospace;
+    font-size: 12px;
+    border-radius: 5px;
+    min-width: 120px;
+}
+
+.floating-window .title {
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 10px;
+    font-family: Menlo, monospace;
+    font-size: 12px;
+}
+
+.red-dot {
+    width: 15px;
+    height: 15px;
+    fill: red;
+    border-radius: 50%;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
+
+
+.green-dot {
+    width: 15px;
+    height: 15px;
+    fill: green;
+    border-radius: 50%;
+    position: absolute;
+    top: 30px;
+    right: 10px;
+}
+
+.blinking-red-circle {
+    animation: blinkFillRed 1s infinite;
+}
+
+@keyframes blinkFillRed {
+    0% {
+        fill: red;
+    }
+
+    33% {
+        fill: gray;
+    }
+
+    34% {
+        fill: gray;
+    }
+
+    66% {
+        fill: gray;
+    }
+
+    67% {
+        fill: red;
+    }
+
+    100% {
+        fill: red;
+    }
+}
+
+.gray-dot {
+    width: 15px;
+    height: 15px;
+    fill: lightgray;
+    border-radius: 50%;
+    position: absolute;
+    top: 30px;
+    right: 10px;
+}
+
+.blinking-orange-circle {
+    animation: blinkFillOrange 1s infinite;
+}
+
+@keyframes blinkFillOrange {
+    0% {
+        fill: orange;
+    }
+
+    33% {
+        fill: gray;
+    }
+
+    34% {
+        fill: gray;
+    }
+
+    66% {
+        fill: gray;
+    }
+
+    67% {
+        fill: orange;
+    }
+
+    100% {
+        fill: orange;
+    }
+}
+
+.crosshair-line {
+    transition: opacity 0.2s ease-in-out;
+}
+
+
+body.light-mode .y-axis text {
+    fill: #000000;
+    stroke: none;
+}
+
+/* Dark mode axis styling */
+body.dark-mode .y-axis text {
+    fill: #ffffff;
+    stroke: none;
+}
+/* Light mode axis style */
+body.light-mode .x-axis path,
+body.light-mode .x-axis line {
+    stroke: #000;
+}
+
+/* Dark mode axis style */
+body.dark-mode .x-axis path,
+body.dark-mode .x-axis line {
+    stroke: #fff;
+}
+
+body.light-mode .y-axis-greek text {
+    fill: #000;
+    stroke: none;  /* important */
+    font-weight: normal;
+}
+
+/* Dark mode */
+body.dark-mode .y-axis-greek text {
+    fill: #fff;
+    stroke: none;  /* important */
+    font-weight: normal;
+}
+body.light-mode .y-axis-greek path,
+body.light-mode .y-axis-greek line {
+    stroke: #000;
+}
+
+body.dark-mode .y-axis-greek path,
+body.dark-mode .y-axis-greek line {
+    stroke: #fff;
+}
+
+.y-label-std-text {
+    fill: var(--text-color);
+    font-size: 12px;
+}

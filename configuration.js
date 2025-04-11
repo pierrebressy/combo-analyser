@@ -1,4 +1,4 @@
-import { fetch_combo_templates } from './async.js';
+import { fetch_combo_templates } from './network.js';
 
 export function getCookie(name) {
     const cookies = document.cookie.split("; ");
@@ -35,12 +35,12 @@ export class Environment {
             combo = get_url_param("combo");
             if (combo.length == 0) {
                 combo = "LONG CALL";
-                console.log("Error: Bad value for [combo] in URL, using default value ["+combo+"]");
+                console.log("Error: Bad value for [combo] in URL, using default value [" + combo + "]");
             }
         }
         catch (error) {
             combo = "LONG CALL";
-            console.log("Info: no [combo] in URL, using default value ["+combo+"]");
+            console.log("Info: no [combo] in URL, using default value [" + combo + "]");
         }
         config.config.combo = combo;
         //console.log("State: config.config.combo="+ config.config.combo);
@@ -61,7 +61,7 @@ export class Environment {
         //const container = d3.select("#graph-container").node();
         //this.config.window.width = container.getBoundingClientRect().width;
         //this.config.window.height = container.getBoundingClientRect().height - 50;
-        
+
         this.combo = this.get_combo_params();
         //console.log("State: env.combo=", this.combo);
 
@@ -77,7 +77,7 @@ export class Environment {
         return this.config.window.view_3d;
     }
 
-    set_combo_to_tmp(){
+    set_combo_to_tmp() {
         this.config.config.combo = "TMP";
     }
 
@@ -167,7 +167,7 @@ export class Environment {
         return this.config.window.zoom;
     }
     get_full_graph_height() {
-        return this.get_window_height()-this.get_window_top_margin();
+        return this.get_window_height() - this.get_window_top_margin();
     }
 
     get_button_default_height() {
@@ -282,10 +282,10 @@ export class Environment {
         return this.combo.simulation.min_price;
     }
     set_simul_max_price_of_combo(value) {
-        this.combo.simulation.max_price=value;
+        this.combo.simulation.max_price = value;
     }
     set_simul_min_price_of_combo(value) {
-        this.combo.simulation.min_price=value;
+        this.combo.simulation.min_price = value;
     }
     get_simul_step_price_of_combo() {
         return this.combo.simulation.step;
@@ -310,7 +310,7 @@ export class ComboTemplater {
         this.combo_templates = await response;
         console.log("Combo templates loaded:", this.combo_templates);
         return this.combo_templates;
-    }   
+    }
     get_combo_templates() {
         let combos = [];
         for (let key in this.combo_templates.combos) {
@@ -318,5 +318,5 @@ export class ComboTemplater {
         }
         return combos;
     }
-    
+
 }

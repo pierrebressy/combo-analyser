@@ -1,6 +1,6 @@
-import { is_mode_local, load_local_price, load_local_config, update_remote_config, fetch_configuration, fetch_price } from './async.js';
+import { is_mode_local, load_local_price, load_local_config, fetch_configuration, fetch_price } from './network.js';
 import { Environment } from './configuration.js';
-import { update_3d_view } from './3dview.js';
+import { update_3d_view } from './3d_view.js';
 import { addLog } from './log.js';
 import { test_iv } from './iv.js';
 import { create_main_frame } from './frame.js';
@@ -93,7 +93,7 @@ function display() {
     d3.select("#left-container").append("div")
         .attr("class", "sigma-selector-container")
         .attr("id", "sigma-selector-container");
-        display_sigma_selector();
+    display_sigma_selector();
 
     d3.select("#left-container").append("div").append("br")
 
@@ -105,21 +105,21 @@ async function main() {
 
     set_use_local(await is_mode_local());
     //set_use_local(true);
-    
+
     env = await setup_global_env(env);
-    
+
     let ticker = env.get_ticker_of_combo();
     let price = get_use_local() ? await load_local_price(ticker) : await fetch_price(ticker);
     env.set_underlying_current_price(price);
     set_underlying_current_price(env.get_underlying_current_price().price);
-    
+
     create_main_frame(env.config.window.tab_active);
     display();
-    
+
     window.addEventListener("resize", display);
-    
+
     addLog('State: use_local=' + get_use_local(), { warning: true });
-    
+
     test_iv();
 }
 

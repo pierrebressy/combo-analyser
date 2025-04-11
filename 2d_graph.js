@@ -1,11 +1,11 @@
 import { env } from './main_script.js';
 import { get_sigma_factor } from './global.js';
-import { set_underlying_current_price,get_underlying_current_price } from './global.js';
+import { set_underlying_current_price, get_underlying_current_price } from './global.js';
 import { get_volatility_is_per_leg } from './global.js';
-import { computeOptionPrice } from './functions.js';
-import { VerticalCursor, HorizontalCursor, TextRect, Line, TextRectPlus } from './cursor.js';
-import { display_local_status} from './frame.js';
-import { update_3d_view } from './3dview.js';
+import { computeOptionPrice } from './computation.js';
+import { VerticalCursor, HorizontalCursor, TextRect, Line, TextRectPlus } from './graphic_objects.js';
+import { display_local_status } from './frame.js';
+import { update_3d_view } from './3d_view.js';
 import { set_simulated_underlying_price_changed } from './global.js';
 import { set_combo_changed } from './global.js';
 import { addLog } from './log.js';
@@ -88,7 +88,7 @@ function compute_greeks_data(use_legs_volatility) {
             greek_index++;
             data = { x: price, y: intrinsic_value + time_value };
             greeks_data[greek_index].push(data);
-    
+
         }
         else {
             let data = { x: price, y: 0 };
@@ -99,7 +99,7 @@ function compute_greeks_data(use_legs_volatility) {
             greek_index++;
             data = { x: price, y: 0 };
             greeks_data[greek_index].push(data);
-    
+
         }
 
     }

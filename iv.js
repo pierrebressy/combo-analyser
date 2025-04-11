@@ -1,5 +1,5 @@
 import { addLog } from './log.js';
-import { normalCDF } from './functions.js';
+import { normalCDF } from './computation.js';
 
 function d1(sigma, S, K, T, r) {
   return (Math.log(S / K) + (r + 0.5 * sigma * sigma) * T) / (sigma * Math.sqrt(T));
@@ -178,10 +178,10 @@ export function test_iv2() {
   addLog("compute_iv_dichotomy       => IV = ", (100 * iv).toFixed(2), " %");
 
   const isCall = true;
-  
+
   const volImp = impliedVolatilityMC(tickerPrice, strikePrice, riskFreeRate, timeToExpiration, optionPrice, isCall);
   addLog("impliedVolatilityMC        => IV = ", (100 * volImp).toFixed(2), " %");
-  
+
 }
 export function test_iv() {
   const tickerPrice = 70.69;   // S
@@ -196,14 +196,14 @@ export function test_iv() {
   addLog("Expiration:   ", (365 * timeToExpiration).toFixed(1), " days");
 
   let iv = compute_iv_newtown_raphson(tickerPrice, strikePrice, timeToExpiration, riskFreeRate, optionPrice, optionType);
-  addLog("compute_iv_newtown_raphson => IV = ", (100 * iv ).toFixed(2), " % (yearly)", (100 * iv/Math.sqrt(252) ).toFixed(2), " % (daily)");
+  addLog("compute_iv_newtown_raphson => IV = ", (100 * iv).toFixed(2), " % (yearly)", (100 * iv / Math.sqrt(252)).toFixed(2), " % (daily)");
 
   iv = compute_iv_dichotomy(tickerPrice, strikePrice, timeToExpiration, riskFreeRate, optionPrice, optionType);
-  addLog("compute_iv_dichotomy       => IV = ", (100 * iv ).toFixed(2), " % (yearly)", (100 * iv/Math.sqrt(252) ).toFixed(2), " % (daily)");
+  addLog("compute_iv_dichotomy       => IV = ", (100 * iv).toFixed(2), " % (yearly)", (100 * iv / Math.sqrt(252)).toFixed(2), " % (daily)");
 
   const isCall = true;
-  
+
   const volImp = impliedVolatilityMC(tickerPrice, strikePrice, riskFreeRate, timeToExpiration, optionPrice, isCall);
-  addLog("impliedVolatilityMC        => IV = ", (100 * iv ).toFixed(2), " % (yearly)", (100 * iv/Math.sqrt(252) ).toFixed(2), " % (daily)");
-  
+  addLog("impliedVolatilityMC        => IV = ", (100 * iv).toFixed(2), " % (yearly)", (100 * iv / Math.sqrt(252)).toFixed(2), " % (daily)");
+
 }
