@@ -9,6 +9,9 @@ import { update_3d_view } from './3d_view.js';
 import { set_simulated_underlying_price_changed } from './global.js';
 import { set_combo_changed } from './global.js';
 import { addLog } from './log.js';
+import { set_use_computed_volatility, get_use_computed_volatility } from './global.js';
+import { set_computed_volatility_available, get_computed_volatility_available } from './global.js';
+
 
 let pl_at_expiration_cursor;
 let pl_at_initial_cursor;
@@ -42,7 +45,8 @@ function compute_greeks_data(use_legs_volatility) {
     const minPrice = env.get_simul_min_price_of_combo();
     const maxPrice = env.get_simul_max_price_of_combo();
     const stepPrice = env.get_simul_step_price_of_combo();
-    const get_use_real_values = env.get_use_real_values();
+    //const get_use_real_values = env.get_use_real_values();
+    const get_use_real_values = get_use_computed_volatility();
     for (let price = minPrice; price <= maxPrice; price = price + stepPrice) {
 
         let greek_index = 0;
@@ -109,7 +113,8 @@ function compute_greeks_data(use_legs_volatility) {
 export function compute_p_and_l_data_for_price(use_legs_volatility, num_days_left, price) {
 
     let p_and_l_profile = 0;
-    const get_use_real_values = env.get_use_real_values();
+    //const get_use_real_values = env.get_use_real_values();
+    const get_use_real_values = get_use_computed_volatility();
     const interest_rate_of_combo = env.get_interest_rate_of_combo();
     const simulation_time_to_expiry = env.get_simulation_time_to_expiry();
     const mean_volatility_of_combo = env.get_mean_volatility_of_combo(get_use_real_values)
@@ -126,6 +131,15 @@ export function compute_p_and_l_data_for_price(use_legs_volatility, num_days_lef
     return { x: price, y: p_and_l_profile }
 }
 function compute_p_and_l_data(use_legs_volatility, num_days_left) {
+    /*const get_use_real_values = get_use_computed_volatility();
+    console.log('get_use_real_values', get_use_real_values);
+    const option=env.get_combo_params().legs[0];
+    let ov = get_use_real_values ?
+    option.trade_volatility : option.sim_volatility;
+    console.log('option.trade_volatility', option.trade_volatility);
+    console.log('option.sim_volatility', option.sim_volatility);*/
+
+
 
     const minPrice = env.get_simul_min_price_of_combo();
     const maxPrice = env.get_simul_max_price_of_combo();
@@ -660,7 +674,10 @@ export function draw_graph() {
     update_3d_view();
 }
 export function draw_one_sigma_area(svg, underlying_current_price, p_and_l_graph_height) {
-    let sigma = underlying_current_price * env.get_mean_volatility_of_combo(env.get_use_real_values()) * Math.sqrt(env.get_time_for_simulation_of_combo() / 365);
+    //const get_use_real_values = env.get_use_real_values();
+    const get_use_real_values = get_use_computed_volatility();
+
+    let sigma = underlying_current_price * env.get_mean_volatility_of_combo(get_use_real_values) * Math.sqrt(env.get_time_for_simulation_of_combo() / 365);
     let sigma_text = `σ = ${sigma.toFixed(0)}`;
     let price_less_sigma = underlying_current_price - get_sigma_factor() * sigma;
     let price_plus_sigma = underlying_current_price + get_sigma_factor() * sigma;

@@ -1,7 +1,9 @@
 let auto_save = true;
 let dark_mode = true;
 let sigma_factor = 1.;
-let volatility_is_per_leg;
+let volatility_is_per_leg=false;
+let use_computed_volatility=false;
+let computed_volatility_available=false;
 let combo_changed = false;
 let two_colors_cmap = true;
 let show_hplane = true;
@@ -10,6 +12,20 @@ let simulated_underlying_price_changed = false;
 let use_local = false;
 let underlying_current_price = 0;
 
+
+export function set_computed_volatility_available(value) {
+    computed_volatility_available = value;
+}
+export function get_computed_volatility_available() {
+    return computed_volatility_available;
+}
+
+export function set_use_computed_volatility(value) {
+    use_computed_volatility = value;
+}
+export function get_use_computed_volatility() {
+    return use_computed_volatility;
+}
 export function set_underlying_current_price(value) {
     underlying_current_price = value;
 }

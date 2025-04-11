@@ -5,10 +5,11 @@
                 {
                     "expiration_offset": 0,
                     "qty": 1,
-                    "sim_volatility": 0.15,
-                    "strike": 225,
-                    "trade_volatility": 0.15,
-                    "type": "call"
+                    "sim_volatility": 0.1,
+                    "strike": 180,
+                    "trade_volatility": 0.3,
+                    "type": "call",
+                    "price": 19.92
                 }
             ],
             "name": "Single CALL",
@@ -16,11 +17,11 @@
                 "expiration_offset": 0,
                 "interest_rate": 0,
                 "max_price": 235,
-                "mean_volatility": 0.15,
-                "min_price": 210,
+                "mean_volatility": 0.20,
+                "min_price": 150,
                 "step": 0.1,
-                "time_for_simulation": 14,
-                "time_to_expiry": 14
+                "time_for_simulation": 15,
+                "time_to_expiry": 35
             },
             "ticker": "AAPL",
             "trade": {
@@ -740,11 +741,11 @@
         ],
         "num_greeks": 6,
         "sigma_factors": [1, 1.5, 2, 2.5, 3, 3.5],
-        "volatility_is_per_leg": true
+        "volatility_is_per_leg": false
     },
     "config": {
         "combo": "LONG CALL",
-        "use_real_values": false
+        "use_real_values": true
     },
     "graph": {
         "greeks": {

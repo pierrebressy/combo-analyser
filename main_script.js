@@ -10,15 +10,12 @@ import { set_volatility_is_per_leg } from './global.js';
 import { set_underlying_current_price } from './global.js';
 import { set_use_local, get_use_local } from './global.js';
 import { draw_graph } from './2d_graph.js';
+import { compute_iv_dichotomy } from './iv.js';
+import { set_computed_volatility_available } from './global.js';
 
 export let env;
 
 
-export function reloadWithParam(key, value) {
-    const url = new URL(window.location);
-    url.searchParams.set(key, value); // Add or update the parameter
-    window.location.href = url.toString(); // Navigate to the new URL
-}
 async function setup_global_env(e) {
     if (!e) {
         console.log("setup_global_env: loading env...");
@@ -113,6 +110,27 @@ async function main() {
     env.set_underlying_current_price(price);
     set_underlying_current_price(env.get_underlying_current_price().price);
 
+    set_computed_volatility_available(true);
+    env.get_combo_params().legs.forEach(option => {
+        if(option.price === undefined) {
+            console.error("Option price is undefined");
+            set_computed_volatility_available(false);
+        }
+        console.log('ticker:', ticker, price.price);
+        console.log('type:', option.type);
+        console.log('strike:', option.strike);
+        console.log('time_to_expiry:', env.get_simulation_time_to_expiry());
+        console.log('price:', option.price);
+        console.log('type:', option.type);
+        const riskFreeRate=0.05;
+        const iv = compute_iv_dichotomy(price.price, option.strike, env.get_simulation_time_to_expiry()/365, riskFreeRate, option.price, option.type);
+        console.log("IV = ", (100 * iv).toFixed(2), " % (yearly)", (100 * iv / Math.sqrt(252)).toFixed(2), " % (daily)");
+        option.trade_volatility = iv;
+    });
+
+
+
+
     create_main_frame(env.config.window.tab_active);
     display();
 
@@ -121,6 +139,6 @@ async function main() {
     addLog('State: use_local=' + get_use_local(), { warning: true });
 
     test_iv();
-}
 
+}
 main();

@@ -1,10 +1,12 @@
 import { TabsManager } from './tabs_manager.js';
 import { RadioButton } from './radiobutton.js';
 import { update_3d_view, cameraPosition } from './3d_view.js';
-import { env, reloadWithParam } from './main_script.js';
+import { env } from './main_script.js';
 import { add_log_container_in_tab_container } from './log.js';
 import { draw_graph } from './2d_graph.js';
 import { set_volatility_is_per_leg, get_volatility_is_per_leg } from './global.js';
+import { set_use_computed_volatility, get_use_computed_volatility } from './global.js';
+import { get_computed_volatility_available } from './global.js';
 import { set_dark_mode, get_dark_mode } from './global.js';
 import { set_auto_save, get_auto_save } from './global.js';
 import { set_sigma_factor, get_sigma_factor } from './global.js';
@@ -17,6 +19,11 @@ import { get_use_local } from './global.js';
 
 let tabs_manager;
 
+function reloadWithParam(key, value) {
+    const url = new URL(window.location);
+    url.searchParams.set(key, value); // Add or update the parameter
+    window.location.href = url.toString(); // Navigate to the new URL
+}
 
 export function display_combos_list() {
 
@@ -163,7 +170,7 @@ export function display_checkbox_for_volatility_mode() {
     volatility_main_container.append("p")
         .attr("class", "checkbox-title")
         .text("Volatility Management");
-    const checkbox = volatility_main_container.append("input")
+    const checkbox_by_leg = volatility_main_container.append("input")
         .attr("type", "checkbox")
         .attr("id", "myCheckbox2")
         .attr("name", "Volatility by leg")
@@ -171,7 +178,7 @@ export function display_checkbox_for_volatility_mode() {
     volatility_main_container.append("label")
         .attr("for", "myCheckbox2")
         .attr("class", "std-text")
-        .text(" Volatility by leg");
+        .text("By leg ");
     if (get_volatility_is_per_leg()) {
         per_leg_volatility_container.style("display", "block"); // Show the new container
         mean_volatility_container.style("display", "none"); // Show the new container
@@ -179,16 +186,43 @@ export function display_checkbox_for_volatility_mode() {
         per_leg_volatility_container.style("display", "none"); // Hide the new container
         mean_volatility_container.style("display", "block"); // Hide the new container
     }
+
+    const checkbox_computed = volatility_main_container.append("input")
+        .attr("type", "checkbox")
+        .attr("id", "myCheckbox2")
+        .attr("name", "Computed")
+        .attr("disabled", get_computed_volatility_available() ? null : true)
+        .attr("checked", get_use_computed_volatility() ? "checked" : null);
+    volatility_main_container.append("label")
+        .attr("for", "myCheckbox2")
+        .attr("class", "std-text")
+        .attr("disabled", get_computed_volatility_available() ? null : true)
+        .text("Computed");
     display_volatility_sliders();
 
-    checkbox.on("change", function () {
+
+    checkbox_by_leg.on("change", function () {
         set_volatility_is_per_leg(this.checked);
         if (this.checked) {
             per_leg_volatility_container.style("display", "block"); // Show the new container
             mean_volatility_container.style("display", "none"); // Show the new container
         } else {
+            set_use_computed_volatility(false);
+            checkbox_computed.property("checked", false);
             per_leg_volatility_container.style("display", "none"); // Hide the new container
             mean_volatility_container.style("display", "block"); // Hide the new container
+        }
+        display_volatility_sliders();
+        draw_graph();
+    });
+
+    checkbox_computed.on("change", function () {
+        set_use_computed_volatility(this.checked);
+        if (this.checked) {
+            checkbox_by_leg.property("checked", true);
+            per_leg_volatility_container.style("display", "block"); // Show the new container
+            mean_volatility_container.style("display", "none"); // Show the new container
+        } else {
         }
         display_volatility_sliders();
         draw_graph();
@@ -200,10 +234,11 @@ export function display_volatility_sliders() {
     const per_leg_volatility_container = d3.select("#per-leg-volatility-container")
     per_leg_volatility_container.selectAll("*").remove();
     env.get_combo_params().legs.forEach((option, index) => {
-        let iv_value = 100 * (env.get_use_real_values() ? option.trade_volatility : option.sim_volatility)
+        //let iv_value = 100 * (env.get_use_real_values() ? option.trade_volatility : option.sim_volatility)
+        let iv_value = 100 * (get_use_computed_volatility() ? option.trade_volatility : option.sim_volatility)
         let leg_vol_text = per_leg_volatility_container.append("p")
             .attr("class", "checkbox-title")
-            .text(`${option.type} ${option.strike} IV ` + iv_value + "%");
+            .text(`${option.type} ${option.strike} IV ` + iv_value.toFixed(2) + "%");
         let leg_vol_slider = per_leg_volatility_container.append("input")
             .attr("type", "range")
             .attr("id", "leg_vol_slider" + index)
@@ -213,9 +248,10 @@ export function display_volatility_sliders() {
             .attr("step", 100 * env.get_iv_slider_step())
             .style("width", "100%"); // Make it full width
         leg_vol_slider.on("input", function () {
-            leg_vol_text.text(`${option.type} ${option.strike} IV ` + this.value + "%");
-            if (env.get_use_real_values()) {
-                option.trade_volatility = parseFloat(this.value / 100.0);
+            leg_vol_text.text(`${option.type} ${option.strike} IV ` + (this.value*1.0).toFixed(2) + "%");
+            //if (env.get_use_real_values()) {
+            if (get_use_computed_volatility()) {
+                    option.trade_volatility = parseFloat(this.value / 100.0);
             } else {
                 option.sim_volatility = parseFloat(this.value / 100.0);
             }

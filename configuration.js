@@ -43,27 +43,12 @@ export class Environment {
             console.log("Info: no [combo] in URL, using default value [" + combo + "]");
         }
         config.config.combo = combo;
-        //console.log("State: config.config.combo="+ config.config.combo);
+        console.log("use_real_values="+ config.config.use_real_values);
 
-        let use_real_values = false;
-        try {
-            use_real_values = get_url_param("use_real_values") === "true";
-        }
-        catch (error) {
-            console.log("Info: no [use_real_values] in URL, using simulation values.");
-            use_real_values = false;
-        }
-        config.config.use_real_values = use_real_values;
-        //console.log("State: config.config.use_real_values="+config.config.use_real_values);
 
-        // Attributes (properties)
         this.config = config;
-        //const container = d3.select("#graph-container").node();
-        //this.config.window.width = container.getBoundingClientRect().width;
-        //this.config.window.height = container.getBoundingClientRect().height - 50;
 
         this.combo = this.get_combo_params();
-        //console.log("State: env.combo=", this.combo);
 
         this.set_3d_view("P/L");
     }
