@@ -1,7 +1,7 @@
 import { TabsManager } from './tabs_manager.js';
 import { RadioButton } from './radiobutton.js';
 import { update_3d_view, cameraPosition } from './3dview.js';
-import {  env } from './main_script.js';
+import {  env, reloadWithParam} from './main_script.js';
 import { add_log_container_in_tab_container } from './log.js';
 import { draw_graph } from './2d_graph.js';
 import { set_volatility_is_per_leg,get_volatility_is_per_leg } from './global.js';
@@ -16,6 +16,39 @@ import { get_simulated_underlying_price_changed } from './global.js';
 import { get_use_local } from './global.js';
 
 let tabs_manager;
+
+
+export function display_combos_list() {
+
+    const comboContainer = d3.select("#combo-list-container")
+    comboContainer.selectAll("*").remove();
+    const dropdown = comboContainer.append("select")
+        .attr("id", "comboBox")
+        .on("change", function () {
+            //env.config.config.combo = this.value;
+            env.set_combo(this.value);
+            if (!get_use_local()) {
+                update_remote_config(env.config);
+                console.log("Remote config updated", env.config);
+                env = 0
+            }
+            location.reload();
+            console.log("reloadWithParam combo=", this.value);
+            reloadWithParam("combo", this.value);
+
+        });
+    dropdown.selectAll("option")
+        .data(env.get_combos())
+        .enter()
+        .append("option")
+        .text(d => d)
+        .attr("value", d => d)
+        .attr("selected", d => d === env.config.config.combo ? "selected" : null);
+    comboContainer.insert("label", "#comboBox")
+        .attr("class", "std-text")
+        .text("Choose combo: ");
+
+}
 
 export function display_theme_buttons() {
     const theme_container = d3.select("#theme-container")
