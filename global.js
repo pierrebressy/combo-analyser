@@ -8,7 +8,14 @@ let show_hplane = true;
 let show_3dbox = true;
 let simulated_underlying_price_changed = false;
 let use_local = false;
+let underlying_current_price = 0;
 
+export function set_underlying_current_price(value) {
+    underlying_current_price = value;
+}
+export function get_underlying_current_price() {
+    return underlying_current_price;
+}
 export function set_use_local(value) {
     use_local = value;
 }

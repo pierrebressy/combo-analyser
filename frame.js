@@ -3,7 +3,7 @@ import { RadioButton } from './radiobutton.js';
 import { update_3d_view, cameraPosition } from './3dview.js';
 import {  env } from './main_script.js';
 import { add_log_container_in_tab_container } from './log.js';
-import { draw_graph } from './main_script.js';
+import { draw_graph } from './2d_graph.js';
 import { set_volatility_is_per_leg,get_volatility_is_per_leg } from './global.js';
 import { set_dark_mode,get_dark_mode } from './global.js';
 import { set_auto_save,get_auto_save } from './global.js';
@@ -524,7 +524,7 @@ function add_view3d_gragh_container_in_view3d_container(view3d_container) {
     view3d_container.appendChild(view3d_graph_container);
 }
 
-function create_left_container(body) {
+function create_left_container() {
 
     const leftContainer = document.createElement('div');
     leftContainer.classList.add('left-container');

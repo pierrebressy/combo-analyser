@@ -1,4 +1,5 @@
-import { compute_p_and_l_data_for_price, compute_greeks_data_for_price, env } from './main_script.js';
+import { compute_p_and_l_data_for_price, compute_greeks_data_for_price } from './2d_graph.js';
+import { env } from './main_script.js';
 import { get_dark_mode } from './global.js';
 import { get_two_colors_cmap } from './global.js';
 import { get_show_hplane } from './global.js';
