@@ -1,18 +1,75 @@
-export let dark_mode = true;
-export let use_local = false;
-export let env;
-export let ticker;
-export let price;
-export let volatility_is_per_leg;
-export let auto_save = true;
-export let simulated_underlying_price_changed = false;
-export let underlying_current_price = 0;
-export let svg;
-export let scale_p_and_l;
-export let combo_changed = false;
-export let pl_at_expiration_cursor;
-export let pl_at_initial_cursor;
-export let pl_at_sim_cursor;
-export let price_cursor;
-export let sigma_factor = 1.;
-export let memo_price_at_mouse_down = 0;
+let auto_save = true;
+let dark_mode = true;
+let sigma_factor = 1.;
+let volatility_is_per_leg;
+let combo_changed = false;
+let two_colors_cmap = true;
+let show_hplane = true;
+let show_3dbox = true;
+let simulated_underlying_price_changed = false;
+let use_local = false;
+
+export function set_use_local(value) {
+    use_local = value;
+}
+export function get_use_local() {
+    return use_local;
+}
+export function set_simulated_underlying_price_changed(value) {
+    simulated_underlying_price_changed = value;
+}
+export function get_simulated_underlying_price_changed() {
+    return simulated_underlying_price_changed;
+}
+export function set_combo_changed(value) {
+    combo_changed = value;
+}
+export function get_combo_changed() {
+    return combo_changed;
+}
+export function set_auto_save(value) {
+    auto_save = value;
+}
+export function get_auto_save() {
+    return auto_save;
+}
+
+export function set_dark_mode(value) {
+    dark_mode = value;
+}
+export function get_dark_mode() {
+    return dark_mode;
+}
+
+export function set_sigma_factor(value) {
+    sigma_factor = value;
+}
+export function get_sigma_factor() {
+    return sigma_factor;
+}
+
+export function set_volatility_is_per_leg(value) {
+    volatility_is_per_leg = value;
+}
+export function get_volatility_is_per_leg() {
+    return volatility_is_per_leg;
+}
+
+export function set_two_colors_cmap(value) {
+    two_colors_cmap = value;
+}
+export function get_two_colors_cmap() {
+    return two_colors_cmap;
+}
+export function set_show_hplane(value) {
+    show_hplane = value;
+}
+export function get_show_hplane() {
+    return show_hplane;
+}
+export function set_show_3dbox(value) {
+    show_3dbox = value;
+}
+export function get_show_3dbox() {
+    return show_3dbox;
+}

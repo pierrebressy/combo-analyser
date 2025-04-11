@@ -1,67 +1,95 @@
 import { TabsManager } from './tabs_manager.js';
 import { RadioButton } from './radiobutton.js';
 import { update_3d_view, cameraPosition } from './3dview.js';
-import { show_hplane, show_3dbox } from './main_script.js';
-import { env } from './main_script.js';
+import {  env } from './main_script.js';
 import { add_log_container_in_tab_container } from './log.js';
-import { set_sigma_factor,get_sigma_factor,draw_graph } from './main_script.js';
-import { set_volatility_is_per_leg,get_volatility_is_per_leg } from './main_script.js';
+import { draw_graph } from './main_script.js';
+import { set_volatility_is_per_leg,get_volatility_is_per_leg } from './global.js';
+import { set_dark_mode,get_dark_mode } from './global.js';
+import { set_auto_save,get_auto_save } from './global.js';
+import { set_sigma_factor,get_sigma_factor } from './global.js';
+import { set_two_colors_cmap,get_two_colors_cmap } from './global.js';
+import { set_show_hplane,get_show_hplane } from './global.js';
+import { set_show_3dbox,get_show_3dbox } from './global.js';
+import { get_combo_changed } from './global.js';
+import { get_simulated_underlying_price_changed } from './global.js';
+import { get_use_local } from './global.js';
 
 let tabs_manager;
 
-
-
-export function display_sigma_selector() {
-    const sigma_selector_container = d3.select("#sigma-selector-container")
-    sigma_selector_container.selectAll("*").remove();
-    sigma_selector_container.append("p")
+export function display_theme_buttons() {
+    const theme_container = d3.select("#theme-container")
+    theme_container.selectAll("*").remove();
+    theme_container.append("p")
         .attr("class", "checkbox-title")
-        .text("Sigma");
-
-    const sigma_factors = env.get_sigma_factors();
-
-    const sliderWrapper = sigma_selector_container.append("div")
-        .style("position", "relative")
-        .style("width", "100%");
-
-    // Create the slider input
-    sliderWrapper.append("input")
-        .attr("type", "range")
-        .attr("min", 0)
-        .attr("max", sigma_factors.length - 1) // Indices as values
-        .attr("value", sigma_factors.indexOf(get_sigma_factor())) // Set the initial value
-        .attr("step", 1) // Discrete steps
-        .style("width", "100%")
-        .style("margin-bottom", "20px") // Space for labels
-        .on("input", function () {
-            let index = +this.value;
-            let selectedValue = sigma_factors[index];
-            d3.select("#slider-label").text("Sigma Factor: " + selectedValue);
-            set_sigma_factor(selectedValue);
-            draw_graph();
-        });
-
-    // Create a label to display the selected value
-
-    const tickContainer = sliderWrapper.append("div")
-        .style("position", "relative")
-        .style("width", "100%")
-        .style("height", "20px") // Space for ticks
-        .style("display", "flex")
-        .style("justify-content", "space-between")
-        .style("pointer-events", "none");
-
-    tickContainer.selectAll("div")
-        .data(sigma_factors)
-        .enter()
-        .append("div")
+        .text("Theme");
+    const checkbox = theme_container.append("input")
+        .attr("type", "checkbox")
+        .attr("id", "myCheckbox")
+        .attr("name", "Dark Mode")
+        .attr("checked", get_dark_mode() ? "checked" : null);
+    theme_container.append("label")
+        .attr("for", "myCheckbox")
         .attr("class", "std-text")
-        .style("position", "absolute")
-        .style("left", (d, i) => `calc(${(i / (sigma_factors.length - 1)) * 95}% + 0px)`) // Center the text
-        .style("text-align", "center")
-        .style("width", "20px") // Small width to avoid overlap
-        .style("font-size", "12px")
-        .text(d => d);
+        .text(" Dark Mode");
+    if (get_dark_mode()) {
+        d3.select("body").classed("dark-mode", true);
+        d3.select("body").classed("light-mode", false);
+    } else {
+        d3.select("body").classed("dark-mode", false);
+        d3.select("body").classed("light-mode", true);
+    }
+
+    checkbox.on("change", function () {
+        set_dark_mode(this.checked);
+        if (this.checked) {
+            d3.select("body").classed("dark-mode", true);
+            d3.select("body").classed("light-mode", false);
+        } else {
+            d3.select("body").classed("dark-mode", false);
+            d3.select("body").classed("light-mode", true);
+        }
+        update_3d_view();
+
+    });
+}
+
+export function display_local_status() {
+
+    const local_status_container = d3.select("#local-status-container")
+    local_status_container.selectAll("*").remove();
+
+    local_status_container.append("p")
+        .attr("class", "checkbox-title")
+        .text("Local Status Info");
+    const local_status_remote_data_state = local_status_container.append("p")
+        .attr("class", get_use_local() ? "checkbox-text-inactive" : "checkbox-text-active")
+        .text("Remote data");
+    const local_status_underlying_state = local_status_container.append("p")
+        .attr("class", !get_simulated_underlying_price_changed() ? "checkbox-text-inactive" : "checkbox-text-active")
+        .text("Underlying price modified");
+    const local_status_strikes_state = local_status_container.append("p")
+        .attr("class", !get_combo_changed() ? "checkbox-text-inactive" : "checkbox-text-active")
+        .text("Strike(s) modified");
+
+    const auto_save_container = d3.select("#auto-save-container")
+    auto_save_container.selectAll("*").remove();
+    d3.select("#auto-save-container")
+        .append("input")
+        .attr("type", "checkbox")
+        .attr("id", "autosaveCheckbox")
+        .attr("checked", get_auto_save() ? "checked" : null)
+        .attr("name", "autosaveCheckbox");
+    d3.select("#auto-save-container")
+        .append("label")
+        .attr("class", "std-text")
+        .attr("for", "autosaveCheckbox")
+        .text(" Auto-save");
+    // Event listener to detect changes
+    d3.select("#autosaveCheckbox").on("change", function () {
+        set_auto_save(document.getElementById('autosaveCheckbox').checked);
+        console.log("Auto-save is now", get_auto_save());
+    });
 
 }
 
@@ -92,6 +120,47 @@ export function display_days_left_slider() {
 
 }
 
+export function display_checkbox_for_volatility_mode() {
+
+    const volatility_main_container = d3.select("#volatility-main-container")
+    volatility_main_container.selectAll("*").remove();
+    const per_leg_volatility_container = d3.select("#per-leg-volatility-container")
+    const mean_volatility_container = d3.select("#mean-volatility-container")
+
+    volatility_main_container.append("p")
+        .attr("class", "checkbox-title")
+        .text("Volatility Management");
+    const checkbox = volatility_main_container.append("input")
+        .attr("type", "checkbox")
+        .attr("id", "myCheckbox2")
+        .attr("name", "Volatility by leg")
+        .attr("checked", get_volatility_is_per_leg() ? "checked" : null);
+    volatility_main_container.append("label")
+        .attr("for", "myCheckbox2")
+        .attr("class", "std-text")
+        .text(" Volatility by leg");
+    if (get_volatility_is_per_leg()) {
+        per_leg_volatility_container.style("display", "block"); // Show the new container
+        mean_volatility_container.style("display", "none"); // Show the new container
+    } else {
+        per_leg_volatility_container.style("display", "none"); // Hide the new container
+        mean_volatility_container.style("display", "block"); // Hide the new container
+    }
+    display_volatility_sliders();
+
+    checkbox.on("change", function () {
+        set_volatility_is_per_leg(this.checked);
+        if (this.checked) {
+            per_leg_volatility_container.style("display", "block"); // Show the new container
+            mean_volatility_container.style("display", "none"); // Show the new container
+        } else {
+            per_leg_volatility_container.style("display", "none"); // Hide the new container
+            mean_volatility_container.style("display", "block"); // Hide the new container
+        }
+        display_volatility_sliders();
+        draw_graph();
+    });
+}
 
 export function display_volatility_sliders() {
 
@@ -162,46 +231,58 @@ export function display_volatility_sliders() {
 
 }
 
-export function display_checkbox_for_volatility_mode() {
-
-    const volatility_main_container = d3.select("#volatility-main-container")
-    volatility_main_container.selectAll("*").remove();
-    const per_leg_volatility_container = d3.select("#per-leg-volatility-container")
-    const mean_volatility_container = d3.select("#mean-volatility-container")
-
-    volatility_main_container.append("p")
+export function display_sigma_selector() {
+    const sigma_selector_container = d3.select("#sigma-selector-container")
+    sigma_selector_container.selectAll("*").remove();
+    sigma_selector_container.append("p")
         .attr("class", "checkbox-title")
-        .text("Volatility Management");
-    const checkbox = volatility_main_container.append("input")
-        .attr("type", "checkbox")
-        .attr("id", "myCheckbox2")
-        .attr("name", "Volatility by leg")
-        .attr("checked", get_volatility_is_per_leg() ? "checked" : null);
-    volatility_main_container.append("label")
-        .attr("for", "myCheckbox2")
-        .attr("class", "std-text")
-        .text(" Volatility by leg");
-    if (get_volatility_is_per_leg()) {
-        per_leg_volatility_container.style("display", "block"); // Show the new container
-        mean_volatility_container.style("display", "none"); // Show the new container
-    } else {
-        per_leg_volatility_container.style("display", "none"); // Hide the new container
-        mean_volatility_container.style("display", "block"); // Hide the new container
-    }
-    display_volatility_sliders();
+        .text("Sigma");
 
-    checkbox.on("change", function () {
-        set_volatility_is_per_leg(this.checked);
-        if (this.checked) {
-            per_leg_volatility_container.style("display", "block"); // Show the new container
-            mean_volatility_container.style("display", "none"); // Show the new container
-        } else {
-            per_leg_volatility_container.style("display", "none"); // Hide the new container
-            mean_volatility_container.style("display", "block"); // Hide the new container
-        }
-        display_volatility_sliders();
-        draw_graph();
-    });
+    const sigma_factors = env.get_sigma_factors();
+
+    const sliderWrapper = sigma_selector_container.append("div")
+        .style("position", "relative")
+        .style("width", "100%");
+
+    // Create the slider input
+    sliderWrapper.append("input")
+        .attr("type", "range")
+        .attr("min", 0)
+        .attr("max", sigma_factors.length - 1) // Indices as values
+        .attr("value", sigma_factors.indexOf(get_sigma_factor())) // Set the initial value
+        .attr("step", 1) // Discrete steps
+        .style("width", "100%")
+        .style("margin-bottom", "20px") // Space for labels
+        .on("input", function () {
+            let index = +this.value;
+            let selectedValue = sigma_factors[index];
+            d3.select("#slider-label").text("Sigma Factor: " + selectedValue);
+            set_sigma_factor(selectedValue);
+            draw_graph();
+        });
+
+    // Create a label to display the selected value
+
+    const tickContainer = sliderWrapper.append("div")
+        .style("position", "relative")
+        .style("width", "100%")
+        .style("height", "20px") // Space for ticks
+        .style("display", "flex")
+        .style("justify-content", "space-between")
+        .style("pointer-events", "none");
+
+    tickContainer.selectAll("div")
+        .data(sigma_factors)
+        .enter()
+        .append("div")
+        .attr("class", "std-text")
+        .style("position", "absolute")
+        .style("left", (d, i) => `calc(${(i / (sigma_factors.length - 1)) * 95}% + 0px)`) // Center the text
+        .style("text-align", "center")
+        .style("width", "20px") // Small width to avoid overlap
+        .style("font-size", "12px")
+        .text(d => d);
+
 }
 
 function handleRadioChange() {
@@ -345,9 +426,9 @@ function add_view3d_control_sliders(view3d_controler_container) {
     showHplane_checkbox.setAttribute("type", "checkbox");
     showHplane_checkbox.setAttribute("id", "show-hplane-container");
     showHplane_checkbox.setAttribute("name", "show-hplane-container");
-    showHplane_checkbox.checked = show_hplane;
+    showHplane_checkbox.checked = get_show_hplane();
     showHplane_checkbox.addEventListener("change", function () {
-        show_hplane = this.checked;
+        set_show_hplane(this.checked);
         update_3d_view();
     });
     showHplaneContainer.appendChild(showHplane_label);
@@ -363,9 +444,9 @@ function add_view3d_control_sliders(view3d_controler_container) {
     show3DBox_checkbox.setAttribute("type", "checkbox");
     show3DBox_checkbox.setAttribute("id", "show-3dbox-container");
     show3DBox_checkbox.setAttribute("name", "show-3dbox-container");
-    show3DBox_checkbox.checked = show_3dbox;
+    show3DBox_checkbox.checked = get_show_3dbox();
     show3DBox_checkbox.addEventListener("change", function () {
-        show_3dbox = this.checked;
+        set_show_3dbox(this.checked);
         update_3d_view();
     });
     show3DBoxContainer.appendChild(show3DBox_label);
@@ -381,9 +462,9 @@ function add_view3d_control_sliders(view3d_controler_container) {
     cmapStyle_checkbox.setAttribute("type", "checkbox");
     cmapStyle_checkbox.setAttribute("id", "cmap-style-container");
     cmapStyle_checkbox.setAttribute("name", "cmap-style-container");
-    cmapStyle_checkbox.checked = show_3dbox;
+    cmapStyle_checkbox.checked = get_two_colors_cmap();
     cmapStyle_checkbox.addEventListener("change", function () {
-        two_colors_cmap = this.checked;
+        set_two_colors_cmap(this.checked);
         update_3d_view();
     });
     cmapStyleContainer.appendChild(cmapStyle_label);

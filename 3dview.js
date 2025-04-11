@@ -1,6 +1,8 @@
 import { compute_p_and_l_data_for_price, compute_greeks_data_for_price, env } from './main_script.js';
-import { addLog } from './log.js';
-import { dark_mode, show_hplane, show_3dbox, two_colors_cmap } from './main_script.js';
+import { get_dark_mode } from './global.js';
+import { get_two_colors_cmap } from './global.js';
+import { get_show_hplane } from './global.js';
+import { get_show_3dbox } from './global.js';
 
 export let x_camera = 20;
 export let y_camera = 20;
@@ -315,7 +317,7 @@ function create_specific_lines() {
     const black_line = new MeshLine();
     black_line.setGeometry(black_geometry);
     const black_material = new MeshLineMaterial({
-        color: new THREE.Color(dark_mode ? 0xffffff : 0x000000),
+        color: new THREE.Color(get_dark_mode() ? 0xffffff : 0x000000),
         lineWidth: 0.1, // real visible width!
         transparent: true,
         depthTest: false
@@ -386,7 +388,7 @@ function create_mesh_color_heatmap(curve_data, z) {
 
             // Normalize Z and convert to color
             const color = new THREE.Color();
-            if (two_colors_cmap) {
+            if (get_two_colors_cmap()) {
                 const zNorm = (point.z - zMin) / (zMax - zMin); // [0, 1]
                 color.setHSL((zNorm) * 0.33, 1.0, 0.5); // green (0.33) → red (0)
             }
@@ -490,8 +492,8 @@ function cleanupThree() {
 
 
 export function update_3d_view() {
-    const display_reference_plane = show_hplane;
-    const display_reference_arrows = show_hplane;
+    const display_reference_plane = get_show_hplane();
+    const display_reference_arrows = get_show_hplane();
     const display_curve = true;
     let display_specific_lines = true;
     let curve_data;
@@ -503,7 +505,7 @@ export function update_3d_view() {
     // Create a canvas renderer and attach it to the container
     scene = new THREE.Scene();
 
-    scene.background = new THREE.Color(dark_mode ? '#1e1e1e' : '#ffffee');
+    scene.background = new THREE.Color(get_dark_mode() ? '#1e1e1e' : '#ffffee');
     camera = new THREE.PerspectiveCamera(cameraPosition.fov, window.innerWidth / window.innerHeight, 0.1, 100);
     camera.up.set(0, 0, 1);          // Make Z the "up" direction
 
@@ -543,7 +545,7 @@ export function update_3d_view() {
 
     // create the reference plane XY
     let box3d = create_3dbox(zero_point.z);
-    if (show_3dbox)
+    if (get_show_3dbox())
         scene.add(box3d);
 
     // create the 3 arrows referencial axes X,Y,Z

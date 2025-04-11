@@ -6,49 +6,30 @@ import { update_3d_view } from './3dview.js';
 import { addLog } from './log.js';
 import { test_iv } from './iv.js';
 import { create_main_frame } from './frame.js';
-import {display_sigma_selector, display_days_left_slider} from './frame.js';
-import {display_volatility_sliders, display_checkbox_for_volatility_mode} from './frame.js';
+import {display_sigma_selector, display_days_left_slider, display_theme_buttons} from './frame.js';
+import {display_volatility_sliders, display_checkbox_for_volatility_mode, display_local_status} from './frame.js';
+import { get_sigma_factor } from './global.js';
+import { set_volatility_is_per_leg,get_volatility_is_per_leg } from './global.js';
+import { set_combo_changed } from './global.js';
+import { set_simulated_underlying_price_changed } from './global.js';
+import { set_use_local,get_use_local } from './global.js';
 
 
-export let dark_mode = true;
-export let two_colors_cmap = true;
-export let show_hplane = true;
-export let show_3dbox = true;
 export let env;
-export let pl_at_expiration_cursor;
-export let pl_at_initial_cursor;
-export let pl_at_sim_cursor;
 
-export let use_local = false;
+let pl_at_expiration_cursor;
+let pl_at_initial_cursor;
+let pl_at_sim_cursor;
 let ticker;
 let price;
-
-export let volatility_is_per_leg;
-let auto_save = true;
-let simulated_underlying_price_changed = false;
 let underlying_current_price = 0;
 let svg;
 let scale_p_and_l;
-let combo_changed = false;
-
 let price_cursor;
-let sigma_factor = 1.;
 let memo_price_at_mouse_down = 0;
 
 
-export function set_sigma_factor (value) {
-    sigma_factor = value;
-}
-export function get_sigma_factor() {
-    return sigma_factor;
-}
 
-export function set_volatility_is_per_leg(value) {
-    volatility_is_per_leg = value;
-}
-export function get_volatility_is_per_leg() {
-    return volatility_is_per_leg;
-}
 
 
 
@@ -61,8 +42,8 @@ function reloadWithParam(key, value) {
 async function setup_global_env(e) {
     if (!e) {
         console.log("setup_global_env: loading env...");
-        e = new Environment(use_local ? await load_local_config() : await fetch_configuration());
-        volatility_is_per_leg = e.check_if_volatility_is_per_leg();
+        e = new Environment(get_use_local() ? await load_local_config() : await fetch_configuration());
+        set_volatility_is_per_leg( e.check_if_volatility_is_per_leg() );
     }
     else {
         console.log("setup_global_env: env already set.");
@@ -210,14 +191,12 @@ function compute_p_and_l_data(use_legs_volatility, num_days_left) {
     return p_and_l_data
 }
 function compute_data_to_display() {
-    env.set_pl_at_exp_data(compute_p_and_l_data(volatility_is_per_leg, 0));
-    env.set_pl_at_init_data(compute_p_and_l_data(volatility_is_per_leg, env.get_time_to_expiry_of_combo()));
-    env.set_pl_at_sim_data(compute_p_and_l_data(volatility_is_per_leg, env.get_time_for_simulation_of_combo()));
+    env.set_pl_at_exp_data(compute_p_and_l_data(get_volatility_is_per_leg(), 0));
+    env.set_pl_at_init_data(compute_p_and_l_data(get_volatility_is_per_leg(), env.get_time_to_expiry_of_combo()));
+    env.set_pl_at_sim_data(compute_p_and_l_data(get_volatility_is_per_leg(), env.get_time_for_simulation_of_combo()));
 
-    env.set_greeks_data(compute_greeks_data(volatility_is_per_leg));
+    env.set_greeks_data(compute_greeks_data(get_volatility_is_per_leg()));
 }
-
-
 function svg_cleanup(svg) {
     if (!svg) {
 
@@ -400,8 +379,8 @@ function add_y_axis_label(graph, graph_height, label) {
 function draw_one_sigma_area(svg, underlying_current_price, p_and_l_graph_height) {
     let sigma = underlying_current_price * env.get_mean_volatility_of_combo(env.get_use_real_values()) * Math.sqrt(env.get_time_for_simulation_of_combo() / 365);
     let sigma_text = `σ = ${sigma.toFixed(0)}`;
-    let price_less_sigma = underlying_current_price - sigma_factor * sigma;
-    let price_plus_sigma = underlying_current_price + sigma_factor * sigma;
+    let price_less_sigma = underlying_current_price - get_sigma_factor() * sigma;
+    let price_plus_sigma = underlying_current_price + get_sigma_factor() * sigma;
     let price_less_sigma_text = `${price_less_sigma.toFixed(1)}`;
     let price_plus_sigma_text = `${price_plus_sigma.toFixed(1)}`;
 
@@ -412,34 +391,34 @@ function draw_one_sigma_area(svg, underlying_current_price, p_and_l_graph_height
         .attr("fill", "var(--text-color)")
         .text(sigma_text);
     svg.append("text")
-        .attr("x", env.get_window_left_margin() + env.get_x_scale()(underlying_current_price - sigma_factor * sigma) - 15)
+        .attr("x", env.get_window_left_margin() + env.get_x_scale()(underlying_current_price - get_sigma_factor() * sigma) - 15)
         .attr("y", env.get_window_top_margin() + 15)
         .attr("font-family", "Menlo, monospace")  // Set font to Menlo
         .attr("fill", "var(--text-color)")
-        .text(`-${sigma_factor.toFixed(1)}σ`);
+        .text(`-${get_sigma_factor().toFixed(1)}σ`);
     svg.append("text")
-        .attr("x", env.get_window_left_margin() + env.get_x_scale()(underlying_current_price - sigma_factor * sigma) - 15)
+        .attr("x", env.get_window_left_margin() + env.get_x_scale()(underlying_current_price - get_sigma_factor() * sigma) - 15)
         .attr("y", env.get_window_top_margin() + 30)
         .attr("font-family", "Menlo, monospace")  // Set font to Menlo
         .attr("fill", "var(--text-color)")
         .text(price_less_sigma_text);
     svg.append("text")
-        .attr("x", env.get_window_left_margin() + env.get_x_scale()(underlying_current_price + sigma_factor * sigma) - 15)
+        .attr("x", env.get_window_left_margin() + env.get_x_scale()(underlying_current_price + get_sigma_factor() * sigma) - 15)
         .attr("y", env.get_window_top_margin() + 15)
         .attr("font-family", "Menlo, monospace")  // Set font to Menlo
         .attr("fill", "var(--text-color)")
-        .text(`+${sigma_factor.toFixed(1)}σ`);
+        .text(`+${get_sigma_factor().toFixed(1)}σ`);
     svg.append("text")
-        .attr("x", env.get_window_left_margin() + env.get_x_scale()(underlying_current_price + sigma_factor * sigma) - 15)
+        .attr("x", env.get_window_left_margin() + env.get_x_scale()(underlying_current_price + get_sigma_factor() * sigma) - 15)
         .attr("y", env.get_window_top_margin() + 30)
         .attr("font-family", "Menlo, monospace")  // Set font to Menlo
         .attr("fill", "var(--text-color)")
         .text(price_plus_sigma_text);
 
     svg.append("rect")
-        .attr("x", env.get_window_left_margin() + env.get_x_scale()(underlying_current_price - sigma_factor * sigma))
+        .attr("x", env.get_window_left_margin() + env.get_x_scale()(underlying_current_price - get_sigma_factor() * sigma))
         .attr("y", env.get_window_top_margin())
-        .attr("width", env.get_x_scale()(underlying_current_price + sigma_factor * sigma) - env.get_x_scale()(underlying_current_price - sigma_factor * sigma))
+        .attr("width", env.get_x_scale()(underlying_current_price + get_sigma_factor() * sigma) - env.get_x_scale()(underlying_current_price - get_sigma_factor() * sigma))
         .attr("height", p_and_l_graph_height)
         .attr("font-family", "Menlo, monospace")  // Set font to Menlo
         .attr("fill", "var(--sigma-area-color)")
@@ -662,7 +641,7 @@ function display_strike_buttons() {
                     let newStrike = env.get_x_scale().invert(newX);
                     option.strike = Math.round(newStrike * 2) / 2; // Round to nearest 0.5
                     //option.strike = (newStrike);
-                    combo_changed = true;
+                    set_combo_changed(true);
                     addLog('strike=' + (option.strike.toFixed(2)), { warning: true });
                     draw_graph();
                 })
@@ -703,7 +682,7 @@ function display_strike_buttons() {
                         console.log("Qty changed to: " + this.value);
                         let option = env.get_combo_params().legs[current_index - 1];
                         option.qty = parseInt(this.value);
-                        combo_changed = true;
+                        set_combo_changed(true);
                         addLog('qty=' + (option.qty.toFixed(0)), { warning: true });
                         draw_graph();
                     });
@@ -721,7 +700,7 @@ function display_strike_buttons() {
                         console.log("Exp. offset changed to: " + this.value);
                         let option = env.get_combo_params().legs[current_index - 1];
                         option.expiration_offset = parseInt(this.value);
-                        combo_changed = true;
+                        set_combo_changed(true);
                         addLog('expiration_offset=' + (option.expiration_offset.toFixed(0)), { warning: true });
                         draw_graph();
                     });
@@ -766,7 +745,7 @@ function display_current_price(svg) {
     label.text_element
         .call(d3.drag()
             .on("drag", function (event) {
-                simulated_underlying_price_changed = true;
+                set_simulated_underlying_price_changed(true);
                 let newX = Math.max(0, Math.min(env.get_window_width(), (event.x - env.get_window_left_margin())));
                 d3.select(this).attr("x", newX - 15);
                 let newStrike = env.get_x_scale().invert(newX);
@@ -778,86 +757,11 @@ function display_current_price(svg) {
         .on("contextmenu", function (event) {
             event.preventDefault(); // Prevent default right-click menu
             underlying_current_price = env.get_underlying_current_price().price;
-            simulated_underlying_price_changed = false;
+            set_simulated_underlying_price_changed(false);
 
             draw_graph();
         });
 
-
-}
-function display_theme_buttons() {
-    const theme_container = d3.select("#theme-container")
-    theme_container.selectAll("*").remove();
-    theme_container.append("p")
-        .attr("class", "checkbox-title")
-        .text("Theme");
-    const checkbox = theme_container.append("input")
-        .attr("type", "checkbox")
-        .attr("id", "myCheckbox")
-        .attr("name", "Dark Mode")
-        .attr("checked", dark_mode ? "checked" : null);
-    theme_container.append("label")
-        .attr("for", "myCheckbox")
-        .attr("class", "std-text")
-        .text(" Dark Mode");
-    if (dark_mode) {
-        d3.select("body").classed("dark-mode", true);
-        d3.select("body").classed("light-mode", false);
-    } else {
-        d3.select("body").classed("dark-mode", false);
-        d3.select("body").classed("light-mode", true);
-    }
-
-    checkbox.on("change", function () {
-        if (this.checked) {
-            dark_mode = true;
-            d3.select("body").classed("dark-mode", true);
-            d3.select("body").classed("light-mode", false);
-        } else {
-            dark_mode = false;
-            d3.select("body").classed("dark-mode", false);
-            d3.select("body").classed("light-mode", true);
-        }
-        update_3d_view();
-
-    });
-}
-function display_local_status() {
-
-    const local_status_container = d3.select("#local-status-container")
-    local_status_container.selectAll("*").remove();
-
-    local_status_container.append("p")
-        .attr("class", "checkbox-title")
-        .text("Local Status Info");
-    const local_status_remote_data_state = local_status_container.append("p")
-        .attr("class", use_local ? "checkbox-text-inactive" : "checkbox-text-active")
-        .text("Remote data");
-    const local_status_underlying_state = local_status_container.append("p")
-        .attr("class", !simulated_underlying_price_changed ? "checkbox-text-inactive" : "checkbox-text-active")
-        .text("Underlying price modified");
-    const local_status_strikes_state = local_status_container.append("p")
-        .attr("class", !combo_changed ? "checkbox-text-inactive" : "checkbox-text-active")
-        .text("Strike(s) modified");
-
-    const auto_save_container = d3.select("#auto-save-container")
-    auto_save_container.selectAll("*").remove();
-    d3.select("#auto-save-container")
-        .append("input")
-        .attr("type", "checkbox")
-        .attr("id", "autosaveCheckbox")
-        .attr("checked", auto_save ? "checked" : null)
-        .attr("name", "autosaveCheckbox");
-    d3.select("#auto-save-container")
-        .append("label")
-        .attr("class", "std-text")
-        .attr("for", "autosaveCheckbox")
-        .text(" Auto-save");
-    // Event listener to detect changes
-    d3.select("#autosaveCheckbox").on("change", function () {
-        auto_save = document.getElementById('autosaveCheckbox').checked;
-        console.log("Auto-save is now", auto_save);
-    });
 
 }
 function add_crosshair() {
@@ -999,7 +903,7 @@ function display_combos_list() {
         .on("change", function () {
             //env.config.config.combo = this.value;
             env.set_combo(this.value);
-            if (!use_local) {
+            if (!get_use_local()) {
                 update_remote_config(env.config);
                 console.log("Remote config updated", env.config);
                 env = 0
@@ -1021,7 +925,6 @@ function display_combos_list() {
         .text("Choose combo: ");
 
 }
-
 function update_main_page() {
 
     const container = d3.select("#pl-container")
@@ -1113,16 +1016,16 @@ function update_main_page() {
     update_3d_view();
 }
 
-use_local = await is_mode_local();
-//use_local = true;
-//console.log('State: use_local='+use_local);
+set_use_local( await is_mode_local() );
+//set_use_local(true);
+//console.log('State: use_local='+get_use_local());
 env = await setup_global_env(env);
 //console.log('State: env=', env);
 
 
 ticker = env.get_ticker_of_combo();
 //console.log('State: ticker=', ticker);
-price = use_local ? await load_local_price(ticker) : await fetch_price(ticker);
+price = get_use_local() ? await load_local_price(ticker) : await fetch_price(ticker);
 //console.log('State: price=', price);
 env.set_underlying_current_price(price);
 underlying_current_price = env.get_underlying_current_price().price;
@@ -1133,6 +1036,6 @@ create_main_frame(env.config.window.tab_active);
 update_main_page();
 window.addEventListener("resize", update_main_page);
 
-addLog('State: use_local=' + use_local, { warning: true });
+addLog('State: use_local=' + get_use_local(), { warning: true });
 
 test_iv();
