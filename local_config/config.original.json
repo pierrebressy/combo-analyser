@@ -5,8 +5,9 @@
                 {
                     "expiration_offset": 0,
                     "qty": 1,
-                    "iv": 0.10,
+                    "sim_volatility": 0.1,
                     "strike": 180,
+                    "trade_volatility": 0.3,
                     "type": "call",
                     "price": 19.92
                 }
@@ -15,17 +16,20 @@
             "simulation": {
                 "expiration_offset": 0,
                 "interest_rate": 0,
-                "max_price": 210,
-                "mean_volatility": 0.3,
-                "min_price": 160,
+                "max_price": 230,
+                "mean_volatility": 0.20,
+                "min_price": 150,
                 "step": 0.1,
                 "time_for_simulation": 15,
                 "time_to_expiry": 35
             },
-            "ticker": "AAPL"
-        }
-    },
-    "combos-zen": {
+            "ticker": "AAPL",
+            "trade": {
+                "expiration_date": "2025-04-17",
+                "mean_volatility": 0.15,
+                "trade_open_by": "2025-03-03"
+            }
+        },
         "LONG PUT": {
             "legs": [
                 {
@@ -744,7 +748,7 @@
     },
     "config": {
         "combo": "LONG CALL",
-        "U_use_real_values": false
+        "use_real_values": true
     },
     "graph": {
         "greeks": {
@@ -765,8 +769,7 @@
                 "Time Value",
                 "Option Price"
             ]
-        },
-        "p_and_l_ratio": 0.6
+        }
     },
     "UNUSED_underlying_current_price": {
         "price": 224.1999969482422,
@@ -774,9 +777,26 @@
         "ticker": "AAPL"
     },
     "window": {
-        "size": {
-            "height": 0,
-            "width": 0
+        "button": {
+            "height": 20,
+            "text_vpos": 15,
+            "underlying_price_vpos": 25,
+            "width": 85
+        },
+        "days_left": {
+            "max": 2,
+            "min": 0.0,
+            "step": 0.1,
+            "type": "range",
+            "width": "200px"
+        },
+        "height": 910,
+        "iv_slider": {
+            "max": 1,
+            "min": 0.001,
+            "step": 0.001,
+            "type": "range",
+            "width": "200px"
         },
         "margin": {
             "bottom": 20,
@@ -787,23 +807,12 @@
             "top": 40,
             "vspacer": 10
         },
-        "button": {
-            "text_vpos": 15
-        },
-        "days_left": {
-            "max": 2,
-            "min": 0.0,
-            "step": 0.1,
-            "type": "range",
-            "width": "200px"
-        },
-        "iv_slider": {
-            "max": 1,
-            "min": 0.001,
-            "step": 0.001
-        },
-        "view_3d": "P/L",
-        "tab_active_list":  ["P/L Graph","3D View","Logs","Combo Builder"],
-        "tab_active": "Combo Builder"
+        "p_and_l_ratio": 0.5,
+        "width": 1339.2734375,
+        "zoom": 1.5,
+        "tab_active1": "P/L Graph",
+        "tab_active2": "3D View",
+        "tab_active3": "Logs",
+        "tab_active": "P/L Graph"
     }
 }

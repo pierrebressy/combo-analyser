@@ -1,0 +1,46 @@
+.table-container {
+    max-width: 100%;
+    margin: 20px auto;
+    border: 1px solid #444;
+    border-radius: 8px;
+    background: #222;
+    color: white;
+    font-family: sans-serif;
+    padding: 10px;
+  }
+  
+  /* Fix table layout */
+  .table-container table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+  }
+  
+  .table-container th, .table-container td {
+    border: 1px solid #444;
+    padding: 4px 8px;
+    text-align: right;
+  }
+  
+  /* Optional: fix header background */
+  .table-container th {
+    background-color: #333;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+  }
+  
+  /* Scrollable table body */
+  .table-container tbody {
+    display: block;
+    max-height: 400px; /* adjust this to fit ~20 rows visually */
+    overflow-y: auto;
+  }
+  
+  .table-container thead,
+  .table-container tbody tr {
+    display: table;
+    width: 100%;
+    table-layout: fixed;
+  }
+  

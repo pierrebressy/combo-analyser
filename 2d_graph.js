@@ -9,8 +9,7 @@ import { update_3d_view } from './3d_view.js';
 import { set_simulated_underlying_price_changed } from './global.js';
 import { set_combo_changed } from './global.js';
 import { addLog } from './log.js';
-import { set_use_computed_volatility, get_use_computed_volatility } from './global.js';
-import { set_computed_volatility_available, get_computed_volatility_available } from './global.js';
+import { get_use_computed_volatility } from './global.js';
 
 
 let pl_at_expiration_cursor;
@@ -24,16 +23,19 @@ let memo_price_at_mouse_down = 0;
 
 export function compute_greeks_data_for_price(greek_index, use_legs_volatility, get_use_real_values, price) {
 
+    const use_computed_volatility=get_use_computed_volatility();
+
     const interest_rate_of_combo = env.get_interest_rate_of_combo();
     const time_for_simulation_of_combo = env.get_time_for_simulation_of_combo();
-    const mean_volatility_of_combo = env.get_mean_volatility_of_combo(get_use_real_values)
+    const mean_volatility_of_combo = env.get_mean_volatility_of_combo(false)
+    const get_greek_scaler = env.get_greek_scaler();
+
     let greek = 0;
     env.get_combo_params().legs.forEach(option => {
-        let ov = get_use_real_values ?
-            option.trade_volatility : option.sim_volatility;
-        let v = use_legs_volatility ? ov : mean_volatility_of_combo;
+        let v = !use_legs_volatility ? mean_volatility_of_combo :
+            use_computed_volatility ? option.computed_volatility : option.iv;
         let greeks = computeOptionPrice(price, option.strike, interest_rate_of_combo, v, time_for_simulation_of_combo + option.expiration_offset, option.type);
-        greek = greek + option.qty * greeks[greek_index] * env.config.computation.greek_scaler[greek_index];
+        greek = greek + option.qty * greeks[greek_index] * get_greek_scaler[greek_index];
     });
     return { x: price, y: greek }
 }
@@ -113,15 +115,15 @@ function compute_greeks_data(use_legs_volatility) {
 export function compute_p_and_l_data_for_price(use_legs_volatility, num_days_left, price) {
 
     let p_and_l_profile = 0;
-    //const get_use_real_values = env.get_use_real_values();
-    const get_use_real_values = get_use_computed_volatility();
+
+    const use_computed_volatility=get_use_computed_volatility();
     const interest_rate_of_combo = env.get_interest_rate_of_combo();
     const simulation_time_to_expiry = env.get_simulation_time_to_expiry();
-    const mean_volatility_of_combo = env.get_mean_volatility_of_combo(get_use_real_values)
+    const mean_volatility_of_combo = env.get_mean_volatility_of_combo(false)
+
     env.get_combo_params().legs.forEach(option => {
-        let ov = get_use_real_values ?
-            option.trade_volatility : option.sim_volatility;
-        let v = use_legs_volatility ? ov : mean_volatility_of_combo;
+        let v = !use_legs_volatility ? mean_volatility_of_combo :
+            use_computed_volatility ? option.computed_volatility : option.iv;
         let option_price = computeOptionPrice(get_underlying_current_price(), option.strike, interest_rate_of_combo, v, simulation_time_to_expiry + option.expiration_offset, option.type);
         let premium = option_price[0];
         let greeks = computeOptionPrice(price, option.strike, interest_rate_of_combo, v, num_days_left + option.expiration_offset, option.type);
@@ -180,7 +182,6 @@ function svg_cleanup(svg) {
     svg.selectAll("*").remove();
     return svg;
 }
-
 function find_zero_crossing_indices(data) {
     return data.slice(1).reduce((indices, point, i) => {
         if (data[i].y * point.y < 0) indices.push(i + 1);
@@ -643,7 +644,7 @@ export function add_crosshair() {
 export function draw_graph() {
 
     svg = svg_cleanup(svg);
-    const p_and_l_area_height = env.get_window_p_and_l_ratio() * env.get_window_height() - env.get_window_vspacer_margin();
+    const p_and_l_area_height = env.get_graph_p_and_l_ratio() * env.get_window_height() - env.get_window_vspacer_margin();
     const greeks_graph_height = env.get_window_height() - p_and_l_area_height;
     let p_and_l_graph_area = svg
         .append("g")

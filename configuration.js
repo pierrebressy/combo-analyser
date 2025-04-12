@@ -25,9 +25,31 @@ function get_url_param(name) {
     return new URLSearchParams(window.location.search).get(name);
 }
 
+export class ComboTemplater {
+    constructor() {
+        this.combo_templates = {};
+    }
+    async fetch_combo_templates() {
+        const response = await fetch_combo_templates();
+        this.combo_templates = await response;
+        console.log("Combo templates loaded:", this.combo_templates);
+        return this.combo_templates;
+    }
+    get_combo_templates() {
+        let combos = [];
+        for (let key in this.combo_templates.combos) {
+            combos.push(key);
+        }
+        return combos;
+    }
+
+}
+
 export class Environment {
 
     constructor(config) {
+
+        this.check_config(config);
 
         let combo = "";
 
@@ -43,18 +65,77 @@ export class Environment {
             console.log("Info: no [combo] in URL, using default value [" + combo + "]");
         }
         config.config.combo = combo;
-        console.log("use_real_values="+ config.config.use_real_values);
-
+        console.log("use_real_values=" + config.config.use_real_values);
 
         this.config = config;
+        console.log("get_use_real_values()=" + this.get_use_real_values());
 
         this.combo = this.get_combo_params();
 
-        this.set_3d_view("P/L");
     }
-    set_combo(combo) {
-        this.config.config.combo = combo;
+
+    get_combo_params() {
+        return this.config.combos[this.config.config.combo];
     }
+    // --- WINDOW
+
+    get_window_height() {
+        return this.config.window.size.height;
+    }
+    set_window_height(height) {
+        this.config.window.size.height = height;
+    }
+    get_window_width() {
+        return this.config.window.size.width;
+    }
+    set_window_width(width) {
+        this.config.window.size.width = width;
+    }
+    get_window_left_margin() {
+        return this.config.window.margin.left;
+    }
+    get_window_right_margin() {
+        return this.config.window.margin.right;
+    }
+    get_window_top_margin() {
+        return this.config.window.margin.top;
+    }
+    get_window_bottom_margin() {
+        return this.config.window.margin.bottom;
+    }
+    get_window_vspacer_margin() {
+        return this.config.window.margin.vspacer;
+    }
+    get_window_greeks_vspacer_margin() {
+        return this.config.window.margin.greeks_vspacer;
+    }
+    get_window_vspacer_price_axis() {
+        return this.config.window.margin.price_axis;
+    }
+    get_graph_p_and_l_ratio() {
+        return this.config.graph.p_and_l_ratio;
+    }
+
+    // --- BUTTONS
+
+    get_button_default_text_vpos() {
+        return this.config.window.button.text_vpos;
+    }
+
+    // --- IV SLIDER
+
+    get_iv_slider_max_val() {
+        return this.config.window.iv_slider.max;
+    }
+    get_iv_slider_min_val() {
+        return this.config.window.iv_slider.min;
+    }
+    get_iv_slider_step() {
+        return this.config.window.iv_slider.step;
+    }
+
+    // --- 3D VIEW
+
     set_3d_view(value) {
         this.config.window.view_3d = value;
     }
@@ -62,9 +143,31 @@ export class Environment {
         return this.config.window.view_3d;
     }
 
-    set_combo_to_tmp() {
-        this.config.config.combo = "TMP";
+    // --- COMPUTATION
+
+    get_sigma_factors() {
+        return this.config.computation.sigma_factors;
     }
+    get_greek_scaler() {
+        return this.config.computation.greek_scaler;
+    }
+    get_computation_num_greeks() {
+        return this.config.computation.num_greeks;
+    }
+    check_if_volatility_is_per_leg() {
+        return this.config.computation.volatility_is_per_leg;
+    }
+    set_if_volatility_is_per_leg(value) {
+        this.config.computation.volatility_is_per_leg = value;
+    }
+
+    // --- <<<<<<<<<<<<<<<<
+
+    set_combo(combo) {
+        this.config.config.combo = combo;
+    }
+
+    // --- EXTRA DATA STORED IN ENVIRONMENT
 
     set_x_scale(scale) {
         this.xscale = scale;
@@ -72,15 +175,14 @@ export class Environment {
     get_x_scale() {
         return this.xscale;
     }
+
     set_greeks_data(data) {
         this.greeks_data = data;
     }
     get_greeks_data() {
         return this.greeks_data;
     }
-    get_sigma_factors() {
-        return this.config.computation.sigma_factors;
-    }
+
     set_pl_at_exp_data(data) {
         this.pl_at_exp_data = data;
     }
@@ -107,102 +209,23 @@ export class Environment {
         const datasets = [this.pl_at_exp_data, this.pl_at_init_data, this.pl_at_sim_data];
         return d3.max(datasets.flat(), d => d.y);
     }
-
-
-    get_combo() {
-        return this.combo;
+    set_underlying_current_price(price) {
+        this.config.underlying_current_price = price;
     }
-    get_window_height() {
-        return this.config.window.height;
-    }
-    set_window_height(height) {
-        this.config.window.height = height;
-    }
-    get_window_width() {
-        return this.config.window.width;
-    }
-    set_window_width(width) {
-        this.config.window.width = width;
-    }
-    get_window_left_margin() {
-        return this.config.window.margin.left;
-    }
-    get_window_right_margin() {
-        return this.config.window.margin.right;
-    }
-    get_window_top_margin() {
-        return this.config.window.margin.top;
-    }
-    get_window_bottom_margin() {
-        return this.config.window.margin.bottom;
-    }
-    get_window_vspacer_margin() {
-        return this.config.window.margin.vspacer;
-    }
-    get_window_greeks_vspacer_margin() {
-        return this.config.window.margin.greeks_vspacer;
-    }
-    get_window_vspacer_price_axis() {
-        return this.config.window.margin.price_axis;
-    }
-    get_window_p_and_l_ratio() {
-        return this.config.window.p_and_l_ratio;
-    }
-    get_window_zoom() {
-        return this.config.window.zoom;
-    }
-    get_full_graph_height() {
-        return this.get_window_height() - this.get_window_top_margin();
+    get_underlying_current_price() {
+        return this.config.underlying_current_price;
     }
 
-    get_button_default_height() {
-        return this.config.window.button.height;
-    }
-    get_button_default_width() {
-        return this.config.window.button.width;
-    }
-    get_button_default_text_vpos() {
-        return this.config.window.button.text_vpos;
-    }
-    get_button_underlying_text_vpos() {
-        return this.config.window.button.underlying_price_vpos;
-    }
-
-
+    // --- COMBO / SIMULATION
 
     get_simulation_time_to_expiry() {
         return this.combo.simulation.time_to_expiry;
     }
-    get_computation_num_greeks() {
-        return this.config.computation.num_greeks;
-    }
-
-
-    get_iv_slider_type() {
-        return this.config.window.iv_slider.type;
-    }
-    get_iv_slider_width() {
-        return this.config.window.iv_slider.width;
-    }
-    get_iv_slider_height() {
-        return this.config.window.iv_slider.height;
-    }
-    get_iv_slider_max_val() {
-        return this.config.window.iv_slider.max;
-    }
-    get_iv_slider_min_val() {
-        return this.config.window.iv_slider.min;
-    }
-    get_iv_slider_step() {
-        return this.config.window.iv_slider.step;
-    }
-
-
 
     get_mean_volatility_of_combo(real) {
-        if (real) {
+        /*if (real) {
             return this.combo.trade.mean_volatility;
-        }
+        }*/
         return this.combo.simulation.mean_volatility;
     }
     set_mean_volatility_of_combo(real, volatility) {
@@ -212,8 +235,7 @@ export class Environment {
         this.combo.simulation.mean_volatility = volatility;
     }
 
-
-
+    // --- CONFIG
 
     get_use_real_values() {
         return this.config.config.use_real_values;
@@ -222,15 +244,8 @@ export class Environment {
         this.config.config.use_real_values = use_real_values;
     }
 
-    get_trade_params() {
-        return this.combo.trade;
-    }
-    get_window_params() {
-        return this.config.window;
-    }
-    get_combo_params() {
-        return this.config.combos[this.config.config.combo];
-    }
+    // --- COMBOS
+
     get_simulation_params() {
         return this.combo.simulation;
     }
@@ -242,12 +257,8 @@ export class Environment {
         //console.log(combos);
         return combos;
     }
-    set_underlying_current_price(price) {
-        this.config.underlying_current_price = price;
-    }
-    get_underlying_current_price() {
-        return this.config.underlying_current_price;
-    }
+    // --- CURRRENT COMBO
+
     get_ticker_of_combo() {
         return this.combo.ticker;
     }
@@ -266,11 +277,11 @@ export class Environment {
     get_simul_min_price_of_combo() {
         return this.combo.simulation.min_price;
     }
-    set_simul_max_price_of_combo(value) {
-        this.combo.simulation.max_price = value;
+    set_simul_max_price_of_combo(num_days) {
+        this.combo.simulation.max_price = num_days;
     }
-    set_simul_min_price_of_combo(value) {
-        this.combo.simulation.min_price = value;
+    set_simul_min_price_of_combo(price) {
+        this.combo.simulation.min_price = price;
     }
     get_simul_step_price_of_combo() {
         return this.combo.simulation.step;
@@ -278,30 +289,75 @@ export class Environment {
     get_interest_rate_of_combo() {
         return this.combo.simulation.interest_rate;
     }
-    check_if_volatility_is_per_leg() {
-        return this.config.computation.volatility_is_per_leg;
-    }
-    set_if_volatility_is_per_leg(value) {
-        this.config.computation.volatility_is_per_leg = value;
-    }
-}
 
-export class ComboTemplater {
-    constructor() {
-        this.combo_templates = {};
-    }
-    async fetch_combo_templates() {
-        const response = await fetch_combo_templates();
-        this.combo_templates = await response;
-        console.log("Combo templates loaded:", this.combo_templates);
-        return this.combo_templates;
-    }
-    get_combo_templates() {
-        let combos = [];
-        for (let key in this.combo_templates.combos) {
-            combos.push(key);
+
+
+    check_config(config) {
+        // table of main properties
+        console.log("Cheking main properties of config data...");
+        const main_properties = ["combos", "computation", "config", "window", "graph"];
+        for (let property of main_properties) {
+            if (!config.hasOwnProperty(property)) {
+                throw new Error(`Config must have a '${property}' property`);
+            }
+            else {
+                //console.log("Property " + property + " is present");
+            }
         }
-        return combos;
+        // table of combos properties
+        for (let combo in config.combos) {
+            console.log("Checking combo " + combo);
+            const combo_properties = [
+                "legs", 
+                "name", 
+                "simulation", 
+                "ticker"];
+            for (let property of combo_properties) {
+                if (!config.combos[combo].hasOwnProperty(property)) {
+                    throw new Error(`Combo '${combo}' must have a '${property}' property`);
+                }
+                else {
+                    //console.log("Property " + property + " is present");
+                }
+                console.log("Checking combo "+combo+" / "+config.combos[combo].legs.length+" leg(s)");
+                const legs_properties = [
+                    "expiration_offset",
+                    "qty", 
+                    "iv",
+                    "strike",
+                    "type",
+                    "price"];
+                for (let i = 0; i < config.combos[combo].legs.length; i++) {
+                    for (let leg_property of legs_properties) {
+                        if (!config.combos[combo].legs[i].hasOwnProperty(leg_property)) {
+                            throw new Error(`Combo '${combo}'/legs['${i}'] must have a '${leg_property}' property`);
+                        }
+                        else {
+                            //console.log("Property " + leg_property + " is present");
+                        }
+                    }
+                }
+                console.log("Checking combo "+combo+" / simulation");
+                const simulation_properties = [
+                    "expiration_offset",
+                    "interest_rate", 
+                    "max_price",
+                    "mean_volatility",
+                    "min_price",
+                    "step",
+                    "time_for_simulation",
+                    "time_to_expiry"];
+                for (let simulation_property of simulation_properties) {
+                    if (!config.combos[combo].simulation.hasOwnProperty(simulation_property)) {
+                        throw new Error(`Combo '${combo}'/simulation must have a '${simulation_property}' property`);
+                    }
+                    else {
+                        //console.log("Property " + simulation_property + " is present");
+                    }
+                }
+            }
+        }
     }
-
 }
+
+

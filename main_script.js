@@ -112,6 +112,7 @@ async function main() {
 
     set_computed_volatility_available(true);
     env.get_combo_params().legs.forEach(option => {
+        option.computed_volatility = 0.;
         if(option.price === undefined) {
             console.error("Option price is undefined");
             set_computed_volatility_available(false);
@@ -125,11 +126,8 @@ async function main() {
         const riskFreeRate=0.05;
         const iv = compute_iv_dichotomy(price.price, option.strike, env.get_simulation_time_to_expiry()/365, riskFreeRate, option.price, option.type);
         console.log("IV = ", (100 * iv).toFixed(2), " % (yearly)", (100 * iv / Math.sqrt(252)).toFixed(2), " % (daily)");
-        option.trade_volatility = iv;
+        option.computed_volatility = iv;
     });
-
-
-
 
     create_main_frame(env.config.window.tab_active);
     display();

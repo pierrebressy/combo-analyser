@@ -1,5 +1,6 @@
 const local_prices_file = "local_config/prices.json";
 const local_config_file = "local_config/config.json";
+const local_chain_file = "local_config/full_option_chain.json";
 
 export async function is_mode_local() {
     try {
@@ -28,6 +29,21 @@ export async function load_local_price(ticker) {
         console.error("Error loading prices:", error);
     }
 }
+
+export async function load_local_option_chain() {
+    try {
+        const url = `${local_chain_file}?t=${Date.now()}`; // Append timestamp to bust cache
+        const response = await fetch(url, { cache: "no-store" }); // Optional: explicit cache control
+        if (!response.ok) throw new Error("Failed to load ",local_chain_file);
+
+        let local_option_chain = await response.json(); // Parse JSON and store in local_config
+        //console.log("local_option_chain loaded:", local_option_chain);
+        return local_option_chain;
+    } catch (error) {
+        console.error("Error loading option_chain:", error);
+    }
+}
+
 
 export async function load_local_config() {
     try {
