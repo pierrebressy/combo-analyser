@@ -66,8 +66,10 @@ export class TabsManager {
   }
 
   get_last_active_tab() {
+    //console.log("[get_last_active_tab]", this.manager_name);
     let last_active_tab = getCookie(this.manager_name);
-    if (last_active_tab === "") {
+    //console.log("[get_last_active_tab] last_active_tab=", last_active_tab);
+    if (last_active_tab === undefined) {
       last_active_tab = this.selectors[0].name;
       setCookie(this.manager_name, last_active_tab, 7);
     }
@@ -78,7 +80,7 @@ export class TabsManager {
     let last_active_tab = this.get_last_active_tab();
     this.activate_tab(last_active_tab);
   }
-  
+
   add_tab_selector(tab_name, class_name, callback) {
     const button = document.createElement('button');
     button.classList.add('tab-button');
