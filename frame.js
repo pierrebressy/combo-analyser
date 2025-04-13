@@ -16,7 +16,7 @@ import { set_show_3dbox, get_show_3dbox } from './global.js';
 import { get_combo_changed } from './global.js';
 import { get_simulated_underlying_price_changed } from './global.js';
 import { get_use_local } from './global.js';
-import { add_option_chain_table } from './test.js';
+import { add_option_chain_container_in_tab_container } from './test.js';
 
 let tabs_manager;
 
@@ -246,9 +246,9 @@ export function display_volatility_sliders() {
     per_leg_volatility_container.selectAll("*").remove();
     env.get_combo_params().legs.forEach((option, index) => {
 
-        let v=option.iv;
-        if(get_use_computed_volatility()) {
-            v=option.computed_volatility;
+        let v = option.iv;
+        if (get_use_computed_volatility()) {
+            v = option.computed_volatility;
         }
         let iv_value = 100. * v;
         let leg_vol_text = per_leg_volatility_container.append("p")
@@ -263,9 +263,9 @@ export function display_volatility_sliders() {
             .attr("step", 100 * env.get_iv_slider_step())
             .style("width", "100%"); // Make it full width
         leg_vol_slider.on("input", function () {
-            const use_computed_volatility=get_use_computed_volatility();
-            leg_vol_text.text(`${option.type} ${option.strike} IV ` + (this.value*1.0).toFixed(1) + "%");
-            if(use_computed_volatility) {
+            const use_computed_volatility = get_use_computed_volatility();
+            leg_vol_text.text(`${option.type} ${option.strike} IV ` + (this.value * 1.0).toFixed(1) + "%");
+            if (use_computed_volatility) {
                 option.computed_volatility = parseFloat(this.value / 100.0);
             }
             else {
@@ -279,7 +279,7 @@ export function display_volatility_sliders() {
     const mean_volatility_container = d3.select("#mean-volatility-container")
     mean_volatility_container.selectAll("*").remove();
     let use_real_values = env.get_use_real_values();
-    let v=env.get_mean_volatility_of_combo(use_real_values)
+    let v = env.get_mean_volatility_of_combo(use_real_values)
     let iv_value = 100 * v;
     let mean_vol_text = mean_volatility_container.append("p")
         .attr("class", "checkbox-title")
@@ -293,7 +293,7 @@ export function display_volatility_sliders() {
         .attr("step", 100 * env.get_iv_slider_step())
         .style("width", "100%"); // Make it full width
     d3.select("#mean_vol_slider").on("input", function () {
-        mean_vol_text.text("Mean Volatility " + (this.value*1.0).toFixed(1) + "%");
+        mean_vol_text.text("Mean Volatility " + (this.value * 1.0).toFixed(1) + "%");
         env.set_mean_volatility_of_combo(env.get_use_real_values(), parseFloat(this.value / 100.0));
         draw_graph();
     });
@@ -629,13 +629,14 @@ function create_left_container() {
     return leftContainer;
 }
 
+
 function create_right_container(tab_active) {
     let container;
     const right_container = document.createElement('div');
     right_container.classList.add('right-container');
     right_container.id = 'right-container';
 
-    tabs_manager = new TabsManager(right_container, tab_active);
+    tabs_manager = new TabsManager(right_container,"main-right-tabs");
 
     container = tabs_manager.add_tab('P/L Graph', 'pl-tab-container', 'pl-container');
     container = tabs_manager.add_tab('3D View', 'view3d-tab-container', 'view3d-container', update_3d_view);
@@ -646,7 +647,11 @@ function create_right_container(tab_active) {
     add_log_container_in_tab_container(container);
 
     container = tabs_manager.add_tab('Combo Builder', 'option-chain-tab-container', 'option-chain-container');
-    add_option_chain_table(container, "AAPL", "20250321", 237.5);
+    add_option_chain_container_in_tab_container(container);
+    //add_option_chain_table(container, "AAPL", "20250321", 237.5);
+
+    tabs_manager.activate_last_tab();//activate_tab(tab_active);
+
     return right_container;
 
 }

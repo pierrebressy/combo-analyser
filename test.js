@@ -1,5 +1,67 @@
 import { load_local_option_chain } from './network.js';
 import { setCookie, getCookie } from "./network.js"
+import { TabsManager } from './tabs_manager.js';
+
+let option_chain
+let current_ticker = "";
+
+export async function add_option_chain_container_in_tab_container(tab_container) {
+
+    option_chain = await load_local_option_chain();
+    console.log("option_chain #tickers=", Object.keys(option_chain).length);
+
+    let oc_container = document.createElement('div');
+    oc_container.classList.add('oc-container');
+    oc_container.id = 'oc-container';
+
+    // Create header container (for heading + button)
+    const headerContainer = document.createElement('div');
+    headerContainer.style.display = 'flex';
+    headerContainer.style.justifyContent = 'space-between';
+    headerContainer.style.alignItems = 'center';
+
+    // Heading
+    const heading = document.createElement('h2');
+    heading.classList.add('std-text');
+    heading.textContent = 'OC';
+
+    // Assemble header
+    headerContainer.appendChild(heading);
+    oc_container.appendChild(headerContainer);
+
+    let oc_tabs_manager = new TabsManager(oc_container);
+    let container;
+
+    for (const ticker of Object.keys(option_chain)) {
+        console.log(ticker + '-oc-container');
+        container = oc_tabs_manager.add_tab(ticker, ticker + '-oc-tab-container', ticker + '-oc-container');
+    }
+
+
+    // 
+    let current_oc_ticker_index = getCookie("current_oc_ticker_index")
+    console.log("current_oc_ticker_index=", current_oc_ticker_index);
+    if (current_oc_ticker_index === undefined) {
+        current_oc_ticker_index = 0;
+        setCookie("current_oc_ticker_index", current_oc_ticker_index, 7);
+    }
+    console.log("cockie(current_oc_ticker_index)=", current_oc_ticker_index);
+
+    current_ticker = Object.keys(option_chain)[current_oc_ticker_index];
+    console.log("current_ticker=", current_ticker);
+    console.log("class tab name=", current_ticker + '-oc-container');
+    oc_tabs_manager.activate_last_tab();//activate_tab(current_ticker);
+
+    // Add to tab container
+    tab_container.appendChild(oc_container);
+}
+
+
+
+
+
+
+
 
 let current_expiry = "";
 let selectedCells = []; // Outside loop, store globally or export as needed
@@ -59,7 +121,7 @@ export async function add_option_chain_table(test_container, ticker, referencePr
     };
     test_container.appendChild(leftButtonHeading);
     const ocExpiry = document.createElement('text');
-    ocExpiry.textContent = " "+current_expiry+" ";
+    ocExpiry.textContent = " " + current_expiry + " ";
     ocExpiry.classList.add('std-text');
     ocExpiry.style.textAlign = 'center';
     test_container.appendChild(ocExpiry);
