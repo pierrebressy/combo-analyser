@@ -17,9 +17,34 @@ export let env;
 
 
 async function setup_global_env(e) {
+    //localStorage.removeItem('config');
     if (!e) {
         console.log("setup_global_env: loading env...");
-        e = new Environment(get_use_local() ? await load_local_config() : await fetch_configuration());
+
+        let config;
+        if (get_use_local()) {
+            config = JSON.parse(localStorage.getItem('config'));
+            if (config == null) {
+                console.log("config: localStorage is empty => loading local config from JSON file");
+                config = await load_local_config();
+                localStorage.setItem('config', JSON.stringify(config));
+                console.log("config: localStorage set");
+            }
+            else {
+                console.log("config: using localStorage");
+
+            }
+        }
+        else {
+            console.log("config: using remote config");
+            config = await fetch_configuration();
+        }
+        e = new Environment(config);
+
+
+
+
+        //e = new Environment(get_use_local() ? await load_local_config() : await fetch_configuration());
         set_volatility_is_per_leg(e.check_if_volatility_is_per_leg());
     }
     else {
@@ -113,7 +138,7 @@ async function main() {
     set_computed_volatility_available(true);
     env.get_combo_params().legs.forEach(option => {
         option.computed_volatility = 0.;
-        if(option.price === undefined) {
+        if (option.price === undefined) {
             console.error("Option price is undefined");
             set_computed_volatility_available(false);
         }
@@ -123,8 +148,8 @@ async function main() {
         console.log('time_to_expiry:', env.get_simulation_time_to_expiry());
         console.log('price:', option.price);
         console.log('type:', option.type);
-        const riskFreeRate=0.05;
-        const iv = compute_iv_dichotomy(price.price, option.strike, env.get_simulation_time_to_expiry()/365, riskFreeRate, option.price, option.type);
+        const riskFreeRate = 0.05;
+        const iv = compute_iv_dichotomy(price.price, option.strike, env.get_simulation_time_to_expiry() / 365, riskFreeRate, option.price, option.type);
         console.log("IV = ", (100 * iv).toFixed(2), " % (yearly)", (100 * iv / Math.sqrt(252)).toFixed(2), " % (daily)");
         option.computed_volatility = iv;
     });
@@ -140,3 +165,5 @@ async function main() {
 
 }
 main();
+
+

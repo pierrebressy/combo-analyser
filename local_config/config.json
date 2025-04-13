@@ -23,6 +23,35 @@
                 "time_to_expiry": 35
             },
             "ticker": "AAPL"
+        },
+        "LONG PUT": {
+            "legs": [
+                {
+                    "expiration_offset": 0,
+                    "qty": 1,
+                    "iv": 0.4,
+                    "strike": 200,
+                    "type": "put",
+                    "price": 10.92
+                }
+            ],
+            "name": "Single PUT",
+            "simulation": {
+                "expiration_offset": 0,
+                "interest_rate": 0,
+                "max_price": 230,
+                "mean_volatility": 0.20,
+                "min_price": 150,
+                "step": 0.1,
+                "time_for_simulation": 14,
+                "time_to_expiry": 14
+            },
+            "ticker": "AAPL",
+            "trade": {
+                "expiration_date": "2025-04-17",
+                "mean_volatility": 0.15,
+                "trade_open_by": "2025-03-03"
+            }
         }
     },
     "combos-zen": {
@@ -31,9 +60,8 @@
                 {
                     "expiration_offset": 0,
                     "qty": 1,
-                    "sim_volatility": 0.4,
+                    "iv": 0.4,
                     "strike": 200,
-                    "trade_volatility": 0.266,
                     "type": "put",
                     "price": 10.92
                 }
@@ -739,7 +767,14 @@
             100
         ],
         "num_greeks": 6,
-        "sigma_factors": [1, 1.5, 2, 2.5, 3, 3.5],
+        "sigma_factors": [
+            1,
+            1.5,
+            2,
+            2.5,
+            3,
+            3.5
+        ],
         "volatility_is_per_leg": false
     },
     "config": {
@@ -803,7 +838,12 @@
             "step": 0.001
         },
         "view_3d": "P/L",
-        "tab_active_list":  ["P/L Graph","3D View","Logs","Combo Builder"],
+        "tab_active_list": [
+            "P/L Graph",
+            "3D View",
+            "Logs",
+            "Combo Builder"
+        ],
         "tab_active": "Combo Builder"
     }
 }

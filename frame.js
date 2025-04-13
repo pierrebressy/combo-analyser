@@ -16,7 +16,7 @@ import { set_show_3dbox, get_show_3dbox } from './global.js';
 import { get_combo_changed } from './global.js';
 import { get_simulated_underlying_price_changed } from './global.js';
 import { get_use_local } from './global.js';
-import { add_option_chain_container_in_tab_container } from './test.js';
+import { add_option_chain_container_in_tab_container } from './option_chain.js';
 
 let tabs_manager;
 
@@ -630,13 +630,64 @@ function create_left_container() {
 }
 
 
+function add_parameters_container_in_tab_container(tab_container) {
+    let param_container = document.createElement('div');
+    param_container.classList.add('param-container');
+    param_container.id = 'param-container';
+
+    // Create header container (for heading + button)
+    const headerContainer = document.createElement('div');
+    headerContainer.style.display = 'flex';
+    headerContainer.style.justifyContent = 'space-between';
+    headerContainer.style.alignItems = 'center';
+
+    // Heading
+    const heading = document.createElement('h2');
+    heading.classList.add('std-text');
+    heading.textContent = 'PARAMETERS';
+
+    // Clear Button
+    const clearBtn = document.createElement('button');
+    clearBtn.textContent = 'Reset configuration local storage';
+    //clearBtn.classList.add('clear-log-btn');
+    clearBtn.onclick = () => {
+        localStorage.removeItem('config');
+        // display a confirmation message
+        const confirmationMessage = document.createElement('div');
+        confirmationMessage.textContent = 'Configuration reset successfully.';
+        confirmationMessage.style.color = 'green';
+        confirmationMessage.style.fontSize = '14px';
+        confirmationMessage.style.marginTop = '10px';
+        confirmationMessage.style.fontWeight = 'bold';
+        param_container.appendChild(confirmationMessage);
+        // Reload the page after a delay
+        setTimeout(() => {
+            location.reload();
+        }
+            , 1000); // 1 second delay
+    };
+
+
+
+    // Assemble header
+    headerContainer.appendChild(heading);
+    param_container.appendChild(headerContainer);
+    param_container.appendChild(clearBtn);
+
+    tab_container.appendChild(param_container);
+
+}
+
+
+
+
 function create_right_container(tab_active) {
     let container;
     const right_container = document.createElement('div');
     right_container.classList.add('right-container');
     right_container.id = 'right-container';
 
-    tabs_manager = new TabsManager(right_container,"main-right-tabs");
+    tabs_manager = new TabsManager(right_container, "main-right-tabs");
 
     container = tabs_manager.add_tab('P/L Graph', 'pl-tab-container', 'pl-container');
     container = tabs_manager.add_tab('3D View', 'view3d-tab-container', 'view3d-container', update_3d_view);
@@ -648,7 +699,9 @@ function create_right_container(tab_active) {
 
     container = tabs_manager.add_tab('Combo Builder', 'option-chain-tab-container', 'option-chain-container');
     add_option_chain_container_in_tab_container(container);
-    //add_option_chain_table(container, "AAPL", "20250321", 237.5);
+
+    container = tabs_manager.add_tab('Parameters', 'parameters-tab-container', 'parameters-container');
+    add_parameters_container_in_tab_container(container);
 
     tabs_manager.activate_last_tab();//activate_tab(tab_active);
 
