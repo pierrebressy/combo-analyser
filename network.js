@@ -2,6 +2,19 @@ const local_prices_file = "local_config/prices.json";
 const local_config_file = "local_config/config.json";
 const local_chain_file = "local_config/full_option_chain.json";
 
+export function setCookie(name, value, days) {
+    const d = new Date();
+    d.setTime(d.getTime() + (days*24*60*60*1000));
+    const expires = "expires=" + d.toUTCString();
+    document.cookie = name + "=" + encodeURIComponent(value) + ";" + expires + ";path=/";
+}
+
+export function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return decodeURIComponent(parts.pop().split(';').shift());
+}
+
 export async function is_mode_local() {
     try {
         const response = await fetch(`http://127.0.0.1:5000/ping`, { method: "GET" });

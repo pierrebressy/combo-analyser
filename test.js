@@ -1,16 +1,30 @@
 import { load_local_option_chain } from './network.js';
+import { setCookie, getCookie } from "./network.js"
 
-export async function add_option_chain_table(test_container, ticker, expiry, referencePrice) {
+let current_expiry = "";
+let selectedCells = []; // Outside loop, store globally or export as needed
 
-    //const ticker = "AAPL";
-    //const expiry = "20250321";
+export async function add_option_chain_table(test_container, ticker, referencePrice) {
+
 
     let option_chain = await load_local_option_chain();
     console.log("ticker:", ticker);
-    console.log("local_option_chain loaded:", option_chain[ticker][expiry]);
+    console.log("current_expiry loaded:", current_expiry);
+    console.log("local_option_chain #expiration date:", Object.keys(option_chain[ticker]).length);
+    console.log("local_option_chain loaded:", Object.keys(option_chain[ticker])[0]);
 
-    const calls = option_chain[ticker][expiry].calls;
-    const puts = option_chain[ticker][expiry].puts;
+    let expiry_index = getCookie("expiry_index")
+    console.log("expiry_index=", expiry_index);
+    if (expiry_index === undefined) {
+        expiry_index = 0;
+        setCookie("expiry_index", expiry_index, 7);
+    }
+    console.log("cockie(expiry_index)=", expiry_index);
+
+    current_expiry = Object.keys(option_chain[ticker])[expiry_index];
+
+    const calls = option_chain[ticker][current_expiry].calls;
+    const puts = option_chain[ticker][current_expiry].puts;
 
     const combined = calls.map((call, i) => ({
         strike: call.strike,
@@ -22,11 +36,55 @@ export async function add_option_chain_table(test_container, ticker, expiry, ref
         put_mid: 0.5 * (puts[i].ask + puts[i].bid)
     }));
 
-    const ocHeading = document.createElement('h2');
-    ocHeading.textContent = ticker + " - " + expiry;
+    const ocHeading = document.createElement('text');
+    ocHeading.textContent = ticker + " ";
     ocHeading.classList.add('std-text');
     ocHeading.style.textAlign = 'center';
     test_container.appendChild(ocHeading);
+    const leftButtonHeading = document.createElement('button');
+    leftButtonHeading.textContent = '<';
+    leftButtonHeading.classList.add('left-btn');
+    leftButtonHeading.onclick = () => {
+        console.log("expiry_index=", expiry_index);
+        expiry_index = parseInt(expiry_index) - 1;
+        if (expiry_index < 0) {
+            expiry_index = Object.keys(option_chain[ticker]).length - 1;
+        }
+        setCookie("expiry_index", expiry_index, 7);
+        console.log("cockie(expiry_index)=", expiry_index);
+        current_expiry = Object.keys(option_chain[ticker])[expiry_index];
+        console.log("current_expiry=", current_expiry);
+        test_container.innerHTML = "";
+        add_option_chain_table(test_container, ticker, referencePrice);
+    };
+    test_container.appendChild(leftButtonHeading);
+    const ocExpiry = document.createElement('text');
+    ocExpiry.textContent = " "+current_expiry+" ";
+    ocExpiry.classList.add('std-text');
+    ocExpiry.style.textAlign = 'center';
+    test_container.appendChild(ocExpiry);
+    const rightButtonHeading = document.createElement('button');
+    rightButtonHeading.textContent = '>';
+    rightButtonHeading.classList.add('right-btn');
+    rightButtonHeading.onclick = () => {
+        console.log("expiry_index=", expiry_index);
+        expiry_index = parseInt(expiry_index) + 1;
+        if (expiry_index >= Object.keys(option_chain[ticker]).length) {
+            expiry_index = 0;
+        }
+        setCookie("expiry_index", expiry_index, 7);
+        console.log("cockie(expiry_index)=", expiry_index);
+        current_expiry = Object.keys(option_chain[ticker])[expiry_index];
+        console.log("current_expiry=", current_expiry);
+        test_container.innerHTML = "";
+        add_option_chain_table(test_container, ticker, referencePrice);
+    };
+    test_container.appendChild(rightButtonHeading);
+
+
+
+
+
 
 
     let option_chain_container = document.createElement('div');
@@ -129,7 +187,6 @@ export async function add_option_chain_table(test_container, ticker, expiry, ref
                     tr.appendChild(td);
                 });
         */
-        const selectedCells = []; // Outside loop, store globally or export as needed
 
         values.forEach((val, j) => {
             const td = document.createElement("td");
@@ -147,19 +204,19 @@ export async function add_option_chain_table(test_container, ticker, expiry, ref
                     hoverLabel.textContent = "Buy";
                     hoverLabel.style.backgroundColor = "#0066cc";
                     hoverLabel.style.display = "block";
-                            }
+                }
             });
 
             td.addEventListener("mousemove", (event) => {
                 hoverLabel.style.left = event.pageX + 10 + "px";
                 hoverLabel.style.top = event.pageY + 10 + "px";
             });
-            
+
             td.addEventListener("mouseout", () => {
                 td.style.backgroundColor = "";
                 hoverLabel.style.display = "none";
             });
-            
+
 
             // Call Mid is at index 1, Put Mid is at index 5
             if (j === 0 || j === 2 || j === 4 || j === 6) {
