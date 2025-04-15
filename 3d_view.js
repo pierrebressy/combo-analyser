@@ -105,7 +105,7 @@ class PLSurface extends Generic3DSurface {
         this.xrange.forEach((x, i) => {
             this.yrange.forEach((y, j) => {
 
-                let z = compute_p_and_l_data_for_price(true, y, x);
+                let z = compute_p_and_l_data_for_price(false, y, x);
 
                 this.matrixData[count] = {
                     x: this.xscale(x),

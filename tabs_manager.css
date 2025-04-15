@@ -1,0 +1,48 @@
+body.light-mode {
+  --tabs-inactive-text-color: #000000;
+  --tabs-inactive-bg-color: #f0efef;
+  --tabs-active-text-color: #000000;
+  --tabs-active-bg-color: #a6a6a6;
+  --bg-tabs-selector: #ffffff;
+  --button-active-bg-color:  rgb(141, 244, 218);
+}
+
+/* Dark theme */
+body.dark-mode {
+  --tabs-inactive-text-color: #b1b0b0;
+  --tabs-inactive-bg-color: #353333;
+  --tabs-active-text-color: #f3f3f3;
+  --tabs-active-bg-color: #8d8d8d;
+  --bg-tabs-selector: #000000;
+  --button-active-bg-color:  rgb(0, 104, 78);
+}
+
+
+
+/* Main container for tab selectors */
+.tabs-selector-container {
+    /*display: flex;*/
+    justify-content: flex-start;
+    padding: 5px;
+    background-color: var(--bg-tabs-selector);
+    border-radius: 5px;
+  }
+  
+  /* Style for each tab button */
+  .tab-button  {
+    padding: 8px 15px;
+    font-size: 12px;
+    color: var(--text-color);
+    cursor: pointer;
+    transition: background-color 0.4s;
+    margin-right: 5px;
+    border-radius: 3px;
+  }
+  
+  .tab-button:hover {
+    background-color: var(--button-active-bg-color);
+  }
+  .tab-button:active {
+    font-weight: bold;
+  }
+  

@@ -1,184 +1,174 @@
 .left-container {
-    width: 20%;
-    min-width: 300px;
-    background-color: var(--bg-left);
-    /*background-color: #00890b11;*/
-    padding: 6px;
-    font-family: Menlo, monospace;
-    font-size: 12px;
-    height: 97vh;
+  width: 20%;
+  min-width: 300px;
+  background-color: var(--bg-left);
+  padding: 2px;
+  height: 97vh;
+}
+
+body.light-mode {
+  --text-active-color: #FF0000;
+  --text-inactive-color: #808080;
+  --bg-local-status: #d4d1d1;
+  --bg-combo-list: #77000061;
+  --bg-days-left: #02520e69;
+  --bg-volatility-main: #0f026f59;
+  --bg-per-leg-volatility: hsl(247, 42%, 69%);
+  --bg-mean-volatility: #1e1e1e;
+  --bg-combo-templater: #1e1e1e;
+  --bg-sigma-selector: #06a4ff;
+}
+
+body.dark-mode {
+  --text-active-color: hsl(63, 100%, 58%);
+  --text-inactive-color: #808080;
+  --bg-local-status: #363535;
+  --bg-combo-list: #770000;
+  --bg-days-left: #02520e;
+  --bg-volatility-main: #0e026f;
+  --bg-per-leg-volatility: #3a2d96;
+  --bg-mean-volatility: #1e1e1e;
+  --bg-combo-templater: #1e1e1e;
+  --bg-sigma-selector: #054f7a;
 }
 
 
-.local-status-container {
-    background-color: var(--bg-local-status);
-    padding: 10px;
-    border-radius: 5px;
-    width: 100%;
-    /* Make it take the full width of its parent */
-    box-sizing: border-box;
-    /* Ensure padding doesn't exceed width */
-    font-family: Menlo, monospace;
-    font-size: 12px;
+.local-status-container,
+.combo-list-container,
+.days-left-container,
+.volatility-main-container,
+.combo-templater-container,
+.sigma-selector-container {
+  background-color: var(--bg-local-status);
+  padding: 10px;
+  border-radius: 5px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .combo-list-container {
-    background-color: var(--bg-combo-list);
-    padding: 10px;
-    border-radius: 5px;
-    width: 100%;
-    /* Make it take the full width of its parent */
-    box-sizing: border-box;
-    /* Ensure padding doesn't exceed width */
-    font-family: Menlo, monospace;
-    font-size: 12px;
+  background-color: var(--bg-combo-list);
 }
 
 .days-left-container {
-    background-color: var(--bg-days-left);
-    padding: 10px;
-    border-radius: 5px;
-    width: 100%;
-    /* Make it take the full width of its parent */
-    box-sizing: border-box;
-    /* Ensure padding doesn't exceed width */
-    font-family: Menlo, monospace;
-    font-size: 12px;
+  background-color: var(--bg-days-left);
 }
 
 .volatility-main-container {
-    background-color: var(--bg-volatility-main);
-    padding: 10px;
-    border-radius: 5px;
-    width: 100%;
-    /* Make it take the full width of its parent */
-    box-sizing: border-box;
-    /* Ensure padding doesn't exceed width */
-    font-family: Menlo, monospace;
-    font-size: 12px;
+  background-color: var(--bg-volatility-main);
 }
-
-.per-leg-volatility-container {
-    opacity: 1;
-    height: auto;
-    padding: 10px;
-    background-color: var(--bg-per-leg-volatility);
-    font-family: Menlo, monospace;
-    font-size: 12px;
-}
-
-.mean-volatility-container {
-    opacity: 1;
-    padding: 10px;
-    height: auto;
-    background-color: var(--bg-mean-volatility);
-    font-family: Menlo, monospace;
-    font-size: 12px;
-}
-
 
 .combo-templater-container {
-    background-color: var(--bg-combo-templater);
-    padding: 10px;
-    border-radius: 5px;
-    width: 100%;
-    /* Make it take the full width of its parent */
-    box-sizing: border-box;
-    /* Ensure padding doesn't exceed width */
-    font-family: Menlo, monospace;
-    font-size: 12px;
+  background-color: var(--bg-combo-templater);
 }
 
 .sigma-selector-container {
-    background-color: var(--bg-sigma-selector);
-    padding: 10px;
-    border-radius: 5px;
-    width: 100%;
-    /* Make it take the full width of its parent */
-    box-sizing: border-box;
-    /* Ensure padding doesn't exceed width */
-    font-family: Menlo, monospace;
-    font-size: 12px;
+  background-color: var(--bg-sigma-selector);
+}
+
+.per-leg-volatility-container,
+.mean-volatility-container {
+  background-color: var(--bg-mean-volatility);
+  padding: 10px;
+  opacity: 1;
+  height: auto;
 }
 
 .camera-position-container {
-    background-color: rgba(135, 102, 255, 0.459);
-    padding: 10px;
-    border-radius: 5px;
-    width: 100%;
-    /* Make it take the full width of its parent */
-    box-sizing: border-box;
-    /* Ensure padding doesn't exceed width */
-    font-family: Menlo, monospace;
-    font-size: 12px;
+  background-color: rgba(135, 102, 255, 0.459);
+  padding: 10px;
+  border-radius: 5px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
+/* === Checkbox === */
 .simple_checkbox {
-    background-color: var(--bg-main);
-    width: 100px;
+  background-color: var(--bg-main);
+  width: 100px;
 }
 
+input[type="checkbox"] {
+  accent-color: #4fc3f7;
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
 
-
+/* === Textes === */
 .checkbox-title {
-    font-weight: bold;
-    margin: 0 0 5px 0;
-    /* Remove top margin, keep a small bottom margin */
-    display: block;
-    font-family: Menlo, monospace;
-    font-size: 12px;
-    color: var(--text-color);
+  font-weight: bold;
+  margin-bottom: 5px;
+  display: block;
+  color: var(--text-color);
 }
+
 .checkbox-text-active {
-    margin: 0 0 5px 0;
-    /* Remove top margin, keep a small bottom margin */
-    display: block;
-    /*color: #000000;*/
-    color: var(--text-active-color);
-    font-family: Menlo, monospace;
-    font-size: 12px;
+  display: block;
+  margin-bottom: 5px;
+  color: var(--text-active-color);
 }
 
 .checkbox-text-inactive {
-    margin: 0 0 5px 0;
-    /* Remove top margin, keep a small bottom margin */
-    display: block;
-    /*color: #BBBBBB;*/
-    color: var(--text-inactive-color);
-    font-family: Menlo, monospace;
-    font-size: 12px;
+  display: block;
+  margin-bottom: 5px;
+  color: var(--text-inactive-color);
 }
 
-
+/* === Containers spéciaux === */
 .context-container {
-    height: 20%;
-    padding: 5px;
-    background-color: #b8ffe7;
-    font-family: Menlo, monospace;
-    font-size: 12px;
+  height: 20%;
+  padding: 5px;
+  background-color: #b8ffe7;
 }
 
 .combo-templates-container {
-    height: 20%;
-    padding: 5px;
-    background-color: #ffc593;
-    font-family: Menlo, monospace;
-    font-size: 12px;
+  height: 20%;
+  padding: 5px;
+  background-color: #ffc593;
 }
 
 .knob-container {
-    height: 20%;
-    padding: 5px;
-    background-color: #eaf494;
-    font-family: Menlo, monospace;
-    font-size: 12px;
+  height: 20%;
+  padding: 5px;
+  background-color: #eaf494;
 }
 
+/* === Sliders === */
+input[type="range"] {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 6px;
+  background: linear-gradient(to right, #4fc3f7, #1f222a);
+  border-radius: 4px;
+  outline: none;
+  margin: 6px 0;
+  transition: background 0.3s ease;
+}
 
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  background: #4fc3f7;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  box-shadow: 0 0 4px #4fc3f7;
+  cursor: pointer;
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  background: #4fc3f7;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  box-shadow: 0 0 4px #4fc3f7;
+  cursor: pointer;
+}
+
+/* === Reverse Slider === */
 .slider-reverse {
-    width: 100%;
-    transform: scaleX(-1);
-    /* Flip the slider horizontally */
+  width: 100%;
+  transform: scaleX(-1);
 }
-
-

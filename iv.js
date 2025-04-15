@@ -161,7 +161,7 @@ function compute_iv_monte_carlo(S, K, r, T, marketPrice, isCall, tol = 1e-4, max
 
 
 
-export function test_iv() {
+export function test_iv_1() {
   /*const tickerPrice = 70.69;   // S
   const strikePrice = 67.5;   // K
   const optionType = "call"; // "call" or "put"
@@ -189,5 +189,32 @@ export function test_iv() {
 
   const volImp = compute_iv_monte_carlo(tickerPrice, strikePrice, riskFreeRate, timeToExpiration, optionPrice, isCall);
   addLog("compute_iv_monte_carlo => IV = ", (100 * iv).toFixed(2), " % (yearly)", (100 * iv / Math.sqrt(252)).toFixed(2), " % (daily)");
+
+}
+
+
+
+export function test_iv() {
+  const tickerPrice = 198.15;   // S
+  const strikePrice = 190;   // K
+  const optionType = "call"; // "call" or "put"
+  const optionPrice = 17.55;     // Market price of the option
+  const timeToExpiration = 39 / 365.; // Time to expiration in years
+  const riskFreeRate = 0.04; // Annualized risk-free rate
+  addLog("Ticker price: ", tickerPrice.toFixed(2));
+  addLog("Strike price: ", strikePrice.toFixed(2));
+  addLog("Option price: ", optionPrice.toFixed(2));
+  addLog("Expiration:   ", (365 * timeToExpiration).toFixed(1), " days");
+
+  //let iv = compute_iv_newtown_raphson(tickerPrice, strikePrice, timeToExpiration, riskFreeRate, optionPrice, optionType);
+  //addLog("compute_iv_newtown_raphson => IV = ", (100 * iv).toFixed(2), " % (yearly)", (100 * iv / Math.sqrt(252)).toFixed(2), " % (daily)");
+
+  let iv = compute_iv_dichotomy(tickerPrice, strikePrice, timeToExpiration, riskFreeRate, optionPrice, optionType);
+  addLog("compute_iv_dichotomy => IV = ", (100 * iv).toFixed(2), " % (yearly)", (100 * iv / Math.sqrt(252)).toFixed(2), " % (daily)");
+
+  //const isCall = true;
+
+  //const volImp = compute_iv_monte_carlo(tickerPrice, strikePrice, riskFreeRate, timeToExpiration, optionPrice, isCall);
+  //addLog("compute_iv_monte_carlo => IV = ", (100 * iv).toFixed(2), " % (yearly)", (100 * iv / Math.sqrt(252)).toFixed(2), " % (daily)");
 
 }
