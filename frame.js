@@ -58,40 +58,6 @@ export function display_combos_list() {
 
 }
 
-export function display_theme_buttons() {
-    const theme_container = d3.select("#theme-container")
-    theme_container.selectAll("*").remove();
-    theme_container.append("p")
-        .attr("class", "checkbox-title")
-        .text("Theme");
-    const checkbox = theme_container.append("input")
-        .attr("type", "checkbox")
-        .attr("id", "myCheckbox")
-        .attr("name", "Dark Mode");
-
-    if (get_dark_mode() == "DARK")
-        checkbox.property("checked", true);
-
-    theme_container.append("label")
-        .attr("for", "myCheckbox")
-        .attr("class", "std-text")
-        .text(" Dark Mode");
-
-
-    checkbox.on("change", function () {
-        set_dark_mode(this.checked);
-        if (this.checked) {
-            d3.select("body").classed("dark-mode", true);
-            d3.select("body").classed("light-mode", false);
-        } else {
-            d3.select("body").classed("dark-mode", false);
-            d3.select("body").classed("light-mode", true);
-        }
-        update_3d_view();
-
-    });
-}
-
 export function display_local_status() {
 
     const local_status_container = d3.select("#local-status-container")
@@ -675,10 +641,65 @@ function add_parameters_container_in_tab_container(tab_container) {
 
 }
 
-
+function create_theme_container() {
+    const theme_container = document.createElement('text');
+    theme_container.classList.add('theme-container');
+    theme_container.id = 'theme-container';
+    let heading = document.createElement('text');
+    heading.classList.add('std-text');
+    heading.textContent = get_dark_mode() == "DARK" ? "🌞 " : "🌙 "
+    heading.style.cursor = "pointer";
+    heading.style.fontSize = "20px";
+    heading.onclick = () => {
+        set_dark_mode(get_dark_mode() == "DARK" ? 0 : 1);
+        heading.textContent = get_dark_mode() == "DARK" ? "🌞 " : "🌙 "
+        d3.select("body").classed("dark-mode", get_dark_mode() == "DARK");
+        d3.select("body").classed("light-mode", get_dark_mode() != "DARK");
+        update_3d_view();
+    }
+    theme_container.appendChild(heading);
+    return theme_container;
+}
 
 
 function create_right_container(tab_active) {
+    let container;
+    const right_container = document.createElement('div');
+    right_container.classList.add('right-container');
+    right_container.id = 'right-container';
+
+    const tabs_container = document.createElement('div');
+    tabs_container.classList.add('tabs-container');
+    tabs_container.id = 'tabs-container';
+    right_container.appendChild(tabs_container);
+
+    tabs_manager = new TabsManager(tabs_container, "main-right-tabs");
+
+    tabs_manager.tabs_selector_container.appendChild(create_theme_container());
+
+    container = tabs_manager.add_tab('P/L Graph', 'pl-tab-container', 'pl-container');
+    container = tabs_manager.add_tab('3D View', 'view3d-tab-container', 'view3d-container', update_3d_view);
+    add_view3d_controler_container_in_view3d_container(container);
+    add_view3d_gragh_container_in_view3d_container(container);
+
+
+    container = tabs_manager.add_tab('Combo Builder', 'option-chain-tab-container', 'option-chain-container');
+    add_option_chain_container_in_tab_container(container);
+
+    container = tabs_manager.add_tab('Parameters', 'parameters-tab-container', 'parameters-container');
+    add_parameters_container_in_tab_container(container);
+
+    container = tabs_manager.add_tab('Logs', 'log-tab-container', 'log-container');
+    add_log_container_in_tab_container(container);
+
+    tabs_manager.activate_last_tab();//activate_tab(tab_active);
+
+    return right_container;
+
+}
+
+
+function create_right_container_original(tab_active) {
     let container;
     const right_container = document.createElement('div');
     right_container.classList.add('right-container');
@@ -722,6 +743,6 @@ export function create_main_frame(tab_active) {
         d3.select("body").classed("dark-mode", false);
         d3.select("body").classed("light-mode", true);
     }
-    addLog("TEST", { error: true, blink : true });
+    addLog("TEST", { error: true, blink: true });
     return;
 }

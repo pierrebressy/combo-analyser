@@ -4,7 +4,7 @@ import { update_3d_view } from './3d_view.js';
 import { addLog } from './log.js';
 import { test_iv } from './iv.js';
 import { create_main_frame } from './frame.js';
-import { display_sigma_selector, display_days_left_slider, display_theme_buttons, display_combos_list } from './frame.js';
+import { display_sigma_selector, display_days_left_slider, display_combos_list } from './frame.js';
 import { display_volatility_sliders, display_checkbox_for_volatility_mode, display_local_status } from './frame.js';
 import { set_dark_mode, set_volatility_is_per_leg } from './global.js';
 import { set_underlying_current_price } from './global.js';
@@ -68,12 +68,12 @@ function display() {
 
     let left_container = d3.select("#left-container");
     left_container.selectAll("*").remove();
-
+/*
     d3.select("#left-container").append("div")
         .attr("class", "theme-container")
         .attr("id", "theme-container");
     display_theme_buttons();
-
+*/
     d3.select("#left-container").append("div")
         .attr("class", "local-status-container")
         .attr("id", "local-status-container");

@@ -1,11 +1,31 @@
 import { load_local_option_chain } from './network.js';
+import { addLog } from './log.js';
 import { TabsManager } from './tabs_manager.js';
 import { compute_iv_dichotomy } from './iv.js';
 
 let selectedCells = [];
 
 
+function remaining_days(expiry) {
 
+    // Convert to YYYY-MM-DD string
+    const expiryStr = expiry.toString();
+    const expiryDate = new Date(
+        parseInt(expiryStr.substring(0, 4)),        // Year
+        parseInt(expiryStr.substring(4, 6)) - 1,    // Month (0-based)
+        parseInt(expiryStr.substring(6, 8))         // Day
+    );
+
+    // Today's date (without time)
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // Difference in milliseconds and convert to days
+    const diffTime = expiryDate - today;
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    return diffDays
+}
 
 export async function add_option_chain_container_in_tab_container(tab_container) {
 
@@ -87,9 +107,12 @@ export async function add_option_chain_container_in_tab_container(tab_container)
 
         let oc_expiries_tabs_manager = new TabsManager(container, ticker + "oc-expiries-tabs-manager");
         for (const expiry of Object.keys(option_chain[ticker])) {
-            let container3 = oc_expiries_tabs_manager.add_tab(expiry, ticker + '-' + expiry + '-oc-tab-container', ticker + '-' + expiry + '-oc-container');
-            let referencePrice = 237.5;
-            add_option_chain_table(container3, option_chain[ticker][expiry], ticker, expiry, referencePrice);
+            if (remaining_days(expiry) > 0) {
+                let container3 = oc_expiries_tabs_manager.add_tab(expiry + " - " + remaining_days(expiry) + "d", ticker + '-' + expiry + '-oc-tab-container', ticker + '-' + expiry + '-oc-container');
+                let referencePrice = 237.5;
+                add_option_chain_table(container3, option_chain[ticker][expiry], ticker, expiry, referencePrice);
+
+            }
         }
         container.appendChild(selectedContainer);
 
@@ -106,6 +129,7 @@ export async function add_option_chain_table(test_container, option_chain, ticke
 
     const calls = option_chain.calls;
     const puts = option_chain.puts;
+    addLog("[add_option_chain_table]", ticker, current_expiry, referencePrice);
 
     const combined = calls.map((call, i) => ({
         strike: call.strike,
@@ -330,10 +354,11 @@ export async function add_option_chain_table(test_container, option_chain, ticke
             closestIndex = i;
         }
 
-
     });
+    addLog("closestIndex=", closestIndex);
 
     setTimeout(() => {
+
         const rows = tbody.querySelectorAll("tr");
         if (rows.length === 0) return;
 
@@ -346,7 +371,6 @@ export async function add_option_chain_table(test_container, option_chain, ticke
 
 
 }
-
 
 export async function add_option_chain_table_v2(test_container, option_chain, ticker, current_expiry, referencePrice) {
 
@@ -362,11 +386,11 @@ export async function add_option_chain_table_v2(test_container, option_chain, ti
         call_bid: calls[i].bid,
         call_ask: calls[i].ask,
         call_mid: 0.5 * (calls[i].ask + calls[i].bid),
-        call_mid_iv: 100 * compute_iv_dichotomy(referencePrice, calls[i].strike, time_to_expiry, riskFreeRate, 0.5 * (calls[i].ask + calls[i].bid) , 'call'),
+        call_mid_iv: 100 * compute_iv_dichotomy(referencePrice, calls[i].strike, time_to_expiry, riskFreeRate, 0.5 * (calls[i].ask + calls[i].bid), 'call'),
         put_bid: puts[i].bid,
         put_ask: puts[i].ask,
         put_mid: 0.5 * (puts[i].ask + puts[i].bid),
-        put_mid_iv: 100 * compute_iv_dichotomy(referencePrice, puts[i].strike, time_to_expiry, riskFreeRate, 0.5 * (puts[i].ask + puts[i].bid) , 'put')
+        put_mid_iv: 100 * compute_iv_dichotomy(referencePrice, puts[i].strike, time_to_expiry, riskFreeRate, 0.5 * (puts[i].ask + puts[i].bid), 'put')
     }));
 
     //console.log("combined=", combined);

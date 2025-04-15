@@ -11,7 +11,7 @@ export class TabsManager {
 
     this.tabs_selector_container = document.createElement('div');
     this.tabs_selector_container.classList.add('tabs-selector-container');
-    this.tabs_selector_container.id = 'tabs-selector-container';
+    this.tabs_selector_container.id = manager_name+'-tabs-selector-container';
     this.main_container.appendChild(this.tabs_selector_container);
 
     this.tab_container = document.createElement('div');
