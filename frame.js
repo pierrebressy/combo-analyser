@@ -67,19 +67,16 @@ export function display_theme_buttons() {
     const checkbox = theme_container.append("input")
         .attr("type", "checkbox")
         .attr("id", "myCheckbox")
-        .attr("name", "Dark Mode")
-        .attr("checked", get_dark_mode() ? "checked" : null);
+        .attr("name", "Dark Mode");
+
+    if (get_dark_mode() == "DARK")
+        checkbox.property("checked", true);
+
     theme_container.append("label")
         .attr("for", "myCheckbox")
         .attr("class", "std-text")
         .text(" Dark Mode");
-    if (get_dark_mode()) {
-        d3.select("body").classed("dark-mode", true);
-        d3.select("body").classed("light-mode", false);
-    } else {
-        d3.select("body").classed("dark-mode", false);
-        d3.select("body").classed("light-mode", true);
-    }
+
 
     checkbox.on("change", function () {
         set_dark_mode(this.checked);
@@ -709,11 +706,22 @@ function create_right_container(tab_active) {
 
 }
 
+
 export function create_main_frame(tab_active) {
+
     const body = document.body;
     let leftContainer = create_left_container();
     let rightContainer = create_right_container(tab_active);
     body.appendChild(leftContainer);
     body.appendChild(rightContainer);
+
+    if (get_dark_mode() == "DARK") {
+        d3.select("body").classed("dark-mode", true);
+        d3.select("body").classed("light-mode", false);
+    } else {
+        d3.select("body").classed("dark-mode", false);
+        d3.select("body").classed("light-mode", true);
+    }
+
     return;
 }

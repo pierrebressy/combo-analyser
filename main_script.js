@@ -1,4 +1,4 @@
-import { is_mode_local, load_local_price, load_local_config, fetch_configuration, fetch_price } from './network.js';
+import { is_mode_local, load_local_price, load_local_config, fetch_configuration, fetch_price, getCookie, setCookie } from './network.js';
 import { Environment } from './configuration.js';
 import { update_3d_view } from './3d_view.js';
 import { addLog } from './log.js';
@@ -6,7 +6,7 @@ import { test_iv } from './iv.js';
 import { create_main_frame } from './frame.js';
 import { display_sigma_selector, display_days_left_slider, display_theme_buttons, display_combos_list } from './frame.js';
 import { display_volatility_sliders, display_checkbox_for_volatility_mode, display_local_status } from './frame.js';
-import { set_volatility_is_per_leg } from './global.js';
+import { set_dark_mode, set_volatility_is_per_leg } from './global.js';
 import { set_underlying_current_price } from './global.js';
 import { set_use_local, get_use_local } from './global.js';
 import { draw_graph } from './2d_graph.js';
@@ -50,6 +50,8 @@ async function setup_global_env(e) {
     else {
         console.log("setup_global_env: env already set.");
     }
+
+
     return e
 }
 function display() {
