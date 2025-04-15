@@ -76,7 +76,7 @@ else if (isWarning)
     logMessage.classList.add('log-line', 'warn');
 
 if (isBlinker) {
-    logMessage.classList.add('log-line', 'log-blink');
+    logMessage.classList.add('log-line', 'blink');
   }
   const now = new Date();
   const pad = (n) => String(n).padStart(2, '0');

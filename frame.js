@@ -691,14 +691,14 @@ function create_right_container(tab_active) {
     add_view3d_controler_container_in_view3d_container(container);
     add_view3d_gragh_container_in_view3d_container(container);
 
-    container = tabs_manager.add_tab('Logs', 'log-tab-container', 'log-container');
-    add_log_container_in_tab_container(container);
-
     container = tabs_manager.add_tab('Combo Builder', 'option-chain-tab-container', 'option-chain-container');
     add_option_chain_container_in_tab_container(container);
 
     container = tabs_manager.add_tab('Parameters', 'parameters-tab-container', 'parameters-container');
     add_parameters_container_in_tab_container(container);
+
+    container = tabs_manager.add_tab('Logs', 'log-tab-container', 'log-container');
+    add_log_container_in_tab_container(container);
 
     tabs_manager.activate_last_tab();//activate_tab(tab_active);
 
@@ -722,6 +722,6 @@ export function create_main_frame(tab_active) {
         d3.select("body").classed("dark-mode", false);
         d3.select("body").classed("light-mode", true);
     }
-    addLog('State: use_local=' + get_use_local(), { error: true, blink : true });
+    addLog("TEST", { error: true, blink : true });
     return;
 }
