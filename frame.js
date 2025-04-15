@@ -722,6 +722,6 @@ export function create_main_frame(tab_active) {
         d3.select("body").classed("dark-mode", false);
         d3.select("body").classed("light-mode", true);
     }
-
+    addLog('State: use_local=' + get_use_local(), { error: true, blink : true });
     return;
 }

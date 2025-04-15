@@ -7,13 +7,35 @@
   --matrix-hover: #00cc33;
 }
 
+
+body.light-mode {
+  --matrix-green: hsl(43, 100%, 35%);
+  --matrix-bg: #ffffff;
+  --matrix-dim: #ffffff;
+  --matrix-text: hsl(0, 0%, 0%);
+  --matrix-text-warning: hsl(35, 100%, 50%);
+  --matrix-text-error:  hsl(0, 100%, 50%);
+  --matrix-border: hsl(43, 100%, 50%);
+  --matrix-hover: hsl(43, 97%, 38%);
+}
+
+body.dark-mode {
+  --matrix-green: #00ff41;
+  --matrix-bg: #0d0208;
+  --matrix-dim: #003b1f;
+  --matrix-text: #28ff5e;
+  --matrix-text-warning: hsl(37, 100%, 50%);
+  --matrix-text-error:  hsl(0, 100%, 50%);
+  --matrix-border: #00ff41;
+  --matrix-hover: #00cc33;
+}
+
 .log-container {
   padding: 10px;
   background-color: var(--matrix-bg);
   border: 1px solid var(--matrix-dim);
   border-radius: 5px;
   height: 82vh;
-  width: 100%;
   overflow-y: scroll;
   font-family: "Courier New", Courier, monospace;
   font-size: 13px;
@@ -31,6 +53,7 @@
   font-family: "Courier New", Courier, monospace;
   transition: all 0.2s ease-in-out;
 }
+
 .clear-log-btn:hover {
   background-color: var(--matrix-hover);
   color: #000;
@@ -39,15 +62,29 @@
 
 .log-line {
   padding: 2px 0;
-  color: var(--matrix-text);
 }
 
 .log-line.warn {
-  color: #ffff00;
+  color: var(--matrix-text-warning);
+  font-weight: bold ;
 }
+
 .log-line.error {
-  color: #ff0044;
+  color: var(--matrix-text-error);
+  font-weight: bold ;
 }
+
+.log-blink {
+  animation: blink-animation 1s steps(2, start) infinite;
+}
+
+@keyframes blink-animation {
+  0%   { opacity: 0; }
+  30%  { opacity: 0; }
+  31%  { opacity: 1; }
+  100% { opacity: 1; }
+}
+
 .log-line.timestamp {
   color: var(--matrix-dim);
 }
@@ -62,11 +99,13 @@
   border-radius: 3px 3px 0 0;
   margin-right: 4px;
 }
+
 .tab-button.active {
   background-color: var(--matrix-dim);
   border-bottom: none;
   box-shadow: inset 0 -2px 0 var(--matrix-green);
 }
+
 .tab-button:hover {
   background-color: var(--matrix-hover);
   color: #000;

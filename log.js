@@ -60,12 +60,24 @@ export function addLog(...args) {
     options = args.pop();
   }
   const isWarning = options.warning === true;
-
+  const isError = options.error === true;
+  const isBlinker = options.blink === true;
 
   const logMessage = document.createElement('div');
   logMessage.style.margin = '5px 0';
-  logMessage.style.color = isWarning ? '#ffcc00' : 'white';  // Optional: color warning logs
+  //const bodyStyles = getComputedStyle(document.body);
+  //const warningColor = bodyStyles.getPropertyValue('--log-warning').trim();
+  //const defaultColor = bodyStyles.getPropertyValue('--log-default2').trim();
+//  logMessage.style.color = isWarning ? warningColor : defaultColor;  // Optional: color warning logs
 
+if(isError)
+  logMessage.classList.add('log-line', 'error');
+else if (isWarning)
+    logMessage.classList.add('log-line', 'warn');
+
+if (isBlinker) {
+    logMessage.classList.add('log-line', 'log-blink');
+  }
   const now = new Date();
   const pad = (n) => String(n).padStart(2, '0');
   const timestamp = `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
@@ -87,7 +99,7 @@ export function addLog(...args) {
     // ignore
   }
 
-  const warningSymbol = isWarning ? ' ⚠️' : '';
+  const msgSymbol = isError? '🛑' : isWarning ? ' ⚠️' : '';
 
   // Convert all arguments to strings (objects -> JSON)
   const formattedMessage = args.map(arg => {
@@ -101,10 +113,11 @@ export function addLog(...args) {
     return String(arg);
   }).join(' ');  // Join with space, like console.log
 
-  logMessage.textContent = `[${timestamp}] ${warningSymbol} ${formattedMessage}`;
+  logMessage.textContent = `[${timestamp}] ${msgSymbol} ${formattedMessage}`;
   //logMessage.textContent = `${timestamp} [${caller}] ${formattedMessage}`;
   //logMessage.textContent = `[${timestamp}] ${formattedMessage}`;
   //logMessage.textContent = formattedMessage;
+  
   log_container.appendChild(logMessage);
 }
 
