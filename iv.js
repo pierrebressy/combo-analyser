@@ -78,7 +78,7 @@ export function compute_iv_dichotomy(S, K, T, r, marketPrice, optionType) {
     }
 
   }
-  addLog("[compute_iv_dichotomy] max iterations: ", maxIterations, { warning: true });
+  //addLog("[compute_iv_dichotomy] max iterations: ", maxIterations, { warning: true });
   return 0;
 }
 

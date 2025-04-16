@@ -5,28 +5,6 @@ import { compute_iv_dichotomy } from './iv.js';
 
 let selectedCells = [];
 
-
-function remaining_days2(expiry) {
-
-    // Convert to YYYY-MM-DD string
-    const expiryStr = expiry.toString();
-    const expiryDate = new Date(
-        parseInt(expiryStr.substring(0, 4)),        // Year
-        parseInt(expiryStr.substring(4, 6)) - 1,    // Month (0-based)
-        parseInt(expiryStr.substring(6, 8))         // Day
-    );
-
-    // Today's date (without time)
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    // Difference in milliseconds and convert to days
-    const diffTime = expiryDate - today;
-    //const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    const diffDays = (diffTime / (1000. * 60 * 60 * 24));
-
-    return diffDays
-}
 function remaining_days(expiry) {
     // Convert expiry string to Date (YYYYMMDD -> 16:30 UTC-5)
     const expiryStr = expiry.toString();
@@ -73,16 +51,18 @@ export async function add_option_chain_container_in_tab_container(tab_container)
 
     let oc_tabs_manager = new TabsManager(oc_container, "oc-tabs-manager");
     let container;
-    // TODO: upate the reference price
-    let referencePrice = 202.19;
 
     for (const ticker of Object.keys(option_chain)) {
         container = oc_tabs_manager.add_tab(ticker, ticker + '-oc-tab-container', ticker + '-oc-container');
 
         const heading = document.createElement('h2');
         heading.classList.add('std-text');
+        let referencePrice = option_chain[ticker].last_price;
         heading.textContent = 'Expiry dates for ' + ticker + " last price: " + referencePrice.toFixed(2);
 
+        const historic_volatility = option_chain[ticker].historic_volatility;
+        addLog("historic_volatility=", historic_volatility);
+    
         ////////// ----->>>>>
         const selectedListContainer = document.createElement("div");
         selectedListContainer.id = "selected-list";
@@ -132,7 +112,7 @@ export async function add_option_chain_container_in_tab_container(tab_container)
             if (remaining_days(expiry) > 0) {
                 let container3 = oc_expiries_tabs_manager.add_tab(expiry + " - " + remaining_days(expiry) + "d", ticker + '-' + expiry + '-oc-tab-container', ticker + '-' + expiry + '-oc-container');
                 addLog(ticker, expiry, "remaining_days=", remaining_days(expiry), referencePrice);
-                add_option_chain_table_v3(container3, option_chain[ticker][expiry], ticker, expiry, referencePrice);
+                add_option_chain_table_v3(container3, option_chain[ticker][expiry], ticker, expiry, referencePrice, historic_volatility);
 
             }
         }
@@ -147,17 +127,30 @@ export async function add_option_chain_container_in_tab_container(tab_container)
     tab_container.appendChild(oc_container);
 }
 
-export async function add_option_chain_table_v3(test_container, option_chain, ticker, current_expiry, referencePrice) {
+export async function add_option_chain_table_v3(test_container, option_chain, ticker, current_expiry, referencePrice, historic_volatility) {
 
     const calls = option_chain.calls;
     const puts = option_chain.puts;
+    const strikes = option_chain.strikes;
+    // find the closest strike to the reference price
+    let closestStrike = null;
+    let closestDiff = Infinity;
+    for (const strike of strikes) {
+        const diff = Math.abs(strike - referencePrice);
+        if (diff < closestDiff) {
+            closestDiff = diff;
+            closestStrike = strike;
+        }
+    }
+    addLog("closestStrike=", closestStrike);
 
     const time_to_expiry = remaining_days(current_expiry) / 365.;
+    addLog("time_to_expiry=", time_to_expiry);
     const riskFreeRate = 0.04; // Example risk-free rate
 
-    console.log("option_chain=", option_chain.strikes);
-    console.log("num calls=", calls.length);
-    console.log("num puts=", puts.length);
+    let sigma = referencePrice * historic_volatility * Math.sqrt(remaining_days(current_expiry) / 252);
+    addLog("sigma=", sigma);
+
     const maxLen = Math.max(calls.length, puts.length);
 
     const combined = Array.from({ length: maxLen }, (_, i) => {
@@ -253,7 +246,20 @@ export async function add_option_chain_table_v3(test_container, option_chain, ti
             else {
                 td.textContent = (val * 1.0).toFixed(2);
             }
-
+            if (j === 4) {
+                if (closestStrike === row.strike) {
+                    td.style.backgroundColor = "#000080";
+                } else if (Math.abs(row.strike - referencePrice) <= sigma) {
+                    td.style.backgroundColor = "#333380";
+                } else if (Math.abs(row.strike - referencePrice) <= 2 * sigma) {
+                    td.style.backgroundColor = "#555580";
+                } else if (Math.abs(row.strike - referencePrice) <= 3 * sigma) {
+                    td.style.backgroundColor = "#777780";
+                } else {
+                    td.style.backgroundColor = "#555555";
+                }
+            }
+        
 
             td.addEventListener("mouseover", () => {
                 td.dataset.originalColor = td.style.backgroundColor;  // Save current bg
