@@ -95,6 +95,22 @@ class OptionChain {
     }
 }
 
+function isThirdFriday(expiry) {
+    const year = parseInt(expiry.slice(0, 4), 10);
+    const month = parseInt(expiry.slice(4, 6), 10) - 1; // JS months = 0-based
+    const day = parseInt(expiry.slice(6, 8), 10);
+
+    const date = new Date(year, month, day);
+    if (date.getDay() !== 5) return false; // Not a Friday
+
+    // Find the first Friday of the month
+    const firstDay = new Date(year, month, 1);
+    const firstFridayOffset = (5 - firstDay.getDay() + 7) % 7;
+    const thirdFridayDate = 1 + firstFridayOffset + 14;
+
+    return day === thirdFridayDate;
+}
+
 
 function remaining_days(expiry) {
     // Convert expiry string to Date (YYYYMMDD -> 16:30 UTC-5)
@@ -206,6 +222,12 @@ export async function add_option_chain_container_in_tab_container(tab_container)
             //console.log(expiry, oc.getChainForExpiry(expiry));
             if (remaining_days(expiry) > 0) {
                 let container3 = oc_expiries_tabs_manager.add_tab(expiry + " - " + remaining_days(expiry).toFixed(0) + "d", ticker + '-' + expiry + '-oc-tab-container', ticker + '-' + expiry + '-oc-container');
+                let selector=oc_expiries_tabs_manager.selectors[oc_expiries_tabs_manager.selectors.length-1].selector;
+                console.log("selector=", selector);
+                if(isThirdFriday(expiry)) {
+                    console.log("isThirdFriday=", expiry);
+                    selector.classList.add("third-friday");
+                }
                 addLog(ticker, expiry, "remaining_days=", remaining_days(expiry), oc.getLastPrice(expiry));
                 add_option_chain_table_v4(container3, oc, expiry);
                 //add_option_chain_table_v3(container3, option_chain[ticker][expiry], ticker, expiry, oc.getLastPrice(), oc.getHistoricVolatility());

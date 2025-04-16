@@ -52,3 +52,7 @@
 
   }
 
+  .tab-button.third-friday {
+    font-style: italic;
+    color: rgb(255, 255, 151)
+  }
