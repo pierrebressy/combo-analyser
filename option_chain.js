@@ -62,6 +62,30 @@ class OptionChain {
         //console.log("this.expiry=", this.expiry);
     }
 
+    clear_legs() {
+        this.legs.forEach(leg => {
+            let l = this.get_expiries_list();
+            const expiryIndex = l.findIndex(e => e === leg.expiry);
+            let c = this.expiry[expiryIndex].combined;
+            const i = c.findIndex(e => e.strike === leg.strike);
+            if (expiryIndex !== -1) {
+                this.expiry[expiryIndex].combined[i].call_count = 0;
+                let selector_bid = 'td[data-expiry="' + leg.expiry + '"][data-strike="' + leg.strike + '"][data-type="' + leg.type + '-bid"]';
+                let selector_ask = 'td[data-expiry="' + leg.expiry + '"][data-strike="' + leg.strike + '"][data-type="' + leg.type + '-ask"]';
+                const td_bid = document.querySelector(selector_bid);
+                const td_ask = document.querySelector(selector_ask);
+                td_bid.style.backgroundColor = "#222";
+                td_ask.style.backgroundColor = "#222";
+                td_bid.textContent = (leg.value * 1.0).toFixed(2);
+                td_ask.textContent = (leg.value * 1.0).toFixed(2);
+
+            }
+            this.legs = [];
+            const btn = document.getElementById("tab-button-" + leg.expiry);
+            btn.classList.remove("used");
+
+        })
+    }
     add_leg(leg) {
         this.legs.push(leg);
         this.simplify_legs_table();
@@ -149,8 +173,9 @@ function remaining_days(expiry) {
     return Math.round(diffDays * 10) / 10;
 }
 
-function create_selected_contracts_list(ticker) {
+function create_selected_contracts_list(option_chain, ticker) {
 
+    console.log(option_chain.legs);
     const selectedListContainer = document.createElement("div");
     selectedListContainer.id = "selected-list";
     selectedListContainer.style.marginTop = "20px";
@@ -171,22 +196,93 @@ function create_selected_contracts_list(ticker) {
     selectedContainer.style.color = "#fff";
     selectedContainer.style.border = "1px solid #444";
 
-    selectedContainer.innerHTML = `
-          <strong>Selected Options for ${ticker}</strong>
-          <table id="selected-table" style="width: 100%; border-collapse: collapse; margin-top: 10px;">
-            <thead>
-              <tr style="background-color: #222;">
-                <th>Qty</th>
-                <th>Type</th>
-                <th>Strike</th>
-                <th>Expiration</th>
-                <th>Premium</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-        `;
 
+    selectedContainer.innerHTML = ""; // Clear previous content
+
+    // Title
+    const title = document.createElement("strong");
+    title.textContent = `Selected Options for ${ticker}`;
+    selectedContainer.appendChild(title);
+
+    // Clear Button
+    const clearBtn = document.createElement("button");
+    clearBtn.id = "clear-selected";
+    clearBtn.textContent = "Clear";
+    clearBtn.style.cssText = `
+      float: right;
+      background-color: #222;
+      color: #fff;
+      border: none;
+      padding: 5px 10px;
+      cursor: pointer;
+    `;
+    clearBtn.addEventListener("click", () => {
+        option_chain.clear_legs();
+        update_selected_table(option_chain);
+    });
+
+    selectedContainer.appendChild(clearBtn);
+
+    // Table
+    const table = document.createElement("table");
+    table.id = "selected-table";
+    table.style.cssText = `
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    `;
+
+    // Thead
+    const thead = document.createElement("thead");
+    const headerRow = document.createElement("tr");
+    headerRow.style.backgroundColor = "#222";
+
+    ["Qty", "Type", "Strike", "Expiration", "Premium"].forEach(text => {
+        const th = document.createElement("th");
+        th.textContent = text;
+        headerRow.appendChild(th);
+    });
+
+    thead.appendChild(headerRow);
+    table.appendChild(thead);
+
+    // Tbody
+    const tbody = document.createElement("tbody");
+    table.appendChild(tbody);
+
+    // Append the table to the container
+    selectedContainer.appendChild(table);
+
+
+
+
+
+
+
+
+
+
+
+
+
+    /*
+        selectedContainer.innerHTML = `
+              <strong>Selected Options for ${ticker}</strong>
+              <button id="clear-selected" style="float: right; background-color: #222; color: #fff; border: none; padding: 5px 10px; cursor: pointer;">Clear</button>
+              <table id="selected-table" style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+                <thead>
+                  <tr style="background-color: #222;">
+                    <th>Qty</th>
+                    <th>Type</th>
+                    <th>Strike</th>
+                    <th>Expiration</th>
+                    <th>Premium</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            `;
+    */
     return selectedContainer;
 }
 
@@ -248,7 +344,7 @@ export async function add_option_chain_container_in_tab_container(tab_container)
             }
         }
         // Add selected contracts list
-        const selectedContainer = create_selected_contracts_list(ticker);
+        const selectedContainer = create_selected_contracts_list(oc, ticker);
         container.appendChild(selectedContainer);
 
         oc_expiries_tabs_manager.activate_last_tab();
@@ -463,24 +559,16 @@ export async function add_option_chain_table_v4(test_container, oc, expiry) {
                 const td_bid = document.querySelector(selector_bid);
                 const td_ask = document.querySelector(selector_ask);
 
-                if (new_count < 0) {
-                    td_bid.textContent = new_count + " x " + (value_bid * 1.0).toFixed(2)
-                    td_ask.textContent = (value_ask * 1.0).toFixed(2)
-                    td_bid.style.backgroundColor = "#600"; // red background
-                    td_ask.style.backgroundColor = "#222"
-                } else if (new_count > 0) {
-                    td_bid.textContent = (value_bid * 1.0).toFixed(2)
-                    td_ask.textContent = new_count + " x " + (value_ask * 1.0).toFixed(2)
-                    td_bid.style.backgroundColor = "#222"
-                    td_ask.style.backgroundColor = "#003366"; // blue background
-                } else {
-                    td_bid.textContent = (value_bid * 1.0).toFixed(2)
-                    td_ask.textContent = (value_ask * 1.0).toFixed(2)
-                    td_bid.style.backgroundColor = "#222"
-                    td_ask.style.backgroundColor = "#222"
-                }
+
+                td_bid.textContent = (new_count > 0 ? "" : new_count + " x ") + (value_bid * 1.0).toFixed(2)
+                td_ask.textContent = (new_count < 0 ? "" : new_count + " x ") + (value_ask * 1.0).toFixed(2)
+
+                td_bid.style.backgroundColor = new_count < 0 ? "#600" : "#222";
+                td_ask.style.backgroundColor = new_count > 0 ? "#003366" : "#222";
+
                 td_bid.dataset.originalColor = td_bid.style.backgroundColor;  // Save current bg
                 td_ask.dataset.originalColor = td_ask.style.backgroundColor;  // Save current bg
+
                 const btn = document.getElementById("tab-button-" + leg.expiry);
                 if (new_count == 0) {
                     btn.classList.remove("used");
