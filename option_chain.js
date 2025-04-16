@@ -63,6 +63,26 @@ class OptionChain {
         //console.log("this.expiry=", this.expiry);
     }
 
+
+    addLeg(leg) {
+        this.legs.push(leg);
+        this.simplifyLegs();
+    }
+    simplifyLegs() {
+        let simplified = [];
+        for (const leg of this.legs) {
+            const existingLeg = simplified.find(l => l.strike === leg.strike && l.type === leg.type);
+            if (existingLeg) {
+                existingLeg.qty += leg.qty;
+            } else {
+                simplified.push(leg);
+            }
+        }
+        /// remove legs with qty=0
+        simplified = simplified.filter(leg => leg.qty !== 0);
+        this.legs = simplified;
+        addLog("Simplified Legs:", this.legs);
+    }
     getCalls(expiry) {
         return this.chain[expiry].calls;
     }
@@ -135,7 +155,7 @@ function remaining_days(expiry) {
 export async function add_option_chain_container_in_tab_container(tab_container) {
 
     let option_chain = await load_local_option_chain();
-    addLog("option_chain #tickers=", Object.keys(option_chain).length);
+    //addLog("option_chain #tickers=", Object.keys(option_chain).length);
 
     let oc_container = document.createElement('div');
     oc_container.classList.add('oc-container');
@@ -169,9 +189,9 @@ export async function add_option_chain_container_in_tab_container(tab_container)
         heading.classList.add('std-text');
         heading.textContent = 'Expiry dates for ' + ticker
 
-        addLog("option_chain #Expiry dates=", oc.getExpiries());
+        //addLog("option_chain #Expiry dates=", oc.getExpiries());
 
-        /*
+
         ////////// ----->>>>>
         const selectedListContainer = document.createElement("div");
         selectedListContainer.id = "selected-list";
@@ -199,18 +219,17 @@ export async function add_option_chain_container_in_tab_container(tab_container)
           <table id="selected-table" style="width: 100%; border-collapse: collapse; margin-top: 10px;">
             <thead>
               <tr style="background-color: #222;">
+                <th>Qty</th>
                 <th>Type</th>
                 <th>Strike</th>
-                <th>Mid</th>
                 <th>Expiration</th>
-                <th>Qty</th>
-        <th>Remove</th>
+                <th>Premium</th>
               </tr>
             </thead>
             <tbody></tbody>
           </table>
         `;
-*/
+
 
         ////////// <<<<------
         // Assemble header
@@ -222,19 +241,17 @@ export async function add_option_chain_container_in_tab_container(tab_container)
             //console.log(expiry, oc.getChainForExpiry(expiry));
             if (remaining_days(expiry) > 0) {
                 let container3 = oc_expiries_tabs_manager.add_tab(expiry + " - " + remaining_days(expiry).toFixed(0) + "d", ticker + '-' + expiry + '-oc-tab-container', ticker + '-' + expiry + '-oc-container');
-                let selector=oc_expiries_tabs_manager.selectors[oc_expiries_tabs_manager.selectors.length-1].selector;
-                console.log("selector=", selector);
-                if(isThirdFriday(expiry)) {
-                    console.log("isThirdFriday=", expiry);
+                let selector = oc_expiries_tabs_manager.selectors[oc_expiries_tabs_manager.selectors.length - 1].selector;
+                if (isThirdFriday(expiry)) {
                     selector.classList.add("third-friday");
                 }
-                addLog(ticker, expiry, "remaining_days=", remaining_days(expiry), oc.getLastPrice(expiry));
+                //addLog(ticker, expiry, "remaining_days=", remaining_days(expiry), oc.getLastPrice(expiry));
                 add_option_chain_table_v4(container3, oc, expiry);
                 //add_option_chain_table_v3(container3, option_chain[ticker][expiry], ticker, expiry, oc.getLastPrice(), oc.getHistoricVolatility());
 
             }
         }
-        //container.appendChild(selectedContainer);
+        container.appendChild(selectedContainer);
 
         oc_expiries_tabs_manager.activate_last_tab();
 
@@ -348,17 +365,11 @@ export async function add_option_chain_table_v4(test_container, oc, expiry) {
                 }
                 else if (j == 1) {
                     td.setAttribute("data-type", "call-bid");
-                    hoverLabel.textContent = "Sell";
-                    hoverLabel.style.backgroundColor = "#900";
-                    hoverLabel.style.display = "block";
                     if (call_count < 0)
                         td.style.backgroundColor = "#600"; // red background
                 }
                 else if (j == 3) {
                     td.setAttribute("data-type", "call-ask");
-                    hoverLabel.textContent = "Sell";
-                    hoverLabel.style.backgroundColor = "#900";
-                    hoverLabel.style.display = "block";
                     if (call_count > 0)
                         td.style.backgroundColor = "#003366"; // blue background
                 }
@@ -377,17 +388,11 @@ export async function add_option_chain_table_v4(test_container, oc, expiry) {
                 }
                 else if (j == 5) {
                     td.setAttribute("data-type", "put-bid");
-                    hoverLabel.textContent = "Sell";
-                    hoverLabel.style.backgroundColor = "#900";
-                    hoverLabel.style.display = "block";
                     if (put_count < 0)
                         td.style.backgroundColor = "#600"; // red background
                 }
                 else if (j == 7) {
                     td.setAttribute("data-type", "put-ask");
-                    hoverLabel.textContent = "Sell";
-                    hoverLabel.style.backgroundColor = "#900";
-                    hoverLabel.style.display = "block";
                     if (put_count > 0)
                         td.style.backgroundColor = "#003366"; // blue background
                 }
@@ -431,7 +436,7 @@ export async function add_option_chain_table_v4(test_container, oc, expiry) {
                     value: val,
                     qty: (j === 1 || j === 5) ? -1 : 1
                 }
-                oc.legs.push(leg);
+                oc.addLeg(leg);
                 //console.log("Selected:", oc.legs);
                 // find the index of expiry in oc.expiry
                 const expiryIndex = oc.expiry.findIndex(e => e.expiry === expiry);
@@ -439,7 +444,6 @@ export async function add_option_chain_table_v4(test_container, oc, expiry) {
                 if (leg.type === "call") {
                     oc.expiry[expiryIndex].combined[i].call_count += leg.qty;
                     let new_count = oc.expiry[expiryIndex].combined[i].call_count
-                    console.log("Updated call_count for leg:", new_count);
 
                     const selector_bid = 'td[data-expiry="' + leg.expiry + '"][data-strike="' + leg.strike + '"][data-type="call-bid"]';
                     const selector_ask = 'td[data-expiry="' + leg.expiry + '"][data-strike="' + leg.strike + '"][data-type="call-ask"]';
@@ -467,8 +471,7 @@ export async function add_option_chain_table_v4(test_container, oc, expiry) {
                     }
                     td_bid.dataset.originalColor = td_bid.style.backgroundColor;  // Save current bg
                     td_ask.dataset.originalColor = td_ask.style.backgroundColor;  // Save current bg
-                    const btn = document.getElementById("tab-button-"+leg.expiry);
-                    console.log("btn=", btn);
+                    const btn = document.getElementById("tab-button-" + leg.expiry);
                     if (new_count == 0) {
                         btn.classList.remove("used");
                     }
@@ -480,7 +483,6 @@ export async function add_option_chain_table_v4(test_container, oc, expiry) {
                 if (leg.type === "put") {
                     oc.expiry[expiryIndex].combined[i].put_count += leg.qty;
                     let new_count = oc.expiry[expiryIndex].combined[i].put_count
-                    console.log("Updated put_count for leg:", new_count);
 
                     const selector_bid = 'td[data-expiry="' + leg.expiry + '"][data-strike="' + leg.strike + '"][data-type="put-bid"]';
                     const selector_ask = 'td[data-expiry="' + leg.expiry + '"][data-strike="' + leg.strike + '"][data-type="put-ask"]';
@@ -510,7 +512,7 @@ export async function add_option_chain_table_v4(test_container, oc, expiry) {
                     td_ask.dataset.originalColor = td_ask.style.backgroundColor;  // Save current bg
 
 
-                    const btn = document.getElementById("tab-button-"+leg.expiry);
+                    const btn = document.getElementById("tab-button-" + leg.expiry);
                     console.log("btn=", btn);
                     if (new_count == 0) {
                         btn.classList.remove("used");
@@ -520,9 +522,12 @@ export async function add_option_chain_table_v4(test_container, oc, expiry) {
                     }
 
 
-
-
                 }
+
+
+                update_selected_table(oc);
+
+
             });
 
             tr.appendChild(td);
@@ -550,7 +555,45 @@ export async function add_option_chain_table_v4(test_container, oc, expiry) {
 
 
 }
+function update_selected_table(oc) {
 
+
+    const selectedTableBody = document.querySelector(`#${oc.ticker}-selected-container tbody`);
+    selectedTableBody.innerHTML = "";
+
+    oc.legs.forEach(leg => {
+        const tr = document.createElement("tr");
+
+        let td = document.createElement("td");
+        td.textContent = leg.qty
+        td.style.textAlign = "center";
+        tr.appendChild(td);
+
+        td = document.createElement("td");
+        td.textContent = leg.type.toUpperCase()
+        td.style.textAlign = "center";
+        tr.appendChild(td);
+
+        td = document.createElement("td");
+        td.textContent = leg.strike.toFixed(2);
+        td.style.textAlign = "center";
+        tr.appendChild(td);
+
+        td = document.createElement("td");
+        td.textContent = leg.expiry
+        td.style.textAlign = "center";
+        tr.appendChild(td);
+
+        td = document.createElement("td");
+        td.textContent = leg.strike.toFixed(2);
+        td.style.textAlign = "center";
+        tr.appendChild(td);
+
+        selectedTableBody.appendChild(tr);
+
+    });
+
+}
 
 
 
