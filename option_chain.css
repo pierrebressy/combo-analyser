@@ -46,3 +46,9 @@
     table-layout: fixed;
   }
   
+
+  .tab-button.used {
+    background-color: #a90000
+
+  }
+

@@ -84,6 +84,9 @@ export class TabsManager {
   add_tab_selector(tab_name, class_name, callback) {
     const button = document.createElement('button');
     button.classList.add('tab-button');
+    // set the id with the tab_name chars from 0 too 8
+    
+    button.setAttribute("id", 'tab-button-'+tab_name.slice(0, 8));
     button.textContent = tab_name;
     button.onclick = () => this.showTab(button, class_name, tab_name, callback);
     this.tabs_selector_container.appendChild(button);
