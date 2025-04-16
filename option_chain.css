@@ -3,8 +3,8 @@
     margin: 20px auto;
     border: 1px solid #444;
     border-radius: 8px;
-    background: #222;
-    color: white;
+    background: var(--bg-main);
+    color: var(--text-color);
     font-family: sans-serif;
     padding: 10px;
   }
@@ -20,11 +20,13 @@
     border: 1px solid #444;
     padding: 4px 8px;
     text-align: right;
-  }
+    background: var(--bg-main);
+    color: var(--text-color);}
   
   /* Optional: fix header background */
   .table-container th {
-    background-color: #333;
+    background-color: var(--text-color);
+    color: var(--bg-main);
     position: sticky;
     top: 0;
     z-index: 1;

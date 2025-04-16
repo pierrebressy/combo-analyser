@@ -62,7 +62,7 @@ export function compute_iv_dichotomy(S, K, T, r, marketPrice, optionType) {
     //addLog("sigma_right:  ", sigma_right.toFixed(5), "price_right:  ", price_right.toFixed(2));
     let priceDiff = price_center - marketPrice;
     if (Math.abs(priceDiff) < tolerance) {
-      addLog("iterations: ", i);
+      //addLog("iterations: ", i);
       return sigma_center;
     }
     if (price_left < marketPrice && marketPrice < price_center) {
@@ -78,6 +78,7 @@ export function compute_iv_dichotomy(S, K, T, r, marketPrice, optionType) {
     }
 
   }
+  addLog("[compute_iv_dichotomy] max iterations: ", maxIterations, { warning: true });
   return 0;
 }
 
@@ -195,11 +196,11 @@ export function test_iv_1() {
 
 
 export function test_iv() {
-  const tickerPrice = 198.15;   // S
-  const strikePrice = 190;   // K
+  const tickerPrice = 202.12;   // S
+  const strikePrice = 200;   // K
   const optionType = "call"; // "call" or "put"
-  const optionPrice = 17.55;     // Market price of the option
-  const timeToExpiration = 39 / 365.; // Time to expiration in years
+  const optionPrice = 4.24;     // Market price of the option
+  const timeToExpiration = 1 / 365.; // Time to expiration in years
   const riskFreeRate = 0.04; // Annualized risk-free rate
   addLog("Ticker price: ", tickerPrice.toFixed(2));
   addLog("Strike price: ", strikePrice.toFixed(2));
