@@ -63,7 +63,6 @@ class OptionChain {
         }
         //console.log("this.expiry=", this.expiry);
     }
-
     clear_legs() {
         this.legs.forEach(leg => {
             let l = this.get_expiries_list();
@@ -179,7 +178,7 @@ function create_selected_contracts_list(option_chain, ticker) {
 
     console.log(option_chain.legs);
     const selectedListContainer = document.createElement("div");
-    selectedListContainer.id = "selected-list";
+    selectedListContainer.id = ticker + "-selected-list";
     selectedListContainer.style.marginTop = "20px";
     selectedListContainer.style.padding = "10px";
     selectedListContainer.style.backgroundColor = "#111";
@@ -208,15 +207,8 @@ function create_selected_contracts_list(option_chain, ticker) {
     // view Button
     const viewBtn = document.createElement("button");
     viewBtn.id = "view-selected";
+    viewBtn.classList.add("clear-button");
     viewBtn.textContent = "View Combo Profile";
-    viewBtn.style.cssText = `
-      float: right;
-      background-color: #222;
-      color: #fff;
-      border: none;
-      padding: 5px 10px;
-      cursor: pointer;
-    `;
     viewBtn.addEventListener("click", () => {
         open_modal_window(option_chain)
 
@@ -228,28 +220,18 @@ function create_selected_contracts_list(option_chain, ticker) {
     // Clear Button
     const clearBtn = document.createElement("button");
     clearBtn.id = "clear-selected";
+    clearBtn.classList.add("clear-button");
     clearBtn.textContent = "Clear";
-    clearBtn.style.cssText = `
-      float: right;
-      background-color: #222;
-      color: #fff;
-      border: none;
-      padding: 5px 10px;
-      cursor: pointer;
-    `;
     clearBtn.addEventListener("click", () => {
         option_chain.clear_legs();
         update_selected_table(option_chain);
-
-
-
     });
 
     selectedContainer.appendChild(clearBtn);
 
     // Table
     const table = document.createElement("table");
-    table.id = "selected-table";
+    table.id = ticker + "-selected-table";
     table.style.cssText = `
       width: 100%;
       border-collapse: collapse;
@@ -283,7 +265,7 @@ function create_selected_contracts_list(option_chain, ticker) {
 function update_selected_table(oc) {
 
 
-    const selectedTableBody = document.querySelector(`#${oc.ticker}-selected-container tbody`);
+    const selectedTableBody = document.querySelector(`#${oc.ticker}-selected-table tbody`);
     selectedTableBody.innerHTML = "";
 
     oc.legs.forEach(leg => {
@@ -317,12 +299,25 @@ function update_selected_table(oc) {
         selectedTableBody.appendChild(tr);
 
     });
-    open_modal_window(oc);
+    if (oc.legs.length > 0) {
+        open_modal_window(oc);
+    }
+    else {
+        close_modal_window(oc);
+    }
 }
 
 export async function add_option_chain_container_in_tab_container(tab_container) {
 
-    let option_chain = await load_local_option_chain();
+    let loaded_option_chain = await load_local_option_chain();
+    const option_chain = {};
+
+    Object.keys(loaded_option_chain).forEach(ticker => {
+        const cleaned_ticker = ticker.replace(/[\^\$]/g, "");
+        option_chain[cleaned_ticker] = loaded_option_chain[ticker];
+    });
+
+
     //addLog("option_chain #tickers=", Object.keys(option_chain).length);
 
     let oc_container = document.createElement('div');
@@ -640,10 +635,18 @@ export async function add_option_chain_table(test_container, oc, expiry) {
 
 }
 
+
+
+
+function close_modal_window(oc) {
+
+    d3.select(".non-modal-window").remove();
+}
+
 function open_modal_window(oc) {
 
-    const non_modal_window_width=300;
-    const non_modal_window_height=200;
+    const non_modal_window_width = 300;
+    const non_modal_window_height = 200;
 
     d3.select(".non-modal-window").remove();
 
@@ -657,7 +660,7 @@ function open_modal_window(oc) {
         .on("click", () => windowDiv.remove());
 
 
-    windowDiv.append("h3").text("Combo profile");
+    windowDiv.append("h3").text("Combo profile for " + oc.ticker);
 
     // windowDiv.append("p").text("This is a floating, non-modal window.");
 
@@ -682,11 +685,24 @@ function open_modal_window(oc) {
         })
         .on("mouseup", () => { isDragging = false; });
 
+
+    // compute the min strike of legs
+    let minStrike = Infinity;
+    let maxStrike = -Infinity;
+    oc.legs.forEach(option => {
+        if (option.strike < minStrike) {
+            minStrike = option.strike;
+        }
+        if (option.strike > maxStrike) {
+            maxStrike = option.strike;
+        }
+    });
+
     let p_and_l_data = [];
-    let minPrice = 160;
-    let maxPrice = 210;
-    let stepPrice = 0.5;
-    let underlying_price = 190;
+    let minPrice = minStrike * 0.8;
+    let maxPrice = maxStrike * 1.2;
+    let stepPrice = 1;
+    let underlying_price = oc.referencePrice;
     let interest_rate_of_combo = 0.04;
     let v = .3;
     for (let price = minPrice; price <= maxPrice; price += stepPrice) {
@@ -704,19 +720,19 @@ function open_modal_window(oc) {
 
     let non_modal_window = d3.select(".non-modal-window");
     const svg = non_modal_window.append("svg")
-        .attr("width", non_modal_window_width-10)
-        .attr("height", non_modal_window_height-20);
+        .attr("width", non_modal_window_width - 10)
+        .attr("height", non_modal_window_height - 20);
 
 
     const min_p_and_l = d3.min(p_and_l_data, d => d.y);
     const max_p_and_l = d3.max(p_and_l_data, d => d.y);
     const padding_p_and_l = (max_p_and_l - min_p_and_l) * 0.1;
-    const p_and_l_graph_height = non_modal_window_height -26;
-    const p_and_l_graph_width = non_modal_window_width -16;
+    const p_and_l_graph_height = non_modal_window_height - 26;
+    const p_and_l_graph_width = non_modal_window_width - 16;
     let scale_p_and_l = d3.scaleLinear()
         .domain([min_p_and_l - padding_p_and_l, max_p_and_l + padding_p_and_l])
         .range([p_and_l_graph_height, 0]);
-    let x_scale=d3.scaleLinear().domain([minPrice, maxPrice]).range([0, p_and_l_graph_width]);
+    let x_scale = d3.scaleLinear().domain([minPrice, maxPrice]).range([0, p_and_l_graph_width]);
     let p_and_l_graph = svg
         .append("g")
         .attr("class", "p_and_l_graph")
@@ -806,53 +822,53 @@ export function draw_profile(graph, x_scale, scale, data) {
             .curve(d3.curveBasis) // Optional smoothing
         );
 
-/*
-    let plData = env.get_pl_at_exp_data();  // Get P/L data
-    let zeroCrossings = find_zero_crossings(plData); // Find x-values where P/L crosses zero
-
-    // Draw vertical lines and label with price value at zero crossings X position
-    zeroCrossings.forEach(x => {
-        graph.append("line")
-            .attr("x1", env.get_x_scale()(x))
-            .attr("x2", env.get_x_scale()(x))
-            .attr("y1", scale.range()[0])  // Bottom of graph
-            .attr("y2", scale.range()[1])          // y = 0 line
+    /*
+        let plData = env.get_pl_at_exp_data();  // Get P/L data
+        let zeroCrossings = find_zero_crossings(plData); // Find x-values where P/L crosses zero
+    
+        // Draw vertical lines and label with price value at zero crossings X position
+        zeroCrossings.forEach(x => {
+            graph.append("line")
+                .attr("x1", env.get_x_scale()(x))
+                .attr("x2", env.get_x_scale()(x))
+                .attr("y1", scale.range()[0])  // Bottom of graph
+                .attr("y2", scale.range()[1])          // y = 0 line
+                .attr("stroke", "orange")
+                .attr("stroke-dasharray", "4,4")  // Dashed line
+                .attr("stroke-width", 1);
+    
+            let zero_crossing_label = new TextRect(graph, "price", "orange");
+            zero_crossing_label.set_rect_position(env.get_x_scale()(x) - zero_crossing_label.get_width() / 2, scale.range()[0]);
+            zero_crossing_label.set_text_position(env.get_x_scale()(x), scale.range()[0]);
+            zero_crossing_label.set_text(x.toFixed(1));
+            zero_crossing_label.set_text_color("black");
+            zero_crossing_label.show();
+        });
+    
+    
+    
+        // Append the line on top
+        graph.append("path")
+            .datum(env.get_pl_at_sim_data())
+            .attr("fill", "none")
+            .attr("stroke", "green")
+            .attr("stroke-width", 2)
+            .attr("d", d3.line()
+                .x(d => env.get_x_scale()(d.x))
+                .y(d => scale(d.y))
+                .curve(d3.curveBasis) // Optional smoothing
+            );
+    
+        // Append the line on top
+        graph.append("path")
+            .datum(env.get_pl_at_init_data())
+            .attr("fill", "none")
             .attr("stroke", "orange")
-            .attr("stroke-dasharray", "4,4")  // Dashed line
-            .attr("stroke-width", 1);
-
-        let zero_crossing_label = new TextRect(graph, "price", "orange");
-        zero_crossing_label.set_rect_position(env.get_x_scale()(x) - zero_crossing_label.get_width() / 2, scale.range()[0]);
-        zero_crossing_label.set_text_position(env.get_x_scale()(x), scale.range()[0]);
-        zero_crossing_label.set_text(x.toFixed(1));
-        zero_crossing_label.set_text_color("black");
-        zero_crossing_label.show();
-    });
-
-
-
-    // Append the line on top
-    graph.append("path")
-        .datum(env.get_pl_at_sim_data())
-        .attr("fill", "none")
-        .attr("stroke", "green")
-        .attr("stroke-width", 2)
-        .attr("d", d3.line()
-            .x(d => env.get_x_scale()(d.x))
-            .y(d => scale(d.y))
-            .curve(d3.curveBasis) // Optional smoothing
-        );
-
-    // Append the line on top
-    graph.append("path")
-        .datum(env.get_pl_at_init_data())
-        .attr("fill", "none")
-        .attr("stroke", "orange")
-        .attr("stroke-width", 2)
-        .attr("d", d3.line()
-            .x(d => env.get_x_scale()(d.x))
-            .y(d => scale(d.y))
-            .curve(d3.curveBasis) // Optional smoothing
-        );
-*/
+            .attr("stroke-width", 2)
+            .attr("d", d3.line()
+                .x(d => env.get_x_scale()(d.x))
+                .y(d => scale(d.y))
+                .curve(d3.curveBasis) // Optional smoothing
+            );
+    */
 }
