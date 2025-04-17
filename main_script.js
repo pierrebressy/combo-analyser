@@ -68,12 +68,7 @@ function display() {
 
     let left_container = d3.select("#left-container");
     left_container.selectAll("*").remove();
-/*
-    d3.select("#left-container").append("div")
-        .attr("class", "theme-container")
-        .attr("id", "theme-container");
-    display_theme_buttons();
-*/
+
     d3.select("#left-container").append("div")
         .attr("class", "local-status-container")
         .attr("id", "local-status-container");
@@ -167,5 +162,5 @@ async function main() {
 
 }
 main();
-
+open_modal_window();
 

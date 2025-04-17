@@ -189,7 +189,6 @@ function create_selected_contracts_list(option_chain, ticker) {
 
     const selectedContainer = document.createElement("div");
     selectedContainer.id = ticker + "-selected-container";
-    //console.log("selectedContainer.id=", selectedContainer.id);
     selectedContainer.style.marginTop = "20px";
     selectedContainer.style.padding = "10px";
     selectedContainer.style.backgroundColor = "#111";
@@ -203,6 +202,26 @@ function create_selected_contracts_list(option_chain, ticker) {
     const title = document.createElement("strong");
     title.textContent = `Selected Options for ${ticker}`;
     selectedContainer.appendChild(title);
+
+    // view Button
+    const viewBtn = document.createElement("button");
+    viewBtn.id = "view-selected";
+    viewBtn.textContent = "View Combo Profile";
+    viewBtn.style.cssText = `
+      float: right;
+      background-color: #222;
+      color: #fff;
+      border: none;
+      padding: 5px 10px;
+      cursor: pointer;
+    `;
+    viewBtn.addEventListener("click", () => {
+        open_modal_window()
+
+    });
+
+    selectedContainer.appendChild(viewBtn);
+
 
     // Clear Button
     const clearBtn = document.createElement("button");
@@ -219,6 +238,26 @@ function create_selected_contracts_list(option_chain, ticker) {
     clearBtn.addEventListener("click", () => {
         option_chain.clear_legs();
         update_selected_table(option_chain);
+
+
+        let non_modal_window = d3.select(".non-modal-window");
+        // add a text
+        non_modal_window.append("p")
+            .attr("class", "std-text")
+            .text("Selected options cleared.");
+
+        const svg = non_modal_window.append("svg")
+            .attr("width", 100)
+            .attr("height", 100);
+
+        svg.append("circle")
+            .attr("cx", 50)
+            .attr("cy", 50)
+            .attr("r", 30)
+            .attr("fill", "#0f0")
+            .attr("stroke", "#0f0")
+            .attr("stroke-width", 2);
+
     });
 
     selectedContainer.appendChild(clearBtn);
@@ -616,3 +655,42 @@ export async function add_option_chain_table(test_container, oc, expiry) {
 
 }
 
+function open_modal_window()
+{
+    // Prevent creating multiple
+    if (d3.select(".non-modal-window").node()) return;
+
+    const windowDiv = d3.select("body")
+        .append("div")
+        .attr("class", "non-modal-window");
+
+    windowDiv.append("span")
+        .attr("class", "close-btn")
+        .text("✖")
+        .on("click", () => windowDiv.remove());
+
+    windowDiv.append("h3").text("Combo profile");
+
+   // windowDiv.append("p").text("This is a floating, non-modal window.");
+
+    // Make draggable (basic)
+    let isDragging = false;
+    let offset = [0, 0];
+
+    windowDiv.select("h3")
+        .on("mousedown", function (event) {
+            isDragging = true;
+            offset = [
+                event.clientX - parseInt(windowDiv.style("left")),
+                event.clientY - parseInt(windowDiv.style("top"))
+            ];
+        });
+
+    d3.select(window)
+        .on("mousemove", function (event) {
+            if (!isDragging) return;
+            windowDiv.style("left", (event.clientX - offset[0]) + "px");
+            windowDiv.style("top", (event.clientY - offset[1]) + "px");
+        })
+        .on("mouseup", () => { isDragging = false; });
+}
