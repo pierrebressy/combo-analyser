@@ -242,23 +242,6 @@ function create_selected_contracts_list(option_chain, ticker) {
         update_selected_table(option_chain);
 
 
-        let non_modal_window = d3.select(".non-modal-window");
-        // add a text
-        non_modal_window.append("p")
-            .attr("class", "std-text")
-            .text("Selected options cleared.");
-
-        const svg = non_modal_window.append("svg")
-            .attr("width", 100)
-            .attr("height", 100);
-
-        svg.append("circle")
-            .attr("cx", 50)
-            .attr("cy", 50)
-            .attr("r", 30)
-            .attr("fill", "#0f0")
-            .attr("stroke", "#0f0")
-            .attr("stroke-width", 2);
 
     });
 
@@ -608,8 +591,8 @@ export async function add_option_chain_table(test_container, oc, expiry) {
                 const td_ask = document.querySelector(selector_ask);
 
 
-                td_bid.textContent = (new_count > 0 ? "" : new_count + " x ") + (value_bid * 1.0).toFixed(2)
-                td_ask.textContent = (new_count < 0 ? "" : new_count + " x ") + (value_ask * 1.0).toFixed(2)
+                td_bid.textContent = ((new_count <= -1) ? (new_count + " x ") : "") + (value_bid * 1.0).toFixed(2)
+                td_ask.textContent = ((new_count >= 1) ? (new_count + " x ") : "") + (value_ask * 1.0).toFixed(2)
 
                 td_bid.style.backgroundColor = new_count < 0 ? "#600" : "#222";
                 td_ask.style.backgroundColor = new_count > 0 ? "#003366" : "#222";
