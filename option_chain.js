@@ -3,6 +3,8 @@ import { addLog } from './log.js';
 import { TabsManager } from './tabs_manager.js';
 import { compute_iv_dichotomy } from './iv.js';
 
+import { computeOptionPrice } from './computation.js';
+
 
 class OptionChain {
 
@@ -216,7 +218,7 @@ function create_selected_contracts_list(option_chain, ticker) {
       cursor: pointer;
     `;
     viewBtn.addEventListener("click", () => {
-        open_modal_window()
+        open_modal_window(option_chain)
 
     });
 
@@ -332,7 +334,7 @@ function update_selected_table(oc) {
         selectedTableBody.appendChild(tr);
 
     });
-
+    open_modal_window(oc);
 }
 
 export async function add_option_chain_container_in_tab_container(tab_container) {
@@ -655,10 +657,12 @@ export async function add_option_chain_table(test_container, oc, expiry) {
 
 }
 
-function open_modal_window()
-{
-    // Prevent creating multiple
-    if (d3.select(".non-modal-window").node()) return;
+function open_modal_window(oc) {
+
+    const non_modal_window_width=300;
+    const non_modal_window_height=200;
+
+    d3.select(".non-modal-window").remove();
 
     const windowDiv = d3.select("body")
         .append("div")
@@ -669,9 +673,10 @@ function open_modal_window()
         .text("✖")
         .on("click", () => windowDiv.remove());
 
+
     windowDiv.append("h3").text("Combo profile");
 
-   // windowDiv.append("p").text("This is a floating, non-modal window.");
+    // windowDiv.append("p").text("This is a floating, non-modal window.");
 
     // Make draggable (basic)
     let isDragging = false;
@@ -693,4 +698,178 @@ function open_modal_window()
             windowDiv.style("top", (event.clientY - offset[1]) + "px");
         })
         .on("mouseup", () => { isDragging = false; });
+
+    let p_and_l_data = [];
+    let minPrice = 160;
+    let maxPrice = 210;
+    let stepPrice = 0.5;
+    let underlying_price = 190;
+    let interest_rate_of_combo = 0.04;
+    let v = .3;
+    for (let price = minPrice; price <= maxPrice; price += stepPrice) {
+
+        //const data = compute_p_and_l_data_for_price(use_legs_volatility, 0, price);
+        let p_and_l_profile = 0;
+        oc.legs.forEach(option => {
+            let option_price = computeOptionPrice(underlying_price, option.strike, interest_rate_of_combo, v, 0, option.type);
+            let premium = option_price[0];
+            let greeks = computeOptionPrice(price, option.strike, interest_rate_of_combo, v, 0, option.type);
+            p_and_l_profile = p_and_l_profile + option.qty * 100 * (greeks[0] - premium);
+        });
+        p_and_l_data.push({ x: price, y: p_and_l_profile });
+    }
+
+    let non_modal_window = d3.select(".non-modal-window");
+    const svg = non_modal_window.append("svg")
+        .attr("width", non_modal_window_width-10)
+        .attr("height", non_modal_window_height-20);
+
+
+    const min_p_and_l = d3.min(p_and_l_data, d => d.y);
+    const max_p_and_l = d3.max(p_and_l_data, d => d.y);
+    const padding_p_and_l = (max_p_and_l - min_p_and_l) * 0.1;
+    const p_and_l_graph_height = non_modal_window_height -26;
+    const p_and_l_graph_width = non_modal_window_width -16;
+    let scale_p_and_l = d3.scaleLinear()
+        .domain([min_p_and_l - padding_p_and_l, max_p_and_l + padding_p_and_l])
+        .range([p_and_l_graph_height, 0]);
+    let x_scale=d3.scaleLinear().domain([minPrice, maxPrice]).range([0, p_and_l_graph_width]);
+    let p_and_l_graph = svg
+        .append("g")
+        .attr("class", "p_and_l_graph")
+        .attr("transform", `translate(${3}, ${3})`)
+        .attr("width", p_and_l_graph_width)
+        .attr("height", p_and_l_graph_height)
+    p_and_l_graph.append("rect")
+        .attr("x", 0)
+        .attr("y", 0)
+        .attr("width", p_and_l_graph_width)
+        .attr("height", p_and_l_graph_height)
+        .attr("fill", "var(--bg-right)");
+
+    p_and_l_graph.append("g")
+        .attr("class", "y-axis")
+        .call(d3.axisLeft(scale_p_and_l));
+
+    p_and_l_graph.append("g").attr("transform", `translate(0,${scale_p_and_l(0)})`).call(d3.axisBottom(x_scale)).selectAll(".tick text").remove();
+    draw_profile(p_and_l_graph, x_scale, scale_p_and_l, p_and_l_data);
+    /*svg.append("circle")
+        .attr("cx", 50)
+        .attr("cy", 50)
+        .attr("r", 30)
+        .attr("fill", "#0f0")
+        .attr("stroke", "#0f0")
+        .attr("stroke-width", 2);*/
+
+}
+
+export function draw_profile(graph, x_scale, scale, data) {
+
+    // Create SVG definitions for gradients
+    const defs = graph.append("defs");
+
+    // Green gradient for positive areas
+    const green_gradient = defs.append("linearGradient")
+        .attr("id", "greenGradient")
+        .attr("x1", "0%").attr("y1", "100%")  // Start at bottom
+        .attr("x2", "0%").attr("y2", "0%");   // End at top
+
+    green_gradient.append("stop")
+        .attr("offset", "0%")
+        .style("stop-color", "var(--gradient-start)");
+
+    green_gradient.append("stop")
+        .attr("offset", "100%")
+        .attr("stop-color", "green");
+
+    // Red gradient for negative areas
+    const red_gradient = defs.append("linearGradient")
+        .attr("id", "redGradient")
+        .attr("x1", "0%").attr("y1", "0%")   // Start at top
+        .attr("x2", "0%").attr("y2", "100%"); // End at bottom
+
+    red_gradient.append("stop")
+        .attr("offset", "0%")
+        .style("stop-color", "var(--gradient-start)");
+
+    red_gradient.append("stop")
+        .attr("offset", "100%")
+        .attr("stop-color", "red");
+
+    // Define the area generator for positive values (above zero)
+    const area_below = d3.area()
+        .x(d => x_scale(d.x))
+        .y0(scale(0))  // Fill down to y=0
+        .y1(d => Math.max(scale(d.y), scale(0))) // Only fill above zero
+        .curve(d3.curveBasis); // Optional smoothing
+
+    // Define the area generator for negative values (below zero)
+    const area_above = d3.area()
+        .x(d => x_scale(d.x))
+        .y0(scale(0))  // Fill up to y=0
+        .y1(d => Math.min(scale(d.y), scale(0))) // Only fill below zero
+        .curve(d3.curveBasis);
+
+
+    // Append the line on top
+    graph.append("path")
+        .datum(data)
+        .attr("fill", "none")
+        .attr("stroke", "var(--exp-path-color)")
+        .attr("stroke-width", 2)
+        .attr("d", d3.line()
+            .x(d => x_scale(d.x))
+            .y(d => scale(d.y))
+            .curve(d3.curveBasis) // Optional smoothing
+        );
+
+/*
+    let plData = env.get_pl_at_exp_data();  // Get P/L data
+    let zeroCrossings = find_zero_crossings(plData); // Find x-values where P/L crosses zero
+
+    // Draw vertical lines and label with price value at zero crossings X position
+    zeroCrossings.forEach(x => {
+        graph.append("line")
+            .attr("x1", env.get_x_scale()(x))
+            .attr("x2", env.get_x_scale()(x))
+            .attr("y1", scale.range()[0])  // Bottom of graph
+            .attr("y2", scale.range()[1])          // y = 0 line
+            .attr("stroke", "orange")
+            .attr("stroke-dasharray", "4,4")  // Dashed line
+            .attr("stroke-width", 1);
+
+        let zero_crossing_label = new TextRect(graph, "price", "orange");
+        zero_crossing_label.set_rect_position(env.get_x_scale()(x) - zero_crossing_label.get_width() / 2, scale.range()[0]);
+        zero_crossing_label.set_text_position(env.get_x_scale()(x), scale.range()[0]);
+        zero_crossing_label.set_text(x.toFixed(1));
+        zero_crossing_label.set_text_color("black");
+        zero_crossing_label.show();
+    });
+
+
+
+    // Append the line on top
+    graph.append("path")
+        .datum(env.get_pl_at_sim_data())
+        .attr("fill", "none")
+        .attr("stroke", "green")
+        .attr("stroke-width", 2)
+        .attr("d", d3.line()
+            .x(d => env.get_x_scale()(d.x))
+            .y(d => scale(d.y))
+            .curve(d3.curveBasis) // Optional smoothing
+        );
+
+    // Append the line on top
+    graph.append("path")
+        .datum(env.get_pl_at_init_data())
+        .attr("fill", "none")
+        .attr("stroke", "orange")
+        .attr("stroke-width", 2)
+        .attr("d", d3.line()
+            .x(d => env.get_x_scale()(d.x))
+            .y(d => scale(d.y))
+            .curve(d3.curveBasis) // Optional smoothing
+        );
+*/
 }
