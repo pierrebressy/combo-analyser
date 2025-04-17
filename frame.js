@@ -677,19 +677,19 @@ function create_right_container(tab_active) {
 
     tabs_manager.tabs_selector_container.appendChild(create_theme_container());
 
-    container = tabs_manager.add_tab('P/L Graph', 'pl-tab-container', 'pl-container');
-    container = tabs_manager.add_tab('3D View', 'view3d-tab-container', 'view3d-container', update_3d_view);
+    container = tabs_manager.add_tab('P/L Graph', 'pl');
+    container = tabs_manager.add_tab('3D View', 'view3d', update_3d_view);
     add_view3d_controler_container_in_view3d_container(container);
     add_view3d_gragh_container_in_view3d_container(container);
 
 
-    container = tabs_manager.add_tab('Combo Builder', 'option-chain-tab-container', 'option-chain-container');
+    container = tabs_manager.add_tab('Combo Builder', 'option-chain');
     add_option_chain_container_in_tab_container(container);
 
-    container = tabs_manager.add_tab('Parameters', 'parameters-tab-container', 'parameters-container');
+    container = tabs_manager.add_tab('Parameters', 'parameters');
     add_parameters_container_in_tab_container(container);
 
-    container = tabs_manager.add_tab('Logs', 'log-tab-container', 'log-container');
+    container = tabs_manager.add_tab('Logs', 'log');
     add_log_container_in_tab_container(container);
 
     tabs_manager.activate_last_tab();//activate_tab(tab_active);
@@ -698,34 +698,6 @@ function create_right_container(tab_active) {
 
 }
 
-
-function create_right_container_original(tab_active) {
-    let container;
-    const right_container = document.createElement('div');
-    right_container.classList.add('right-container');
-    right_container.id = 'right-container';
-
-    tabs_manager = new TabsManager(right_container, "main-right-tabs");
-
-    container = tabs_manager.add_tab('P/L Graph', 'pl-tab-container', 'pl-container');
-    container = tabs_manager.add_tab('3D View', 'view3d-tab-container', 'view3d-container', update_3d_view);
-    add_view3d_controler_container_in_view3d_container(container);
-    add_view3d_gragh_container_in_view3d_container(container);
-
-    container = tabs_manager.add_tab('Combo Builder', 'option-chain-tab-container', 'option-chain-container');
-    add_option_chain_container_in_tab_container(container);
-
-    container = tabs_manager.add_tab('Parameters', 'parameters-tab-container', 'parameters-container');
-    add_parameters_container_in_tab_container(container);
-
-    container = tabs_manager.add_tab('Logs', 'log-tab-container', 'log-container');
-    add_log_container_in_tab_container(container);
-
-    tabs_manager.activate_last_tab();//activate_tab(tab_active);
-
-    return right_container;
-
-}
 
 
 export function create_main_frame(tab_active) {

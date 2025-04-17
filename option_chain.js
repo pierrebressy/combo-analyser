@@ -253,37 +253,47 @@ function create_selected_contracts_list(option_chain, ticker) {
     // Append the table to the container
     selectedContainer.appendChild(table);
 
-
-
-
-
-
-
-
-
-
-
-
-
-    /*
-        selectedContainer.innerHTML = `
-              <strong>Selected Options for ${ticker}</strong>
-              <button id="clear-selected" style="float: right; background-color: #222; color: #fff; border: none; padding: 5px 10px; cursor: pointer;">Clear</button>
-              <table id="selected-table" style="width: 100%; border-collapse: collapse; margin-top: 10px;">
-                <thead>
-                  <tr style="background-color: #222;">
-                    <th>Qty</th>
-                    <th>Type</th>
-                    <th>Strike</th>
-                    <th>Expiration</th>
-                    <th>Premium</th>
-                  </tr>
-                </thead>
-                <tbody></tbody>
-              </table>
-            `;
-    */
     return selectedContainer;
+}
+
+function update_selected_table(oc) {
+
+
+    const selectedTableBody = document.querySelector(`#${oc.ticker}-selected-container tbody`);
+    selectedTableBody.innerHTML = "";
+
+    oc.legs.forEach(leg => {
+        const tr = document.createElement("tr");
+
+        let td = document.createElement("td");
+        td.textContent = leg.qty
+        td.style.textAlign = "center";
+        tr.appendChild(td);
+
+        td = document.createElement("td");
+        td.textContent = leg.type.toUpperCase()
+        td.style.textAlign = "center";
+        tr.appendChild(td);
+
+        td = document.createElement("td");
+        td.textContent = leg.strike.toFixed(2);
+        td.style.textAlign = "center";
+        tr.appendChild(td);
+
+        td = document.createElement("td");
+        td.textContent = leg.expiry
+        td.style.textAlign = "center";
+        tr.appendChild(td);
+
+        td = document.createElement("td");
+        td.textContent = 0.;
+        td.style.textAlign = "center";
+        tr.appendChild(td);
+
+        selectedTableBody.appendChild(tr);
+
+    });
+
 }
 
 export async function add_option_chain_container_in_tab_container(tab_container) {
@@ -317,7 +327,7 @@ export async function add_option_chain_container_in_tab_container(tab_container)
 
         let oc = new OptionChain(ticker, option_chain[ticker]);
 
-        container = oc_tabs_manager.add_tab(ticker, ticker + '-oc-tab-container', ticker + '-oc-container');
+        container = oc_tabs_manager.add_tab(ticker, ticker + '-oc');
 
         const heading = document.createElement('h2');
         heading.classList.add('std-text');
@@ -325,21 +335,19 @@ export async function add_option_chain_container_in_tab_container(tab_container)
 
         //addLog("option_chain #Expiry dates=", oc.getExpiries());
 
-
-
-        ////////// <<<<------
-        // Assemble header
         container.appendChild(heading);
 
         let oc_expiries_tabs_manager = new TabsManager(container, ticker + "oc-expiries-tabs-manager");
         for (const expiry of oc.get_expiries_list()) {
             if (remaining_days(expiry) > 0) {
-                let container3 = oc_expiries_tabs_manager.add_tab(expiry + " - " + remaining_days(expiry).toFixed(0) + "d", ticker + '-' + expiry + '-oc-tab-container', ticker + '-' + expiry + '-oc-container');
+                let container3 = oc_expiries_tabs_manager.add_tab(
+                    expiry + " - " + remaining_days(expiry).toFixed(0) + "d",
+                    ticker + '-' + expiry + '-oc');
                 let selector = oc_expiries_tabs_manager.selectors[oc_expiries_tabs_manager.selectors.length - 1].selector;
                 if (is_third_friday(expiry)) {
                     selector.classList.add("third-friday");
                 }
-                add_option_chain_table_v4(container3, oc, expiry);
+                add_option_chain_table(container3, oc, expiry);
 
             }
         }
@@ -356,8 +364,7 @@ export async function add_option_chain_container_in_tab_container(tab_container)
     tab_container.appendChild(oc_container);
 }
 
-
-export async function add_option_chain_table_v4(test_container, oc, expiry) {
+export async function add_option_chain_table(test_container, oc, expiry) {
 
     const referencePrice = oc.get_last_price(expiry);
     //console.log("referencePrice=", referencePrice);
@@ -608,44 +615,4 @@ export async function add_option_chain_table_v4(test_container, oc, expiry) {
 
 
 }
-function update_selected_table(oc) {
-
-
-    const selectedTableBody = document.querySelector(`#${oc.ticker}-selected-container tbody`);
-    selectedTableBody.innerHTML = "";
-
-    oc.legs.forEach(leg => {
-        const tr = document.createElement("tr");
-
-        let td = document.createElement("td");
-        td.textContent = leg.qty
-        td.style.textAlign = "center";
-        tr.appendChild(td);
-
-        td = document.createElement("td");
-        td.textContent = leg.type.toUpperCase()
-        td.style.textAlign = "center";
-        tr.appendChild(td);
-
-        td = document.createElement("td");
-        td.textContent = leg.strike.toFixed(2);
-        td.style.textAlign = "center";
-        tr.appendChild(td);
-
-        td = document.createElement("td");
-        td.textContent = leg.expiry
-        td.style.textAlign = "center";
-        tr.appendChild(td);
-
-        td = document.createElement("td");
-        td.textContent = 0.;
-        td.style.textAlign = "center";
-        tr.appendChild(td);
-
-        selectedTableBody.appendChild(tr);
-
-    });
-
-}
-
 

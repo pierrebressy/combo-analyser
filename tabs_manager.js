@@ -11,7 +11,7 @@ export class TabsManager {
 
     this.tabs_selector_container = document.createElement('div');
     this.tabs_selector_container.classList.add('tabs-selector-container');
-    this.tabs_selector_container.id = manager_name+'-tabs-selector-container';
+    this.tabs_selector_container.id = manager_name + '-tabs-selector-container';
     this.main_container.appendChild(this.tabs_selector_container);
 
     this.tab_container = document.createElement('div');
@@ -21,20 +21,22 @@ export class TabsManager {
 
   }
 
-  add_tab(tab_name, tab_class_name, class_name, callback) {
-    let selector = this.add_tab_selector(tab_name, tab_class_name, callback);
+  add_tab(tab_label, tab_name, callback) {
+    const tab_class_name = tab_name + '-tab-container';
+    const class_name = tab_name + '-container';
+    let selector = this.add_tab_selector(tab_label, tab_class_name, callback);
     this.selectors.push({
       selector: selector,
-      name: tab_name,
+      name: tab_label,
       document_name: '.' + class_name,
       tab_class_name: tab_class_name,
       class_name: class_name,
       callback: callback
     });
-    let tab_container = this.add_tab_container(tab_name, class_name);
+    let tab_container = this.add_tab_container(tab_label, class_name);
     this.containers.push({
       container: tab_container,
-      name: tab_name,
+      name: tab_label,
       document_name: '.' + class_name,
       tab_class_name: tab_class_name,
       class_name: class_name,
@@ -42,7 +44,6 @@ export class TabsManager {
     });
     return tab_container;
   }
-
 
   activate_tab(selector_name) {
     this.selectors.forEach(selector => {
@@ -85,8 +86,8 @@ export class TabsManager {
     const button = document.createElement('button');
     button.classList.add('tab-button');
     // set the id with the tab_name chars from 0 too 8
-    
-    button.setAttribute("id", 'tab-button-'+tab_name.slice(0, 8));
+
+    button.setAttribute("id", 'tab-button-' + tab_name.slice(0, 8));
     button.textContent = tab_name;
     button.onclick = () => this.showTab(button, class_name, tab_name, callback);
     this.tabs_selector_container.appendChild(button);
@@ -104,7 +105,7 @@ export class TabsManager {
 
   showTab(button, tabId, tab_name, callback) {
     this.activate_tab(tab_name);
-    if(callback)
+    if (callback)
       callback();
     return;
   }
