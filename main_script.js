@@ -162,5 +162,4 @@ async function main() {
 
 }
 main();
-open_modal_window();
 

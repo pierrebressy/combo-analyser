@@ -1,4 +1,5 @@
 import { TabsManager } from './tabs_manager.js';
+import { update_remote_config } from './network.js';
 import { RadioButton } from './radiobutton.js';
 import { update_3d_view, cameraPosition } from './3d_view.js';
 import { env } from './main_script.js';
@@ -17,6 +18,7 @@ import { get_combo_changed } from './global.js';
 import { get_simulated_underlying_price_changed } from './global.js';
 import { get_use_local } from './global.js';
 import { add_option_chain_container_in_tab_container } from './option_chain.js';
+import { getCookie, setCookie } from './network.js';
 
 let tabs_manager;
 
@@ -24,6 +26,7 @@ function reloadWithParam(key, value) {
     const url = new URL(window.location);
     url.searchParams.set(key, value); // Add or update the parameter
     window.location.href = url.toString(); // Navigate to the new URL
+    console.log("reloadWithParam: combo=",getCookie("combo"));
 }
 
 export function display_combos_list() {
@@ -38,11 +41,13 @@ export function display_combos_list() {
             if (!get_use_local()) {
                 update_remote_config(env.config);
                 console.log("Remote config updated", env.config);
-                env = 0
+                //env = 0
             }
+            setCookie("combo", this.value, 365);
             location.reload();
+            this.value=getCookie("combo");
             console.log("reloadWithParam combo=", this.value);
-            reloadWithParam("combo", this.value);
+            //reloadWithParam("combo", this.value);
 
         });
     dropdown.selectAll("option")

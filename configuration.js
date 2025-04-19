@@ -61,7 +61,8 @@ export class Environment {
             }
         }
         catch (error) {
-            combo = "LONG CALL";
+            combo=getCookie("combo");
+//            combo = "LONG CALL";
             console.log("Info: no [combo] in URL, using default value [" + combo + "]");
         }
         config.config.combo = combo;
@@ -306,7 +307,7 @@ export class Environment {
         }
         // table of combos properties
         for (let combo in config.combos) {
-            console.log("Checking combo " + combo);
+            //console.log("Checking combo " + combo);
             const combo_properties = [
                 "legs", 
                 "name", 
@@ -319,7 +320,7 @@ export class Environment {
                 else {
                     //console.log("Property " + property + " is present");
                 }
-                console.log("Checking combo "+combo+" / "+config.combos[combo].legs.length+" leg(s)");
+                //console.log("Checking combo "+combo+" / "+config.combos[combo].legs.length+" leg(s)");
                 const legs_properties = [
                     "expiration_offset",
                     "qty", 
@@ -337,7 +338,7 @@ export class Environment {
                         }
                     }
                 }
-                console.log("Checking combo "+combo+" / simulation");
+                //console.log("Checking combo "+combo+" / simulation");
                 const simulation_properties = [
                     "expiration_offset",
                     "interest_rate", 

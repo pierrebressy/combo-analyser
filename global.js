@@ -12,7 +12,6 @@ let simulated_underlying_price_changed = false;
 let use_local = false;
 let underlying_current_price = 0;
 
-
 export function set_computed_volatility_available(value) {
     computed_volatility_available = value;
 }

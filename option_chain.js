@@ -5,6 +5,7 @@ import { compute_iv_dichotomy } from './iv.js';
 
 import { computeOptionPrice } from './computation.js';
 
+import { saveJSONInCookie, loadJSONFromCookie } from './network.js';
 
 class OptionChain {
 
@@ -13,6 +14,15 @@ class OptionChain {
         this.chain = chain;
         this.referencePrice = chain.last_price;
         this.legs = [];
+        let leg_from_cookie = loadJSONFromCookie(this.ticker + "-legs");
+        console.log("leg_from_cookie=", leg_from_cookie);
+        if (leg_from_cookie !== null) {
+            console.log("leg_from_cookie accepted");
+            this.legs = leg_from_cookie;
+        }
+        else {
+            console.log("leg_from_cookie rejected");
+        }
         this.expiry = [];
         for (const expiry of this.get_expiries_list()) {
             //console.log("... expiry=", expiry);
@@ -85,7 +95,9 @@ class OptionChain {
             const btn = document.getElementById("tab-button-" + leg.expiry);
             btn.classList.remove("used");
 
-        })
+        });
+        saveJSONInCookie(this.ticker + "-legs", this.legs);
+
     }
     add_leg(leg) {
         this.legs.push(leg);
@@ -94,7 +106,7 @@ class OptionChain {
     simplify_legs_table() {
         let simplified = [];
         for (const leg of this.legs) {
-            const existingLeg = simplified.find(l => l.strike === leg.strike && l.type === leg.type);
+            const existingLeg = simplified.find(l => l.strike === leg.strike && l.type === leg.type && l.expiry === leg.expiry && l.type === leg.type);
             if (existingLeg) {
                 existingLeg.qty += leg.qty;
             } else {
@@ -105,6 +117,7 @@ class OptionChain {
         simplified = simplified.filter(leg => leg.qty !== 0);
         this.legs = simplified;
         addLog("Simplified Legs:", this.legs);
+        saveJSONInCookie(this.ticker + "-legs", this.legs);
     }
     get_calls_list(expiry) {
         return this.chain[expiry].calls;
@@ -292,7 +305,7 @@ function update_selected_table(oc) {
         tr.appendChild(td);
 
         td = document.createElement("td");
-        td.textContent = 0.;
+        td.textContent = leg.value.toFixed(2);
         td.style.textAlign = "center";
         tr.appendChild(td);
 
@@ -305,6 +318,54 @@ function update_selected_table(oc) {
     else {
         close_modal_window(oc);
     }
+}
+
+function update_oc_table(oc) {
+
+    oc.legs.forEach(leg => {
+        let count;
+        let selector_bid;
+        let selector_ask;
+        let value_bid;
+        let value_ask;
+        const expiryIndex = oc.expiry.findIndex(e => e.expiry === leg.expiry);
+        const i = oc.expiry[expiryIndex].combined.findIndex(e => e.strike === leg.strike);
+        if (leg.type === "call") {
+            count = leg.qty
+            oc.expiry[expiryIndex].combined[i].call_count = leg.qty
+            selector_bid = 'td[data-expiry="' + leg.expiry + '"][data-strike="' + leg.strike + '"][data-type="' + leg.type + '-bid"]';
+            selector_ask = 'td[data-expiry="' + leg.expiry + '"][data-strike="' + leg.strike + '"][data-type="' + leg.type + '-ask"]';
+            value_bid = oc.expiry[expiryIndex].combined[i].call_bid;
+            value_ask = oc.expiry[expiryIndex].combined[i].call_ask;
+        }
+        else {
+            count = leg.qty
+            oc.expiry[expiryIndex].combined[i].put_count = leg.qty
+            selector_bid = 'td[data-expiry="' + leg.expiry + '"][data-strike="' + leg.strike + '"][data-type="' + leg.type + '-bid"]';
+            selector_ask = 'td[data-expiry="' + leg.expiry + '"][data-strike="' + leg.strike + '"][data-type="' + leg.type + '-ask"]';
+            value_bid = oc.expiry[expiryIndex].combined[i].put_bid;
+            value_ask = oc.expiry[expiryIndex].combined[i].put_ask;
+        }
+        const td_bid = document.querySelector(selector_bid);
+        const td_ask = document.querySelector(selector_ask);
+        td_bid.textContent = ((count <= -1) ? (count + " x ") : "") + (value_bid * 1.0).toFixed(2)
+        td_ask.textContent = ((count >= 1) ? (count + " x ") : "") + (value_ask * 1.0).toFixed(2)
+
+        td_bid.style.backgroundColor = count < 0 ? "#600" : "#222";
+        td_ask.style.backgroundColor = count > 0 ? "#003366" : "#222";
+
+        td_bid.dataset.originalColor = td_bid.style.backgroundColor;  // Save current bg
+        td_ask.dataset.originalColor = td_ask.style.backgroundColor;  // Save current bg
+
+        const btn = document.getElementById("tab-button-" + leg.expiry);
+        if (count == 0) {
+            btn.classList.remove("used");
+        }
+        else {
+            btn.classList.add("used");
+        }
+
+    });
 }
 
 export async function add_option_chain_container_in_tab_container(tab_container) {
@@ -375,9 +436,8 @@ export async function add_option_chain_container_in_tab_container(tab_container)
         container.appendChild(selectedContainer);
 
         oc_expiries_tabs_manager.activate_last_tab();
-
     }
-    oc_tabs_manager.activate_last_tab();//activate_tab(current_ticker);
+    oc_tabs_manager.activate_last_tab();
 
     // Add to tab container
     tab_container.appendChild(oc_container);
@@ -492,6 +552,34 @@ export async function add_option_chain_table(test_container, oc, expiry) {
                     if (call_count > 0)
                         td.style.backgroundColor = "#003366"; // blue background
                 }
+                else if (j === 33333) {
+                    td.innerHTML = `
+                    <svg width="100" height="20">
+                      <g class="cell" transform="translate(0, 0)">
+                        <rect x="0" y="0" width="100" height="15" fill="#555585" />
+                        <rect class="left-area" x="0" y="0" width="33" height="15" fill="transparent" style="cursor:pointer;"></rect>
+                        <rect class="right-area" x="66" y="0" width="33" height="15" fill="transparent" style="cursor:pointer;"></rect>
+                        <text x="50" y="12" text-anchor="middle" fill="white" font-size="12">185.00</text>
+                        <text class="hover-sell" x="10" y="12" text-anchor="middle" fill="white" font-size="6" >SELL</text>
+                        <text class="hover-buy" x="90" y="12" text-anchor="middle" fill="white" font-size="6" >BUY</text>
+                      </g>
+                    </svg>
+                    `;
+                    const svg = td.querySelector("svg");
+                    const leftArea = svg.querySelector(".left-area");
+                    const rightArea = svg.querySelector(".right-area");
+                    const hoverSell = svg.querySelector(".hover-sell");
+                    const hoverBuy = svg.querySelector(".hover-buy");
+
+                    leftArea.addEventListener("mouseover", () => hoverSell.setAttribute("visibility", "visible"));
+                    leftArea.addEventListener("mouseout", () => hoverSell.setAttribute("visibility", "hidden"));
+                    leftArea.addEventListener("click", () => console.log("sell"));
+
+                    rightArea.addEventListener("mouseover", () => hoverBuy.setAttribute("visibility", "visible"));
+                    rightArea.addEventListener("mouseout", () => hoverBuy.setAttribute("visibility", "hidden"));
+                    rightArea.addEventListener("click", () => console.log("buy"));
+
+                }
                 else if (j === 3) {
                     if (closestStrike === row.strike) {
                         td.style.backgroundColor = "#000080";
@@ -553,7 +641,8 @@ export async function add_option_chain_table(test_container, oc, expiry) {
                     strike: row.strike,
                     type,
                     value: val,
-                    qty: (j === 1 || j === 4) ? -1 : 1
+                    qty: (j === 1 || j === 4) ? -1 : 1,
+                    offset: 0
                 }
                 oc.add_leg(leg);
 
@@ -570,6 +659,8 @@ export async function add_option_chain_table(test_container, oc, expiry) {
                     new_count = oc.expiry[expiryIndex].combined[i].call_count
                     selector_bid = 'td[data-expiry="' + leg.expiry + '"][data-strike="' + leg.strike + '"][data-type="' + leg.type + '-bid"]';
                     selector_ask = 'td[data-expiry="' + leg.expiry + '"][data-strike="' + leg.strike + '"][data-type="' + leg.type + '-ask"]';
+                    console.log("selector_bid=", selector_bid);
+                    console.log("selector_ask=", selector_ask);
                     value_bid = oc.expiry[expiryIndex].combined[i].call_bid;
                     value_ask = oc.expiry[expiryIndex].combined[i].call_ask;
 
@@ -621,6 +712,10 @@ export async function add_option_chain_table(test_container, oc, expiry) {
     });
 
     setTimeout(() => {
+
+
+        update_oc_table(oc);
+
         const rows = tbody.querySelectorAll("tr");
         if (rows.length === 0) return;
 
@@ -643,16 +738,41 @@ function close_modal_window(oc) {
     d3.select(".non-modal-window").remove();
 }
 
+function daysBetweenDates(date1, date2) {
+    // Parse yyyymmdd strings to Date objects
+    const parseDate = (yyyymmdd) => {
+        const year = parseInt(yyyymmdd.substring(0, 4), 10);
+        const month = parseInt(yyyymmdd.substring(4, 6), 10) - 1; // JS months are 0-based
+        const day = parseInt(yyyymmdd.substring(6, 8), 10);
+        return new Date(year, month, day);
+    };
+
+    const d1 = parseDate(date1);
+    const d2 = parseDate(date2);
+
+    // Calculate the time difference in milliseconds
+    const diffTime = Math.abs(d2 - d1);
+
+    // Convert milliseconds to days
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays;
+}
+
+
 function open_modal_window(oc) {
 
-    const non_modal_window_width = 300;
-    const non_modal_window_height = 200;
-
+    console.log("**** open_modal_window ****");
     d3.select(".non-modal-window").remove();
 
     const windowDiv = d3.select("body")
         .append("div")
         .attr("class", "non-modal-window");
+    const non_modal_window_height = windowDiv.node().getBoundingClientRect().height;
+    const non_modal_window_width = windowDiv.node().getBoundingClientRect().width;
+
+    console.log("Height:", non_modal_window_height, "px");
+    console.log("Width:", non_modal_window_width, "px");
+
 
     windowDiv.append("span")
         .attr("class", "close-btn")
@@ -697,12 +817,26 @@ function open_modal_window(oc) {
             maxStrike = option.strike;
         }
     });
+    console.log("oc.legs=", oc.legs);
+    let oldest_date = oc.legs[0].expiry;
+    oc.legs.forEach(option => {
+        console.log("option=", option.expiry, oldest_date);
+        if (option.expiry < oldest_date) {
+            oldest_date = option.expiry;
+        }
+    });
+    console.log("oldest_date=", oldest_date);
+    oc.legs.forEach(option => {
+        option.offset = daysBetweenDates(option.expiry, oldest_date);
+        console.log("option=", option.expiry, option.offset);
+    });
 
     let p_and_l_data = [];
     let minPrice = minStrike * 0.8;
     let maxPrice = maxStrike * 1.2;
     let stepPrice = 1;
-    let underlying_price = oc.referencePrice;
+    let underlying_price = oc.get_last_price(oc.legs[0].expiry);
+
     let interest_rate_of_combo = 0.04;
     let v = .3;
     for (let price = minPrice; price <= maxPrice; price += stepPrice) {
@@ -710,9 +844,9 @@ function open_modal_window(oc) {
         //const data = compute_p_and_l_data_for_price(use_legs_volatility, 0, price);
         let p_and_l_profile = 0;
         oc.legs.forEach(option => {
-            let option_price = computeOptionPrice(underlying_price, option.strike, interest_rate_of_combo, v, 0, option.type);
+            let option_price = computeOptionPrice(underlying_price, option.strike, interest_rate_of_combo, v, 0 + option.offset, option.type);
             let premium = option_price[0];
-            let greeks = computeOptionPrice(price, option.strike, interest_rate_of_combo, v, 0, option.type);
+            let greeks = computeOptionPrice(price, option.strike, interest_rate_of_combo, v, 0 + option.offset, option.type);
             p_and_l_profile = p_and_l_profile + option.qty * 100 * (greeks[0] - premium);
         });
         p_and_l_data.push({ x: price, y: p_and_l_profile });
@@ -720,15 +854,17 @@ function open_modal_window(oc) {
 
     let non_modal_window = d3.select(".non-modal-window");
     const svg = non_modal_window.append("svg")
-        .attr("width", non_modal_window_width - 10)
-        .attr("height", non_modal_window_height - 20);
+        .attr("width", non_modal_window_width - 30)
+        .attr("height", non_modal_window_height - 30);
 
 
     const min_p_and_l = d3.min(p_and_l_data, d => d.y);
     const max_p_and_l = d3.max(p_and_l_data, d => d.y);
+    addLog("min_p_and_l=", min_p_and_l);
+    addLog("max_p_and_l=", max_p_and_l);
     const padding_p_and_l = (max_p_and_l - min_p_and_l) * 0.1;
-    const p_and_l_graph_height = non_modal_window_height - 26;
-    const p_and_l_graph_width = non_modal_window_width - 16;
+    const p_and_l_graph_height = non_modal_window_height - 60;
+    const p_and_l_graph_width = non_modal_window_width - 30;
     let scale_p_and_l = d3.scaleLinear()
         .domain([min_p_and_l - padding_p_and_l, max_p_and_l + padding_p_and_l])
         .range([p_and_l_graph_height, 0]);
@@ -752,14 +888,6 @@ function open_modal_window(oc) {
 
     p_and_l_graph.append("g").attr("transform", `translate(0,${scale_p_and_l(0)})`).call(d3.axisBottom(x_scale)).selectAll(".tick text").remove();
     draw_profile(p_and_l_graph, x_scale, scale_p_and_l, p_and_l_data);
-    /*svg.append("circle")
-        .attr("cx", 50)
-        .attr("cy", 50)
-        .attr("r", 30)
-        .attr("fill", "#0f0")
-        .attr("stroke", "#0f0")
-        .attr("stroke-width", 2);*/
-
 }
 
 export function draw_profile(graph, x_scale, scale, data) {
