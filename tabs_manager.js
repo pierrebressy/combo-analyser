@@ -21,17 +21,18 @@ export class TabsManager {
 
   }
 
-  add_tab(tab_label, tab_name, callback) {
+  add_tab(tab_label, tab_name, callback, params) {
     const tab_class_name = tab_name + '-tab-container';
     const class_name = tab_name + '-container';
-    let selector = this.add_tab_selector(tab_label, tab_class_name, callback);
+    let selector = this.add_tab_selector(tab_label, tab_class_name, callback, params);
     this.selectors.push({
       selector: selector,
       name: tab_label,
       document_name: '.' + class_name,
       tab_class_name: tab_class_name,
       class_name: class_name,
-      callback: callback
+      callback: callback,
+      params: params
     });
     let tab_container = this.add_tab_container(tab_label, class_name);
     this.containers.push({
@@ -40,7 +41,8 @@ export class TabsManager {
       document_name: '.' + class_name,
       tab_class_name: tab_class_name,
       class_name: class_name,
-      callback: callback
+      callback: callback,
+      params: params
     });
     return tab_container;
   }
@@ -82,14 +84,14 @@ export class TabsManager {
     this.activate_tab(last_active_tab);
   }
 
-  add_tab_selector(tab_name, class_name, callback) {
+  add_tab_selector(tab_name, class_name, callback, params) {
     const button = document.createElement('button');
     button.classList.add('tab-button');
     // set the id with the tab_name chars from 0 too 8
 
     button.setAttribute("id", 'tab-button-' + tab_name.slice(0, 8));
     button.textContent = tab_name;
-    button.onclick = () => this.showTab(button, class_name, tab_name, callback);
+    button.onclick = () => this.showTab(button, class_name, tab_name, callback, params);
     this.tabs_selector_container.appendChild(button);
     return button;
   }
@@ -103,10 +105,10 @@ export class TabsManager {
     return container;
   }
 
-  showTab(button, tabId, tab_name, callback) {
+  showTab(button, tabId, tab_name, callback, params) {
     this.activate_tab(tab_name);
     if (callback)
-      callback();
+      callback(params);
     return;
   }
 

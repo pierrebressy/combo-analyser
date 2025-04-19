@@ -50,6 +50,34 @@
 }
 
 
+
+.oc-dark-bg {
+  background-color: #282828;
+}
+.oc-dark-bg.na {
+  background-color: #5f5f5f;
+  color: #9a9898
+}
+.oc-dark-bg.bid {
+  background-color: rgb(182, 0, 0);
+}
+.oc-dark-bg.bid_hover {
+  background-color: rgb(255, 0, 0);
+}
+
+.oc-dark-bg.ask {
+  background-color: #005ab3;
+}
+.oc-dark-bg.ask_hover {
+  background-color: #0080ff;
+}
+
+
+
+
+
+
+
 .tab-button.used {
   background-color: #a90000
 }
@@ -75,6 +103,25 @@
 }
 
 
+.hover-label {
+  position: absolute;
+  background-color: #000;
+  color: #fff;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+  pointer-events: none;
+  display: none;
+  z-index: 1000;
+}
+.hover-label.sell {
+  background-color: #ff0000;
+  display: block;
+}
+.hover-label.buy {
+  background-color: #005eff;
+  display: block;
+}
 
 
 .non-modal-window {
@@ -90,6 +137,7 @@
   z-index: 999;
   box-shadow: 0 0 20px #0f0;
 }
+
 
 .non-modal-window h3 {
   margin-top: 0;

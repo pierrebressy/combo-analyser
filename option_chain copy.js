@@ -2,9 +2,7 @@ import { load_local_option_chain } from './network.js';
 import { addLog } from './log.js';
 import { TabsManager } from './tabs_manager.js';
 import { compute_iv_dichotomy } from './iv.js';
-import { days_between_dates, remaining_days, is_third_friday } from './computation.js';
 import { computeOptionPrice } from './computation.js';
-
 import { saveJSONInCookie, loadJSONFromCookie } from './network.js';
 
 
@@ -34,6 +32,7 @@ function set_td_bid_ask_bgnd(td_bid, td_ask, count) {
     set_td_bgnd(td_bid, Math.min(count, 0));
     set_td_bgnd(td_ask, Math.max(count, 0));
 }
+
 
 class OptionChain {
 
@@ -171,6 +170,42 @@ class OptionChain {
     }
 }
 
+function is_third_friday(expiry) {
+    const year = parseInt(expiry.slice(0, 4), 10);
+    const month = parseInt(expiry.slice(4, 6), 10) - 1; // JS months = 0-based
+    const day = parseInt(expiry.slice(6, 8), 10);
+
+    const date = new Date(year, month, day);
+    if (date.getDay() !== 5) return false; // Not a Friday
+
+    // Find the first Friday of the month
+    const firstDay = new Date(year, month, 1);
+    const firstFridayOffset = (5 - firstDay.getDay() + 7) % 7;
+    const thirdFridayDate = 1 + firstFridayOffset + 14;
+
+    return day === thirdFridayDate;
+}
+
+function remaining_days(expiry) {
+    // Convert expiry string to Date (YYYYMMDD -> 16:30 UTC-5)
+    const expiryStr = expiry.toString();
+    const expiryYear = parseInt(expiryStr.substring(0, 4));
+    const expiryMonth = parseInt(expiryStr.substring(4, 6)) - 1; // JS months are 0-based
+    const expiryDay = parseInt(expiryStr.substring(6, 8));
+
+    // Create expiry date at 16:30 in UTC-5
+    const expiryDate = new Date(Date.UTC(expiryYear, expiryMonth, expiryDay, 21, 30)); // 16:30 UTC-5 = 21:30 UTC
+
+    // Get current time (now) in UTC
+    const now = new Date();
+
+    // Compute the difference in milliseconds and convert to days (fractional)
+    const diffMs = expiryDate - now;
+    const diffDays = diffMs / (1000 * 60 * 60 * 24);
+
+    return Math.round(diffDays * 10) / 10;
+}
+
 function create_selected_contracts_list(option_chain, ticker) {
 
     console.log(option_chain.legs);
@@ -181,6 +216,7 @@ function create_selected_contracts_list(option_chain, ticker) {
     selectedListContainer.style.backgroundColor = "#111";
     selectedListContainer.style.color = "#fff";
     selectedListContainer.style.border = "1px solid #444";
+    selectedListContainer.innerHTML = "<strong>Selected Options:</strong><ul></ul>";
 
     selectedListContainer.querySelector("ul");
 
@@ -297,11 +333,11 @@ function update_selected_table(oc) {
         open_modal_window(oc);
     }
     else {
-        close_modal_window();
+        close_modal_window(oc);
     }
 }
 
-function update_oc_table(oc) {
+function UNUSED_update_oc_table(oc) {
 
     oc.legs.forEach(leg => {
         let count;
@@ -344,6 +380,14 @@ function update_oc_table(oc) {
 
 export async function add_option_chain_container_in_tab_container(tab_container) {
 
+    let loaded_option_chain = await load_local_option_chain();
+    const option_chain = {};
+
+    Object.keys(loaded_option_chain).forEach(ticker => {
+        const cleaned_ticker = ticker.replace(/[\^\$]/g, "");
+        option_chain[cleaned_ticker] = loaded_option_chain[ticker];
+    });
+
 
     //addLog("option_chain #tickers=", Object.keys(option_chain).length);
 
@@ -369,22 +413,11 @@ export async function add_option_chain_container_in_tab_container(tab_container)
     let oc_tabs_manager = new TabsManager(oc_container, "oc-tabs-manager");
     let container;
 
-
-
-
-    let loaded_option_chain = await load_local_option_chain();
-    const option_chain = {};
-
-    Object.keys(loaded_option_chain).forEach(ticker => {
-        const cleaned_ticker = ticker.replace(/[\^\$]/g, "");
-        option_chain[cleaned_ticker] = loaded_option_chain[ticker];
-    });
-
     for (const ticker of Object.keys(option_chain)) {
 
         let oc = new OptionChain(ticker, option_chain[ticker]);
 
-        container = oc_tabs_manager.add_tab(ticker, ticker + '-oc', open_modal_window, oc);
+        container = oc_tabs_manager.add_tab(ticker, ticker + '-oc');
 
         const heading = document.createElement('h2');
         heading.classList.add('std-text');
@@ -413,23 +446,14 @@ export async function add_option_chain_container_in_tab_container(tab_container)
         container.appendChild(selectedContainer);
 
         oc_expiries_tabs_manager.activate_last_tab();
-
-        // add the content to the tab when all data are loaded
-        setTimeout(() => {
-
-            update_selected_table(oc);
-
-        }, 0);
-
     }
     oc_tabs_manager.activate_last_tab();
 
     // Add to tab container
     tab_container.appendChild(oc_container);
-
 }
 
-async function add_option_chain_table(test_container, oc, expiry) {
+export async function add_option_chain_table(test_container, oc, expiry) {
 
     const referencePrice = oc.get_last_price(expiry);
     //console.log("referencePrice=", referencePrice);
@@ -469,7 +493,8 @@ async function add_option_chain_table(test_container, oc, expiry) {
         hoverLabel.style.fontSize = "12px";
         hoverLabel.style.pointerEvents = "none";
         hoverLabel.style.display = "none";
-        hoverLabel.style.zIndex = "1000";*/
+        hoverLabel.style.zIndex = "1000";
+      */
     document.body.appendChild(hoverLabel);
 
     const table = document.createElement("table");
@@ -649,7 +674,9 @@ async function add_option_chain_table(test_container, oc, expiry) {
 
     setTimeout(() => {
 
-        update_oc_table(oc);
+
+        //update_oc_table(oc);
+        update_selected_table(oc)
         const rows = tbody.querySelectorAll("tr");
         if (rows.length === 0) return;
 
@@ -664,14 +691,38 @@ async function add_option_chain_table(test_container, oc, expiry) {
 
 }
 
-function close_modal_window() {
+
+
+
+function close_modal_window(oc) {
 
     d3.select(".non-modal-window").remove();
 }
 
+function daysBetweenDates(date1, date2) {
+    // Parse yyyymmdd strings to Date objects
+    const parseDate = (yyyymmdd) => {
+        const year = parseInt(yyyymmdd.substring(0, 4), 10);
+        const month = parseInt(yyyymmdd.substring(4, 6), 10) - 1; // JS months are 0-based
+        const day = parseInt(yyyymmdd.substring(6, 8), 10);
+        return new Date(year, month, day);
+    };
+
+    const d1 = parseDate(date1);
+    const d2 = parseDate(date2);
+
+    // Calculate the time difference in milliseconds
+    const diffTime = Math.abs(d2 - d1);
+
+    // Convert milliseconds to days
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays;
+}
+
+
 function open_modal_window(oc) {
-    console.log("open_modal_window");
-    close_modal_window()
+
+    d3.select(".non-modal-window").remove();
 
     const windowDiv = d3.select("body")
         .append("div")
@@ -734,7 +785,7 @@ function open_modal_window(oc) {
     });
     console.log("oldest_date=", oldest_date);
     oc.legs.forEach(option => {
-        option.offset = days_between_dates(option.expiry, oldest_date);
+        option.offset = daysBetweenDates(option.expiry, oldest_date);
         console.log("option=", option.expiry, option.offset);
     });
 
@@ -794,7 +845,7 @@ function open_modal_window(oc) {
     draw_profile(p_and_l_graph, x_scale, scale_p_and_l, p_and_l_data);
 }
 
-function draw_profile(graph, x_scale, scale, data) {
+export function draw_profile(graph, x_scale, scale, data) {
 
     // Create SVG definitions for gradients
     const defs = graph.append("defs");
