@@ -36,7 +36,7 @@ export function display_combos_list() {
     const dropdown = comboContainer.append("select")
         .attr("id", "comboBox")
         .on("change", function () {
-            //env.config.config.combo = this.value;
+            env.config.active.combo = this.value;
             env.set_combo(this.value);
             if (!get_use_local()) {
                 update_remote_config(env.config);
@@ -56,7 +56,7 @@ export function display_combos_list() {
         .append("option")
         .text(d => d)
         .attr("value", d => d)
-        .attr("selected", d => d === env.config.config.combo ? "selected" : null);
+        .attr("selected", d => d === env.config.active.combo ? "selected" : null);
     comboContainer.insert("label", "#comboBox")
         .attr("class", "std-text")
         .text("Choose combo: ");

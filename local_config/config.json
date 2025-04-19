@@ -777,7 +777,7 @@
         ],
         "volatility_is_per_leg": false
     },
-    "config": {
+    "active": {
         "combo": "LONG CALL",
         "U_use_real_values": false
     },

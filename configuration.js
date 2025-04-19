@@ -1,4 +1,5 @@
 import { fetch_combo_templates } from './network.js';
+import {    loadJSONFromCookie } from './network.js';
 
 export function getCookie(name) {
     const cookies = document.cookie.split("; ");
@@ -49,34 +50,57 @@ export class Environment {
 
     constructor(config) {
 
+        this.default_combo="LONG CALL";
+        console.log("Environment constructor");
+        console.log("config=", config);
         this.check_config(config);
+        this.config = config;
 
-        let combo = "";
+        // uncomment to overide the combo to use, stored in a cookie
+        //setCookie("combo", "LONG CALL", 1);
+        //setCookie("combo", "LONG PUT", 1);
+        //setCookie("combo", "Combo Builder", 1);
 
-        try {
-            combo = get_url_param("combo");
-            if (combo.length == 0) {
-                combo = "LONG CALL";
-                console.log("Error: Bad value for [combo] in URL, using default value [" + combo + "]");
+        let combo = getCookie("combo");
+        console.log("**** combo=", combo);
+
+        if(combo!= null) {
+            console.log("Will use combo from cookie: ", combo);
+        }
+        else {
+            combo = this.default_combo;
+            console.log("No combo in cookie, using default combo", combo);
+            setCookie("combo", combo, 1);
+        }
+
+        this.config.active.combo=combo;
+
+
+        if(combo == "Combo Builder") {
+            console.log("Combo Builder selected, loading from cookie");
+            let combo_builder = loadJSONFromCookie("combo-builder");
+            if (combo_builder) {
+                console.log("Combo builder loaded from cookie: ", combo_builder);
+                this.config.combos["Combo Builder"] = combo_builder;
+                this.config.active.combo = "Combo Builder";
+                console.log("Combo builder loaded from cookie: ", this.config.active.combo);
             }
         }
-        catch (error) {
-            combo=getCookie("combo");
-//            combo = "LONG CALL";
-            console.log("Info: no [combo] in URL, using default value [" + combo + "]");
-        }
-        config.config.combo = combo;
-        console.log("use_real_values=" + config.config.use_real_values);
 
-        this.config = config;
-        console.log("get_use_real_values()=" + this.get_use_real_values());
-
+        // set the combo to the one selected
         this.combo = this.get_combo_params();
+        if (this.combo == null) {
+            console.log("Error: combo "+combo+"not found in config");
+            this.config.active.combo=this.default_combo;
+            setCookie("combo", this.default_combo, 1);
+            console.log("setting cookie to "+this.default_combo);
+            this.combo = this.get_combo_params();
+        }
 
     }
 
     get_combo_params() {
-        return this.config.combos[this.config.config.combo];
+        return this.config.combos[this.config.active.combo];
     }
     // --- WINDOW
 
@@ -165,7 +189,8 @@ export class Environment {
     // --- <<<<<<<<<<<<<<<<
 
     set_combo(combo) {
-        this.config.config.combo = combo;
+        this.config.active.combo = combo;
+        setCookie("combo", combo, 1);
     }
 
     // --- EXTRA DATA STORED IN ENVIRONMENT
@@ -239,10 +264,10 @@ export class Environment {
     // --- CONFIG
 
     get_use_real_values() {
-        return this.config.config.use_real_values;
+        return this.config.active.use_real_values;
     }
     set_use_real_values(use_real_values) {
-        this.config.config.use_real_values = use_real_values;
+        this.config.active.use_real_values = use_real_values;
     }
 
     // --- COMBOS
@@ -251,11 +276,19 @@ export class Environment {
         return this.combo.simulation;
     }
     get_combos() {
+
         let combos = [];
         for (let key in this.config.combos) {
             combos.push(key);
         }
-        //console.log(combos);
+        combos = combos.filter(name => name !== "Combo Builder");
+
+        let combo_builder = loadJSONFromCookie("combo-builder");
+        if (combo_builder) {
+            combos.push("Combo Builder");
+            this.config.combos["Combo Builder"] = combo_builder;
+        }
+
         return combos;
     }
     // --- CURRRENT COMBO
@@ -296,7 +329,7 @@ export class Environment {
     check_config(config) {
         // table of main properties
         console.log("Cheking main properties of config data...");
-        const main_properties = ["combos", "computation", "config", "window", "graph"];
+        const main_properties = ["combos", "computation", "active", "window", "graph"];
         for (let property of main_properties) {
             if (!config.hasOwnProperty(property)) {
                 throw new Error(`Config must have a '${property}' property`);
@@ -309,9 +342,9 @@ export class Environment {
         for (let combo in config.combos) {
             //console.log("Checking combo " + combo);
             const combo_properties = [
-                "legs", 
-                "name", 
-                "simulation", 
+                "legs",
+                "name",
+                "simulation",
                 "ticker"];
             for (let property of combo_properties) {
                 if (!config.combos[combo].hasOwnProperty(property)) {
@@ -323,7 +356,7 @@ export class Environment {
                 //console.log("Checking combo "+combo+" / "+config.combos[combo].legs.length+" leg(s)");
                 const legs_properties = [
                     "expiration_offset",
-                    "qty", 
+                    "qty",
                     "iv",
                     "strike",
                     "type",
@@ -341,7 +374,7 @@ export class Environment {
                 //console.log("Checking combo "+combo+" / simulation");
                 const simulation_properties = [
                     "expiration_offset",
-                    "interest_rate", 
+                    "interest_rate",
                     "max_price",
                     "mean_volatility",
                     "min_price",

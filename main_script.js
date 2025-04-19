@@ -17,7 +17,12 @@ export let env;
 
 
 async function setup_global_env(e) {
-    //localStorage.removeItem('config');
+    
+    // comment this line to reset local storage
+    // to be done when the config.json structure is changed
+    localStorage.removeItem('config');
+
+
     if (!e) {
         console.log("setup_global_env: loading env...");
 
@@ -83,6 +88,8 @@ function display() {
         .attr("class", "combo-list-container")
         .attr("id", "combo-list-container");
     display_combos_list();
+
+
 
     d3.select("#left-container").append("div").append("br")
 

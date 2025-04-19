@@ -6,7 +6,7 @@ import { days_between_dates, remaining_days, is_third_friday } from './computati
 import { computeOptionPrice } from './computation.js';
 
 import { saveJSONInCookie, loadJSONFromCookie } from './network.js';
-
+let display_profile = false;
 
 function get_td_bid_ask(expiry, strike, type) {
     let selector_bid = 'td[data-expiry="' + expiry + '"][data-strike="' + strike + '"][data-type="' + type + '-bid"]';
@@ -200,12 +200,23 @@ function create_selected_contracts_list(option_chain, ticker) {
     title.textContent = `Selected Options for ${ticker}`;
     selectedContainer.appendChild(title);
 
+    // save Button
+    const saveBtn = document.createElement("button");
+    saveBtn.id = "save-selected";
+    saveBtn.classList.add("clear-button");
+    saveBtn.textContent = "Save Combo";
+    saveBtn.addEventListener("click", () => {
+        create_json_from_combo(option_chain)
+    });
+    selectedContainer.appendChild(saveBtn);
+
     // view Button
     const viewBtn = document.createElement("button");
     viewBtn.id = "view-selected";
     viewBtn.classList.add("clear-button");
     viewBtn.textContent = "View Combo Profile";
     viewBtn.addEventListener("click", () => {
+        display_profile=true;
         open_modal_window(option_chain)
     });
 
@@ -384,7 +395,7 @@ export async function add_option_chain_container_in_tab_container(tab_container)
 
         let oc = new OptionChain(ticker, option_chain[ticker]);
 
-        container = oc_tabs_manager.add_tab(ticker, ticker + '-oc', open_modal_window, oc);
+        container = oc_tabs_manager.add_tab(ticker, ticker + '-oc');//, open_modal_window, oc);
 
         const heading = document.createElement('h2');
         heading.classList.add('std-text');
@@ -670,9 +681,10 @@ function close_modal_window() {
 }
 
 function open_modal_window(oc) {
-    console.log("open_modal_window");
     close_modal_window()
-
+    if (display_profile === false) {
+        return;
+    }
     const windowDiv = d3.select("body")
         .append("div")
         .attr("class", "non-modal-window");
@@ -727,15 +739,12 @@ function open_modal_window(oc) {
 
     let oldest_date = oc.legs[0].expiry;
     oc.legs.forEach(option => {
-        console.log("option=", option.expiry, oldest_date);
         if (option.expiry < oldest_date) {
             oldest_date = option.expiry;
         }
     });
-    console.log("oldest_date=", oldest_date);
     oc.legs.forEach(option => {
         option.offset = days_between_dates(option.expiry, oldest_date);
-        console.log("option=", option.expiry, option.offset);
     });
 
     let p_and_l_data = [];
@@ -867,4 +876,35 @@ function draw_profile(graph, x_scale, scale, data) {
             .curve(d3.curveBasis) // Optional smoothing
         );
 
+}
+
+function create_json_from_combo (oc) {
+    let json = {};
+    json.ticker = oc.ticker;
+    json.legs = [];
+    oc.legs.forEach(leg => {
+        let l = {};
+        l.expiration_offset = leg.offset;
+        l.qty = leg.qty;
+        l.iv = 0.2;
+        l.strike = leg.strike;
+        l.type = leg.type;
+        l.price = leg.value;
+        json.legs.push(l);
+    });
+    json.name = "Combo Builder";
+    json.simulation = {};
+    json.simulation.expiration_offset = 0;
+    json.simulation.interest_rate = 0.04;
+    json.simulation.max_price = 300;
+    json.simulation.mean_volatility = 0.2;
+    json.simulation.min_price = 100;
+    json.simulation.step = 0.5
+    json.simulation.time_for_simulation = 15;
+    json.simulation.time_to_expiry = remaining_days(oc.legs[0].expiry) / 365.;
+    json.ticker = oc.ticker;
+
+    console.log("json=", json);
+    saveJSONInCookie("combo-builder", json);
+    return json;
 }
