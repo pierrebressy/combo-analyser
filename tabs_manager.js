@@ -1,4 +1,4 @@
-import { setCookie, getCookie } from "./network.js"
+import { cookie_manager } from './cookie.js';
 
 
 export class TabsManager {
@@ -51,7 +51,7 @@ export class TabsManager {
     this.selectors.forEach(selector => {
       if (selector.name === selector_name) {
         selector.selector.classList.add('active');
-        setCookie(this.manager_name, selector_name, 7);
+        cookie_manager.set_cookie(this.manager_name, selector_name, 7);
       }
       else {
         selector.selector.classList.remove('active');
@@ -70,11 +70,11 @@ export class TabsManager {
 
   get_last_active_tab() {
     //console.log("[get_last_active_tab]", this.manager_name);
-    let last_active_tab = getCookie(this.manager_name);
+    let last_active_tab = cookie_manager.get_cookie(this.manager_name);
     //console.log("[get_last_active_tab] last_active_tab=", last_active_tab);
     if (last_active_tab === undefined) {
       last_active_tab = this.selectors[0].name;
-      setCookie(this.manager_name, last_active_tab, 7);
+      cookie_manager.set_cookie(this.manager_name, last_active_tab, 7);
     }
     return last_active_tab;
   }

@@ -3,7 +3,7 @@
         "20250417": {
             "last_price": 202.1300048828125,
             "historic_volatility": 0.3190268141862271,
-            "unused_strikes": [
+            "strikes": [
                 100.0,
                 110.0,
                 115.0,
@@ -869,7 +869,7 @@
         "20250425": {
             "last_price": 202.1300048828125,
             "historic_volatility": 0.3190268141862271,
-            "unused_strikes": [
+            "strikes": [
                 100.0,
                 110.0,
                 120.0,
@@ -1356,7 +1356,7 @@
         "20250502": {
             "last_price": 202.1300048828125,
             "historic_volatility": 0.3190268141862271,
-            "unused_strikes": [
+            "strikes": [
                 110.0,
                 120.0,
                 125.0,
@@ -1706,7 +1706,7 @@
         "20250509": {
             "last_price": 202.1300048828125,
             "historic_volatility": 0.3190268141862271,
-            "unused_strikes": [
+            "strikes": [
                 110.0,
                 120.0,
                 125.0,
@@ -2026,7 +2026,7 @@
         "20250516": {
             "last_price": 202.1300048828125,
             "historic_volatility": 0.3190268141862271,
-            "unused_strikes": [
+            "strikes": [
                 95.0,
                 100.0,
                 105.0,
@@ -2446,7 +2446,7 @@
         "20250523": {
             "last_price": 202.1300048828125,
             "historic_volatility": 0.3190268141862271,
-            "unused_strikes": [
+            "strikes": [
                 110.0,
                 120.0,
                 125.0,
@@ -2754,7 +2754,7 @@
         "20250530": {
             "last_price": 202.1300048828125,
             "historic_volatility": 0.3190268141862271,
-            "unused_strikes": [
+            "strikes": [
                 110.0,
                 120.0,
                 125.0,
@@ -2986,7 +2986,7 @@
         "20250620": {
             "last_price": 202.1300048828125,
             "historic_volatility": 0.3190268141862271,
-            "unused_strikes": [
+            "strikes": [
                 5.0,
                 10.0,
                 15.0,
@@ -3591,7 +3591,7 @@
         "20250718": {
             "last_price": 202.1300048828125,
             "historic_volatility": 0.3190268141862271,
-            "unused_strikes": [
+            "strikes": [
                 90.0,
                 95.0,
                 100.0,
@@ -4063,7 +4063,7 @@
         "20250815": {
             "last_price": 202.1300048828125,
             "historic_volatility": 0.3190268141862271,
-            "unused_strikes": [
+            "strikes": [
                 90.0,
                 95.0,
                 100.0,
@@ -4510,7 +4510,7 @@
         "20250919": {
             "last_price": 202.1300048828125,
             "historic_volatility": 0.3190268141862271,
-            "unused_strikes": [
+            "strikes": [
                 5.0,
                 10.0,
                 15.0,
@@ -5108,7 +5108,7 @@
         "20251017": {
             "last_price": 202.1300048828125,
             "historic_volatility": 0.3190268141862271,
-            "unused_strikes": [
+            "strikes": [
                 90.0,
                 95.0,
                 100.0,
@@ -5561,7 +5561,7 @@
         "20251219": {
             "last_price": 202.1300048828125,
             "historic_volatility": 0.3190268141862271,
-            "unused_strikes": [
+            "strikes": [
                 5.0,
                 10.0,
                 15.0,
@@ -6162,7 +6162,7 @@
         "20260116": {
             "last_price": 202.1300048828125,
             "historic_volatility": 0.3190268141862271,
-            "unused_strikes": [
+            "strikes": [
                 5.0,
                 10.0,
                 20.0,
@@ -6775,7 +6775,7 @@
         "20260320": {
             "last_price": 202.1300048828125,
             "historic_volatility": 0.3190268141862271,
-            "unused_strikes": [
+            "strikes": [
                 90.0,
                 95.0,
                 100.0,
@@ -7122,7 +7122,7 @@
         "20260618": {
             "last_price": 202.1300048828125,
             "historic_volatility": 0.3190268141862271,
-            "unused_strikes": [
+            "strikes": [
                 5.0,
                 10.0,
                 15.0,
@@ -7735,7 +7735,7 @@
         "20261218": {
             "last_price": 202.1300048828125,
             "historic_volatility": 0.3190268141862271,
-            "unused_strikes": [
+            "strikes": [
                 5.0,
                 10.0,
                 15.0,
@@ -8274,7 +8274,7 @@
         "20270115": {
             "last_price": 202.1300048828125,
             "historic_volatility": 0.3190268141862271,
-            "unused_strikes": [
+            "strikes": [
                 5.0,
                 10.0,
                 15.0,
@@ -8823,7 +8823,7 @@
         "20270617": {
             "last_price": 202.1300048828125,
             "historic_volatility": 0.3190268141862271,
-            "unused_strikes": [
+            "strikes": [
                 50.0,
                 60.0,
                 65.0,
@@ -9328,7 +9328,7 @@
         "20271217": {
             "last_price": 202.1300048828125,
             "historic_volatility": 0.3190268141862271,
-            "unused_strikes": [
+            "strikes": [
                 50.0,
                 55.0,
                 60.0,
@@ -9913,7 +9913,7 @@
         "20250416": {
             "last_price": 5346.10009765625,
             "historic_volatility": 0.18834311343566976,
-            "unused_strikes": [
+            "strikes": [
                 2000.0,
                 2200.0,
                 2400.0,
@@ -12137,7 +12137,7 @@
         "20250417": {
             "last_price": 5346.10009765625,
             "historic_volatility": 0.18834311343566976,
-            "unused_strikes": [
+            "strikes": [
                 200.0,
                 400.0,
                 600.0,
@@ -16689,7 +16689,7 @@
         "20250421": {
             "last_price": 5346.10009765625,
             "historic_volatility": 0.18834311343566976,
-            "unused_strikes": [
+            "strikes": [
                 2000.0,
                 2200.0,
                 2400.0,
@@ -18802,7 +18802,7 @@
         "20250422": {
             "last_price": 5346.10009765625,
             "historic_volatility": 0.18834311343566976,
-            "unused_strikes": [
+            "strikes": [
                 2200.0,
                 2400.0,
                 2600.0,
@@ -20773,7 +20773,7 @@
         "20250423": {
             "last_price": 5346.10009765625,
             "historic_volatility": 0.18834311343566976,
-            "unused_strikes": [
+            "strikes": [
                 2000.0,
                 2200.0,
                 2400.0,
@@ -22544,7 +22544,7 @@
         "20250424": {
             "last_price": 5346.10009765625,
             "historic_volatility": 0.18834311343566976,
-            "unused_strikes": [
+            "strikes": [
                 2000.0,
                 2200.0,
                 2400.0,
@@ -24258,7 +24258,7 @@
         "20250425": {
             "last_price": 5346.10009765625,
             "historic_volatility": 0.18834311343566976,
-            "unused_strikes": [
+            "strikes": [
                 1200.0,
                 1400.0,
                 1600.0,
@@ -26703,7 +26703,7 @@
         "20250428": {
             "last_price": 5346.10009765625,
             "historic_volatility": 0.18834311343566976,
-            "unused_strikes": [
+            "strikes": [
                 2200.0,
                 2400.0,
                 2600.0,
@@ -28240,7 +28240,7 @@
         "20250429": {
             "last_price": 5346.10009765625,
             "historic_volatility": 0.18834311343566976,
-            "unused_strikes": [
+            "strikes": [
                 2200.0,
                 2400.0,
                 2600.0,
@@ -29589,7 +29589,7 @@
         "20250430": {
             "last_price": 5346.10009765625,
             "historic_volatility": 0.18834311343566976,
-            "unused_strikes": [
+            "strikes": [
                 1200.0,
                 1400.0,
                 1600.0,
@@ -33489,7 +33489,7 @@
         "20250501": {
             "last_price": 5346.10009765625,
             "historic_volatility": 0.18834311343566976,
-            "unused_strikes": [
+            "strikes": [
                 2000.0,
                 2200.0,
                 2400.0,
@@ -34736,7 +34736,7 @@
         "20250502": {
             "last_price": 5346.10009765625,
             "historic_volatility": 0.18834311343566976,
-            "unused_strikes": [
+            "strikes": [
                 1200.0,
                 1400.0,
                 1600.0,
@@ -36739,7 +36739,7 @@
         "20250505": {
             "last_price": 5346.10009765625,
             "historic_volatility": 0.18834311343566976,
-            "unused_strikes": [
+            "strikes": [
                 2000.0,
                 2200.0,
                 2400.0,
@@ -37845,7 +37845,7 @@
         "20250506": {
             "last_price": 5346.10009765625,
             "historic_volatility": 0.18834311343566976,
-            "unused_strikes": [
+            "strikes": [
                 2000.0,
                 2200.0,
                 2400.0,
@@ -38772,7 +38772,7 @@
         "20250507": {
             "last_price": 5346.10009765625,
             "historic_volatility": 0.18834311343566976,
-            "unused_strikes": [
+            "strikes": [
                 2000.0,
                 2200.0,
                 2400.0,
@@ -39702,7 +39702,7 @@
         "20250508": {
             "last_price": 5346.10009765625,
             "historic_volatility": 0.18834311343566976,
-            "unused_strikes": [
+            "strikes": [
                 2000.0,
                 2200.0,
                 2400.0,
@@ -40576,7 +40576,7 @@
         "20250509": {
             "last_price": 5346.10009765625,
             "historic_volatility": 0.18834311343566976,
-            "unused_strikes": [
+            "strikes": [
                 600.0,
                 800.0,
                 1000.0,
@@ -42106,7 +42106,7 @@
         "20250512": {
             "last_price": 5346.10009765625,
             "historic_volatility": 0.18834311343566976,
-            "unused_strikes": [
+            "strikes": [
                 2000.0,
                 2200.0,
                 2400.0,
@@ -42722,7 +42722,7 @@
         "20250513": {
             "last_price": 5346.10009765625,
             "historic_volatility": 0.18834311343566976,
-            "unused_strikes": [
+            "strikes": [
                 2000.0,
                 2200.0,
                 2400.0,
@@ -43175,7 +43175,7 @@
         "20250514": {
             "last_price": 5346.10009765625,
             "historic_volatility": 0.18834311343566976,
-            "unused_strikes": [
+            "strikes": [
                 2200.0,
                 2400.0,
                 2600.0,
@@ -43592,7 +43592,7 @@
         "20250515": {
             "last_price": 5346.10009765625,
             "historic_volatility": 0.18834311343566976,
-            "unused_strikes": [
+            "strikes": [
                 2200.0,
                 2400.0,
                 2600.0,
@@ -44007,7 +44007,7 @@
         "20250516": {
             "last_price": 5346.10009765625,
             "historic_volatility": 0.18834311343566976,
-            "unused_strikes": [
+            "strikes": [
                 200.0,
                 400.0,
                 600.0,
@@ -48307,7 +48307,7 @@
         "20250519": {
             "last_price": 5346.10009765625,
             "historic_volatility": 0.18834311343566976,
-            "unused_strikes": [
+            "strikes": [
                 2200.0,
                 2400.0,
                 2600.0,
@@ -48538,7 +48538,7 @@
         "20250520": {
             "last_price": 5346.10009765625,
             "historic_volatility": 0.18834311343566976,
-            "unused_strikes": [
+            "strikes": [
                 2600.0,
                 4200.0,
                 4500.0,
@@ -48623,7 +48623,7 @@
         "20250522": {
             "last_price": 5346.10009765625,
             "historic_volatility": 0.18834311343566976,
-            "unused_strikes": [
+            "strikes": [
                 2200.0,
                 2400.0,
                 2600.0,
@@ -48855,7 +48855,7 @@
         "20250523": {
             "last_price": 5346.10009765625,
             "historic_volatility": 0.18834311343566976,
-            "unused_strikes": [
+            "strikes": [
                 2000.0,
                 2200.0,
                 2400.0,
@@ -50089,7 +50089,7 @@
         "20250530": {
             "last_price": 5346.10009765625,
             "historic_volatility": 0.18834311343566976,
-            "unused_strikes": [
+            "strikes": [
                 1400.0,
                 1600.0,
                 1800.0,
@@ -53623,7 +53623,7 @@
         "20250606": {
             "last_price": 5346.10009765625,
             "historic_volatility": 0.18834311343566976,
-            "unused_strikes": [
+            "strikes": [
                 2000.0,
                 2200.0,
                 2400.0,
@@ -54023,7 +54023,7 @@
         "20250620": {
             "last_price": 5346.10009765625,
             "historic_volatility": 0.18834311343566976,
-            "unused_strikes": [
+            "strikes": [
                 200.0,
                 400.0,
                 600.0,
@@ -58044,7 +58044,7 @@
         "20250630": {
             "last_price": 5346.10009765625,
             "historic_volatility": 0.18834311343566976,
-            "unused_strikes": [
+            "strikes": [
                 1200.0,
                 1400.0,
                 1600.0,
@@ -61804,7 +61804,7 @@
         "20250718": {
             "last_price": 5346.10009765625,
             "historic_volatility": 0.18834311343566976,
-            "unused_strikes": [
+            "strikes": [
                 200.0,
                 400.0,
                 600.0,
@@ -65102,7 +65102,7 @@
         "20250731": {
             "last_price": 5346.10009765625,
             "historic_volatility": 0.18834311343566976,
-            "unused_strikes": [
+            "strikes": [
                 1400.0,
                 1600.0,
                 1800.0,
@@ -67607,7 +67607,7 @@
         "20250815": {
             "last_price": 5346.10009765625,
             "historic_volatility": 0.18834311343566976,
-            "unused_strikes": [
+            "strikes": [
                 200.0,
                 400.0,
                 600.0,
@@ -70227,7 +70227,7 @@
         "20250829": {
             "last_price": 5346.10009765625,
             "historic_volatility": 0.18834311343566976,
-            "unused_strikes": [
+            "strikes": [
                 1200.0,
                 1400.0,
                 1600.0,
@@ -71971,7 +71971,7 @@
         "20250919": {
             "last_price": 5346.10009765625,
             "historic_volatility": 0.18834311343566976,
-            "unused_strikes": [
+            "strikes": [
                 200.0,
                 400.0,
                 600.0,
@@ -74181,7 +74181,7 @@
         "20250930": {
             "last_price": 5346.10009765625,
             "historic_volatility": 0.18834311343566976,
-            "unused_strikes": [
+            "strikes": [
                 1200.0,
                 1400.0,
                 1600.0,
@@ -76606,7 +76606,7 @@
         "20251017": {
             "last_price": 5346.10009765625,
             "historic_volatility": 0.18834311343566976,
-            "unused_strikes": [
+            "strikes": [
                 200.0,
                 400.0,
                 600.0,
@@ -77907,7 +77907,7 @@
         "20251121": {
             "last_price": 5346.10009765625,
             "historic_volatility": 0.18834311343566976,
-            "unused_strikes": [
+            "strikes": [
                 200.0,
                 400.0,
                 600.0,
@@ -79123,7 +79123,7 @@
         "20251219": {
             "last_price": 5346.10009765625,
             "historic_volatility": 0.18834311343566976,
-            "unused_strikes": [
+            "strikes": [
                 200.0,
                 400.0,
                 500.0,
@@ -80704,7 +80704,7 @@
         "20251231": {
             "last_price": 5346.10009765625,
             "historic_volatility": 0.18834311343566976,
-            "unused_strikes": [
+            "strikes": [
                 1200.0,
                 1400.0,
                 1600.0,
@@ -82178,7 +82178,7 @@
         "20260116": {
             "last_price": 5346.10009765625,
             "historic_volatility": 0.18834311343566976,
-            "unused_strikes": [
+            "strikes": [
                 200.0,
                 400.0,
                 600.0,
@@ -83648,7 +83648,7 @@
         "20260220": {
             "last_price": 5346.10009765625,
             "historic_volatility": 0.18834311343566976,
-            "unused_strikes": [
+            "strikes": [
                 200.0,
                 400.0,
                 600.0,
@@ -84819,7 +84819,7 @@
         "20260320": {
             "last_price": 5346.10009765625,
             "historic_volatility": 0.18834311343566976,
-            "unused_strikes": [
+            "strikes": [
                 200.0,
                 400.0,
                 600.0,
@@ -86177,7 +86177,7 @@
         "20260331": {
             "last_price": 5346.10009765625,
             "historic_volatility": 0.18834311343566976,
-            "unused_strikes": [
+            "strikes": [
                 2400.0,
                 2600.0,
                 2800.0,
@@ -86949,7 +86949,7 @@
         "20260417": {
             "last_price": 5346.10009765625,
             "historic_volatility": 0.18834311343566976,
-            "unused_strikes": [
+            "strikes": [
                 200.0,
                 400.0,
                 600.0,
@@ -87939,7 +87939,7 @@
         "20260618": {
             "last_price": 5346.10009765625,
             "historic_volatility": 0.18834311343566976,
-            "unused_strikes": [
+            "strikes": [
                 200.0,
                 400.0,
                 600.0,
@@ -89327,7 +89327,7 @@
         "20261218": {
             "last_price": 5346.10009765625,
             "historic_volatility": 0.18834311343566976,
-            "unused_strikes": [
+            "strikes": [
                 200.0,
                 400.0,
                 600.0,
@@ -90686,7 +90686,7 @@
         "20271217": {
             "last_price": 5346.10009765625,
             "historic_volatility": 0.18834311343566976,
-            "unused_strikes": [
+            "strikes": [
                 400.0,
                 800.0,
                 1200.0,
@@ -91532,7 +91532,7 @@
         "20281215": {
             "last_price": 5346.10009765625,
             "historic_volatility": 0.18834311343566976,
-            "unused_strikes": [
+            "strikes": [
                 400.0,
                 800.0,
                 1200.0,
@@ -92116,7 +92116,7 @@
         "20291221": {
             "last_price": 5346.10009765625,
             "historic_volatility": 0.18834311343566976,
-            "unused_strikes": [
+            "strikes": [
                 400.0,
                 800.0,
                 1200.0,
@@ -92659,7 +92659,7 @@
         "20301220": {
             "last_price": 5346.10009765625,
             "historic_volatility": 0.18834311343566976,
-            "unused_strikes": [
+            "strikes": [
                 400.0,
                 800.0,
                 1200.0,

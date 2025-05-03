@@ -1,4 +1,4 @@
-import { is_mode_local, load_local_price, load_local_config, fetch_configuration, fetch_price, getCookie, setCookie } from './network.js';
+import { is_mode_local, load_local_price, load_local_config, fetch_configuration, fetch_price } from './network.js';
 import { Environment } from './configuration.js';
 import { update_3d_view } from './3d_view.js';
 import { addLog } from './log.js';

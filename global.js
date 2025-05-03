@@ -1,4 +1,5 @@
-import { getCookie, setCookie } from './network.js';
+import { cookie_manager } from './cookie.js';   
+
 let auto_save = true;
 let sigma_factor = 1.;
 let volatility_is_per_leg=false;
@@ -57,12 +58,12 @@ export function get_auto_save() {
 }
 
 export function set_dark_mode(value) {
-    setCookie("display_mode", value ? "DARK" : "LIGHT", 365);
-    let mode=getCookie("dark_mode");
+    cookie_manager.set_cookie("display_mode", value ? "DARK" : "LIGHT", 365);
+    let mode=cookie_manager.get_cookie("dark_mode");
 }
 export function get_dark_mode() {
 
-    let mode=getCookie("display_mode");
+    let mode=cookie_manager.get_cookie("display_mode");
     if(mode!="DARK" && mode!="LIGHT"){
         mode="DARK";
         set_dark_mode(true);

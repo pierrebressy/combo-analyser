@@ -42,12 +42,11 @@ class OptionChain {
         this.chain = chain;
         this.referencePrice = chain.last_price;
         this.legs = [];
-        if(1) { // 0: reset leg
-            let leg_from_cookie = cookie_manager.load_JSON_from_cookie(this.ticker + "-legs");
-            if (leg_from_cookie !== null) {
-                this.legs = leg_from_cookie;
-            }
+        let leg_from_cookie = cookie_manager.load_JSON_from_cookie(this.ticker + "-legs");
+        if (leg_from_cookie !== null) {
+            this.legs = leg_from_cookie;
         }
+
         this.expiry = [];
         for (const expiry of this.get_expiries_list()) {
             //console.log("... expiry=", expiry);
@@ -146,8 +145,8 @@ class OptionChain {
             let l = this.get_expiries_list();
             const expiryIndex = l.findIndex(e => e === leg.expiry);
             let c = this.expiry[expiryIndex].combined;
-            const i = c.findIndex(item => Math.abs(item.strike - leg.strike) < 1e-6);
-            if (expiryIndex !== -1 && i !== -1) {
+            const i = c.findIndex(e => e.strike === leg.strike);
+            if (expiryIndex !== -1) {
                 this.expiry[expiryIndex].combined[i].call_count = 0;
                 const { td_bid, td_ask } = get_td_bid_ask(leg.expiry, leg.strike, leg.type);
                 set_td_bid_ask_bgnd(td_bid, td_ask, 0);
@@ -330,7 +329,7 @@ function update_selected_table(oc) {
         tr.appendChild(td);
 
         td = document.createElement("td");
-        td.textContent = (leg.strike*1.0).toFixed(2);
+        td.textContent = leg.strike.toFixed(2);
         td.style.textAlign = "center";
         tr.appendChild(td);
 
@@ -472,7 +471,7 @@ export async function add_option_chain_container_in_tab_container(tab_container)
         // add the content to the tab when all data are loaded
         setTimeout(() => {
 
-            //    update_selected_table(oc);
+        //    update_selected_table(oc);
 
         }, 0);
 
@@ -485,15 +484,16 @@ export async function add_option_chain_container_in_tab_container(tab_container)
 }
 
 class OptionChainTable {
-    constructor(cols_attributes, referencePrice, sigma, expiry) {
-        this.cols_attributes = cols_attributes;
+    constructor(header_cols, col_types, cursor_types, referencePrice, sigma, expiry) {
         this.sigma = sigma;
         this.referencePrice = referencePrice;
         this.expiry = expiry;
+        this.col_types = col_types;
+        this.cursor_types = cursor_types;
         this.table = document.createElement("table");
         const thead = document.createElement("thead");
         const headerRow = document.createElement("tr");
-        cols_attributes.headers.forEach(text => {
+        header_cols.forEach(text => {
             const th = document.createElement("th");
             th.style.textAlign = "center";
             th.textContent = text;
@@ -508,13 +508,13 @@ class OptionChainTable {
     }
     add_rows(oc) {
         let rows = oc.get_combined_data(this.expiry);
-        this.tbody = document.createElement("tbody");
-        this.table.appendChild(this.tbody);
-        rows.forEach((row, i) => {
-            this.add_row(row, i, oc);
+        const tbody = document.createElement("tbody");
+        this.table.appendChild(tbody);
+        rows.forEach(row => {
+            this.add_row(tbody, row, oc);
         });
     }
-    add_row(row, i, oc) {
+    add_row(tbody, row, oc) {
         const tr = document.createElement("tr");
         const values = [
             row.call_mid_iv,
@@ -527,20 +527,18 @@ class OptionChainTable {
             const td = document.createElement("td");
             td.setAttribute("data-expiry", this.expiry);
             td.setAttribute("data-strike", row.strike);
-            this.set_td_content(td, row, j, val);
-            this.add_td_animation(td, row, j);
-            if (this.cols_attributes.is_clickable[j]) {
-                this.add_td_click(td, i, j, val, oc);
-            }
+            this.decorate_td(td, row, j, val);
+            this.animate_td(td, row, j);
+            //this.onclick_td(td, row, j, val, oc);
             tr.appendChild(td);
         });
-        this.tbody.appendChild(tr);
+        tbody.appendChild(tr);
     }
-    set_td_content(td, row, j, val) {
+    decorate_td(td, row, j, val) {
         td.style.textAlign = "center";
         td.classList.add("oc-dark-bg");
-        td.setAttribute("data-type", this.cols_attributes.types[j]);
-        td.style.cursor = this.cols_attributes.cursor[j];
+        td.setAttribute("data-type", this.col_types[j]);
+        td.style.cursor = this.cursor_types[j];
         td.textContent = (val * 1.0).toFixed(2);
         if (val === null) {
             this.format_td_as_na(td);
@@ -549,70 +547,21 @@ class OptionChainTable {
             this.decorate_strike_td(td, row);
         }
     }
-    add_td_click(td, i, j, val, oc) {
-        td.addEventListener("click", () => {
-            const leg = {
-                expiry: this.expiry,
-                strike: td.getAttribute("data-strike"),
-                type: this.cols_attributes.contracts[j],
-                value: val,
-                qty: (j === 1 || j === 4) ? -1 : 1,
-                offset: 0
-            }
-            console.log("leg=", leg);
-            oc.add_leg(leg);
-            let new_count;
-            let value_bid;
-            let value_ask;
-
-            const expiryIndex = oc.expiry.findIndex(e => e.expiry === this.expiry);
-
-            if (leg.type === "call") {
-                oc.expiry[expiryIndex].combined[i].call_count += leg.qty;
-                new_count = oc.expiry[expiryIndex].combined[i].call_count
-                value_bid = oc.expiry[expiryIndex].combined[i].call_bid;
-                value_ask = oc.expiry[expiryIndex].combined[i].call_ask;
-            }
-            else {
-                oc.expiry[expiryIndex].combined[i].put_count += leg.qty;
-                new_count = oc.expiry[expiryIndex].combined[i].put_count
-                value_bid = oc.expiry[expiryIndex].combined[i].put_bid;
-                value_ask = oc.expiry[expiryIndex].combined[i].put_ask;
-            }
-            let td_bid;
-            let td_ask;
-            ({ td_bid, td_ask } = get_td_bid_ask(leg.expiry, leg.strike, leg.type));
-
-
-            td_bid.textContent = ((new_count <= -1) ? (new_count + " x ") : "") + (value_bid * 1.0).toFixed(2)
-            td_ask.textContent = ((new_count >= 1) ? (new_count + " x ") : "") + (value_ask * 1.0).toFixed(2)
-
-            set_td_bid_ask_bgnd(td_bid, td_ask, new_count);
-
-            const btn = document.getElementById("tab-button-" + leg.expiry);
-            if (new_count == 0) {
-                btn.classList.remove("used");
-            }
-            else {
-                btn.classList.add("used");
-            }
-            console.log ("oc=", oc);
-            update_selected_table(oc);
-
-        });
-
+    onclick_td(td, row, j, val, oc) {
+        if (j === 0 || j === 3 || j === 6) {
+            return;
+        }
+        const type = (j === 1 || j === 2) ? "call" : "put";
     }
-    add_td_animation(td, row, j) {
+    animate_td(td, row, j) {
         td.addEventListener("mouseover", () => {
 
             if (j === 1 || j === 4) {
                 td.classList.add("bid_hover");
-                this.hoverLabel.style.display = "visible";
                 this.hoverLabel.textContent = "Sell";
                 this.hoverLabel.classList.add("sell");
             } else if (j === 2 || j === 5) {
                 td.classList.add("ask_hover");
-                this.hoverLabel.style.display = "visible";
                 this.hoverLabel.textContent = "Buy";
                 this.hoverLabel.classList.add("buy");
             }
@@ -623,17 +572,9 @@ class OptionChainTable {
             this.hoverLabel.classList.remove("sell");
             this.hoverLabel.classList.remove("buy");
         });
-        td.addEventListener("mousemove", (event) => {
-            this.hoverLabel.style.left = event.pageX + 10 + "px";
-            this.hoverLabel.style.top = event.pageY + 10 + "px";
-        });
-
-
-
-
     }
     decorate_strike_td(td, row) {
-        let closestStrike = 0;
+        let closestStrike=0;
         if (closestStrike === row.strike) {
             td.style.backgroundColor = "#000080";
         } else if (Math.abs(row.strike - this.referencePrice) <= this.sigma) {
@@ -645,7 +586,7 @@ class OptionChainTable {
         } else {
             td.style.backgroundColor = "#555555";
         }
-    }
+}
     format_td_as_na(td) {
         td.textContent = "N/A";
         td.classList.add("na");
@@ -703,23 +644,15 @@ async function add_option_chain_table(test_container, oc, expiry) {
 
     const headers = ["IV (mid)", "Call Bid", "Call Ask", "Strike", "Put Bid", "Put Ask", "IV (mid)"];
     const col_types = ["call-iv", "call-bid", "call-ask", "strike", "put-bid", "put-ask", "put-iv"];
-    const col_clickable = [false, true, true, false, true, true, false];
-    const contract = [null, "call", "call", null, "put", "put", null];
     const cursor_types = ["default", "pointer", "pointer", "default", "pointer", "pointer", "default"];
-    const cols_attributes = {
-        headers: headers,
-        types: col_types,
-        contracts: contract,
-        is_clickable: col_clickable,
-        cursor: cursor_types
-    }
-    if (1) {
-        let test_table = new OptionChainTable(cols_attributes, referencePrice, sigma, expiry);
+
+    if (0) {
+        let test_table = new OptionChainTable(headers, col_types, cursor_types, referencePrice, sigma, expiry);
         let combined = oc.get_combined_data(expiry);
         test_table.add_rows(oc);
         option_chain_container.appendChild(test_table.table);
     }
-    if (0) {
+    if (1) {
         const table = document.createElement("table");
         option_chain_container.appendChild(table);
 
@@ -880,19 +813,19 @@ async function add_option_chain_table(test_container, oc, expiry) {
         });
     }
     setTimeout(() => {
-        /*
-                update_oc_table(oc);
-                const rows = tbody.querySelectorAll("tr");
-                if (rows.length === 0) return;
-        
-                const targetRow = rows[closestIndex];
-                targetRow.scrollIntoView({ behavior: "auto", block: "center" });
-        
-                // Optional: highlight it
-                targetRow.style.backgroundColor = "#444";
-        */
-    }, 0);
 
+        update_oc_table(oc);
+        const rows = tbody.querySelectorAll("tr");
+        if (rows.length === 0) return;
+
+        const targetRow = rows[closestIndex];
+        targetRow.scrollIntoView({ behavior: "auto", block: "center" });
+
+        // Optional: highlight it
+        targetRow.style.backgroundColor = "#444";
+
+    }, 0);
+    
 
 }
 
@@ -1123,7 +1056,7 @@ function create_json_from_combo(oc) {
     json.simulation.min_price = 100;
     json.simulation.step = 0.5
     json.simulation.time_for_simulation = 15;
-    const remaining_days = 15; //new DateManager(expiry).remaining_days()
+    const remaining_days = new DateManager(expiry).remaining_days()
     json.simulation.time_to_expiry = remaining_days / 365.;
     json.ticker = oc.ticker;
 

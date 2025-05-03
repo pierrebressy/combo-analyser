@@ -1,26 +1,7 @@
 import { fetch_combo_templates } from './network.js';
-import {    loadJSONFromCookie } from './network.js';
+import { cookie_manager } from './cookie.js';
 
-export function getCookie(name) {
-    const cookies = document.cookie.split("; ");
-    for (let i = 0; i < cookies.length; i++) {
-        const [cookieName, cookieValue] = cookies[i].split("=");
-        if (cookieName === name) {
-            return decodeURIComponent(cookieValue);
-        }
-    }
-    return null;
-}
 
-export function setCookie(name, value, days) {
-    let expires = "";
-    if (days) {
-        const date = new Date();
-        date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
-        expires = "; expires=" + date.toUTCString();
-    }
-    document.cookie = name + "=" + encodeURIComponent(value) + expires + "; path=/";
-}
 
 function get_url_param(name) {
     return new URLSearchParams(window.location.search).get(name);
@@ -50,35 +31,35 @@ export class Environment {
 
     constructor(config) {
 
-        this.default_combo="LONG CALL";
+        this.default_combo = "LONG CALL";
         console.log("Environment constructor");
         console.log("config=", config);
         this.check_config(config);
         this.config = config;
 
         // uncomment to overide the combo to use, stored in a cookie
-        //setCookie("combo", "LONG CALL", 1);
-        //setCookie("combo", "LONG PUT", 1);
-        //setCookie("combo", "Combo Builder", 1);
+        //cookie_manager.set_cookie("combo", "LONG CALL", 1);
+        //cookie_manager.set_cookie("combo", "LONG PUT", 1);
+        //cookie_manager.set_cookie("combo", "Combo Builder", 1);
 
-        let combo = getCookie("combo");
+        let combo = cookie_manager.get_cookie("combo");
         console.log("**** combo=", combo);
 
-        if(combo!= null) {
+        if (combo != null) {
             console.log("Will use combo from cookie: ", combo);
         }
         else {
             combo = this.default_combo;
             console.log("No combo in cookie, using default combo", combo);
-            setCookie("combo", combo, 1);
+            cookie_manager.set_cookie("combo", combo, 1);
         }
 
-        this.config.active.combo=combo;
+        this.config.active.combo = combo;
 
 
-        if(combo == "Combo Builder") {
+        if (combo == "Combo Builder") {
             console.log("Combo Builder selected, loading from cookie");
-            let combo_builder = loadJSONFromCookie("combo-builder");
+            let combo_builder = cookie_manager.load_JSON_from_cookie("combo-builder");
             if (combo_builder) {
                 console.log("Combo builder loaded from cookie: ", combo_builder);
                 this.config.combos["Combo Builder"] = combo_builder;
@@ -90,10 +71,10 @@ export class Environment {
         // set the combo to the one selected
         this.combo = this.get_combo_params();
         if (this.combo == null) {
-            console.log("Error: combo "+combo+"not found in config");
-            this.config.active.combo=this.default_combo;
-            setCookie("combo", this.default_combo, 1);
-            console.log("setting cookie to "+this.default_combo);
+            console.log("Error: combo " + combo + "not found in config");
+            this.config.active.combo = this.default_combo;
+            cookie_manager.set_cookie("combo", this.default_combo, 1);
+            console.log("setting cookie to " + this.default_combo);
             this.combo = this.get_combo_params();
         }
 
@@ -190,7 +171,7 @@ export class Environment {
 
     set_combo(combo) {
         this.config.active.combo = combo;
-        setCookie("combo", combo, 1);
+        cookie_manager.set_cookie("combo", combo, 1);
     }
 
     // --- EXTRA DATA STORED IN ENVIRONMENT
@@ -283,7 +264,7 @@ export class Environment {
         }
         combos = combos.filter(name => name !== "Combo Builder");
 
-        let combo_builder = loadJSONFromCookie("combo-builder");
+        let combo_builder = cookie_manager.load_JSON_from_cookie("combo-builder");
         if (combo_builder) {
             combos.push("Combo Builder");
             this.config.combos["Combo Builder"] = combo_builder;

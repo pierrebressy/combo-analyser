@@ -52,6 +52,59 @@
                 "mean_volatility": 0.15,
                 "trade_open_by": "2025-03-03"
             }
+        },
+        "SHORT CALL": {
+            "legs": [
+                {
+                    "expiration_offset": 0,
+                    "qty": -1,
+                    "iv": 0.10,
+                    "strike": 180,
+                    "type": "call",
+                    "price": 19.92
+                }
+            ],
+            "name": "Single CALL",
+            "simulation": {
+                "expiration_offset": 0,
+                "interest_rate": 0,
+                "max_price": 210,
+                "mean_volatility": 0.3,
+                "min_price": 160,
+                "step": 0.1,
+                "time_for_simulation": 15,
+                "time_to_expiry": 35
+            },
+            "ticker": "AAPL"
+        },
+        "SHORT PUT": {
+            "legs": [
+                {
+                    "expiration_offset": 0,
+                    "qty": -1,
+                    "iv": 0.4,
+                    "strike": 200,
+                    "type": "put",
+                    "price": 10.92
+                }
+            ],
+            "name": "Single PUT",
+            "simulation": {
+                "expiration_offset": 0,
+                "interest_rate": 0,
+                "max_price": 230,
+                "mean_volatility": 0.20,
+                "min_price": 150,
+                "step": 0.1,
+                "time_for_simulation": 14,
+                "time_to_expiry": 14
+            },
+            "ticker": "AAPL",
+            "trade": {
+                "expiration_date": "2025-04-17",
+                "mean_volatility": 0.15,
+                "trade_open_by": "2025-03-03"
+            }
         }
     },
     "combos-zen": {

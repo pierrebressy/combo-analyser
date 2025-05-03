@@ -1,0 +1,52 @@
+{
+    "XYZ": {
+        "20250522": {
+            "strikes-xxx": [
+                100.0,
+                110.0,
+                120.0
+            ],
+            "calls": [
+                {
+                    "strike": 95.0,
+                    "price": 140.0,
+                    "bid_price": 138.0,
+                    "ask_price": 142.0
+                },
+                {
+                    "strike": 110.0,
+                    "price": 141.0
+                },
+                {
+                    "strike": 120.0,
+                    "price": 161.0
+                },
+                {
+                    "strike": 125.0,
+                    "price": 161.0
+                }
+            ],
+            "puts": [
+                {
+                    "strike": 90.0,
+                    "price": 50.0
+                },
+                {
+                    "strike": 97.0,
+                    "price": 79.0,
+                    "bid_price": 78.0,
+                    "ask_price": 80.0
+                },
+                {
+                    "strike": 100.0,
+                    "price": 60.0
+                },
+                {
+                    "strike": 110.0,
+                    "price": 59.0
+                }
+            ]
+        }
+
+    }
+}

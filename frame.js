@@ -18,7 +18,7 @@ import { get_combo_changed } from './global.js';
 import { get_simulated_underlying_price_changed } from './global.js';
 import { get_use_local } from './global.js';
 import { add_option_chain_container_in_tab_container } from './option_chain.js';
-import { getCookie, setCookie } from './network.js';
+import { cookie_manager } from './cookie.js';   
 
 let tabs_manager;
 
@@ -43,7 +43,7 @@ export function display_combos_list() {
                 console.log("Remote config updated", env.config);
                 //env = 0
             }
-            setCookie("combo", this.value, 365);
+            cookie_manager.set_cookie("combo", this.value, 365);
             location.reload();
             this.value=getCookie("combo");
             console.log("reloadWithParam combo=", this.value);
@@ -666,7 +666,6 @@ function create_theme_container() {
     return theme_container;
 }
 
-
 function create_right_container(tab_active) {
     let container;
     const right_container = document.createElement('div');
@@ -702,8 +701,6 @@ function create_right_container(tab_active) {
     return right_container;
 
 }
-
-
 
 export function create_main_frame(tab_active) {
 
