@@ -1,9 +1,9 @@
-import { compute_p_and_l_data_for_price, compute_greeks_data_for_price } from './2d_graph.js';
-import { env } from './main_script.js';
+import { compute_p_and_l_data_for_price, compute_data_to_display, compute_greeks_data_for_price } from './2d_graph.js';
 import { get_dark_mode } from './global.js';
 import { get_two_colors_cmap } from './global.js';
 import { get_show_hplane } from './global.js';
 import { get_show_3dbox } from './global.js';
+import { global_data } from './main_script.js';
 
 export let x_camera = 20;
 export let y_camera = 20;
@@ -246,28 +246,29 @@ function create_reference_arrows(z) {
 }
 function create_pl_vs_time_and_price_surface() {
     let surface = new PLSurface();
-    surface.set_x_limits(env.get_simul_min_price_of_combo(), env.get_simul_max_price_of_combo(), 20);
-    surface.set_y_limits(0, env.get_time_to_expiry_of_combo(), 20);
-    surface.prepare_dataset([env.get_pl_at_init_data(), env.get_pl_at_sim_data(), env.get_pl_at_exp_data()]);
+    compute_data_to_display();
+    surface.set_x_limits(global_data.get_simul_min_price_of_combo(), global_data.get_simul_max_price_of_combo(), 20);
+    surface.set_y_limits(0, global_data.get_time_to_expiry_of_active_combo(), 20);
+    surface.prepare_dataset([global_data.get_pl_at_init_data(), global_data.get_pl_at_sim_data(), global_data.get_pl_at_exp_data()]);
     return [surface.run(), surface.get_zero_point()];
 }
 function create_greek_vs_time_and_price_surface(greek_index) {
     let surface = new GreekSurface();
-    surface.set_x_limits(env.get_simul_min_price_of_combo(), env.get_simul_max_price_of_combo(), 20);
-    surface.set_y_limits(0, env.get_time_to_expiry_of_combo(), 20);
-    surface.prepare_dataset([env.get_greeks_data()[greek_index]]);
+    surface.set_x_limits(global_data.get_simul_min_price_of_combo(), global_data.get_simul_max_price_of_combo(), 20);
+    surface.set_y_limits(0, global_data.get_time_to_expiry_of_active_combo(), 20);
+    surface.prepare_dataset([global_data.get_greeks_data()[greek_index]]);
     return [surface.run(greek_index), surface.get_zero_point()];
 }
 function create_specific_lines() {
 
     let lines = new THREE.Group();
 
-    const min_price = env.get_simul_min_price_of_combo();
-    const max_price = env.get_simul_max_price_of_combo();
-    const min_p_and_l = env.get_min_of_dataset();
-    const max_p_and_l = env.get_max_of_dataset();
+    const min_price = global_data.get_simul_min_price_of_combo();
+    const max_price = global_data.get_simul_max_price_of_combo();
+    const min_p_and_l = global_data.get_min_of_dataset();
+    const max_p_and_l = global_data.get_max_of_dataset();
     const min_time = 0;
-    const max_time = env.get_time_to_expiry_of_combo();
+    const max_time = global_data.get_time_to_expiry_of_active_combo();
     let time_to_xscale = d3.scaleLinear()
         .domain([max_time, min_time])
         .range([-ref_plane_half_size, ref_plane_half_size]);
@@ -285,31 +286,31 @@ function create_specific_lines() {
     const black_points = [];
     const orange_points = [];
     let line_count = 0;
-    const num_points = Math.round(env.get_pl_at_exp_data().length / 50);
+    const num_points = Math.round(global_data.get_pl_at_exp_data().length / 50);
     let x = time_to_xscale(0);
-    const y2 = price_to_yscale(env.get_pl_at_exp_data()[0].x);
-    let z2 = env.get_pl_at_exp_data()[0].y * cameraPosition.z_zoom_factor;
+    const y2 = price_to_yscale(global_data.get_pl_at_exp_data()[0].x);
+    let z2 = global_data.get_pl_at_exp_data()[0].y * cameraPosition.z_zoom_factor;
     black_points.push(new THREE.Vector3(x, y2, zscale(z2)));
-    x = time_to_xscale(env.get_time_for_simulation_of_combo());
-    z2 = env.get_pl_at_sim_data()[0].y * cameraPosition.z_zoom_factor;
+    x = time_to_xscale(global_data.get_time_for_simulation_of_active_combo());
+    z2 = global_data.get_pl_at_sim_data()[0].y * cameraPosition.z_zoom_factor;
     green_points.push(new THREE.Vector3(x, y2, zscale(z2)));
-    x = time_to_xscale(env.get_time_to_expiry_of_combo());
-    z2 = env.get_pl_at_init_data()[0].y * cameraPosition.z_zoom_factor;
+    x = time_to_xscale(global_data.get_time_to_expiry_of_active_combo());
+    z2 = global_data.get_pl_at_init_data()[0].y * cameraPosition.z_zoom_factor;
     orange_points.push(new THREE.Vector3(x, y2, zscale(z2)));
 
-    for (let i = 0; i < env.get_pl_at_exp_data().length - num_points; i += num_points) {
+    for (let i = 0; i < global_data.get_pl_at_exp_data().length - num_points; i += num_points) {
         line_count++;
         let x = time_to_xscale(0);
-        const y2 = price_to_yscale(env.get_pl_at_exp_data()[i + num_points].x);
-        let z2 = env.get_pl_at_exp_data()[i + num_points].y * cameraPosition.z_zoom_factor;
+        const y2 = price_to_yscale(global_data.get_pl_at_exp_data()[i + num_points].x);
+        let z2 = global_data.get_pl_at_exp_data()[i + num_points].y * cameraPosition.z_zoom_factor;
         black_points.push(new THREE.Vector3(x, y2, zscale(z2)));
 
-        x = time_to_xscale(env.get_time_for_simulation_of_combo());
-        z2 = env.get_pl_at_sim_data()[i + num_points].y * cameraPosition.z_zoom_factor;
+        x = time_to_xscale(global_data.get_time_for_simulation_of_active_combo());
+        z2 = global_data.get_pl_at_sim_data()[i + num_points].y * cameraPosition.z_zoom_factor;
         green_points.push(new THREE.Vector3(x, y2, zscale(z2)));
 
-        x = time_to_xscale(env.get_time_to_expiry_of_combo());
-        z2 = env.get_pl_at_init_data()[i + num_points].y * cameraPosition.z_zoom_factor;
+        x = time_to_xscale(global_data.get_time_to_expiry_of_active_combo());
+        z2 = global_data.get_pl_at_init_data()[i + num_points].y * cameraPosition.z_zoom_factor;
         orange_points.push(new THREE.Vector3(x, y2, zscale(z2)));
 
     }
@@ -493,6 +494,9 @@ function cleanupThree() {
 
 
 export function update_3d_view() {
+
+
+
     const display_reference_plane = get_show_hplane();
     const display_reference_arrows = get_show_hplane();
     const display_curve = true;
@@ -502,7 +506,17 @@ export function update_3d_view() {
 
     cleanupThree();
 
-    const container = document.getElementById('view3d-graph-container');
+    let width = 0;
+    let height = 0;
+    width = global_data.get_window_width()
+    height = global_data.get_window_height()
+    //console.log("view3d Width:", width);
+    //console.log("view3d Height:", height);
+
+    //let container = document.getElementById('view3d-graph-container');
+    let container = document.getElementById('view3d-container');
+
+
     // Create a canvas renderer and attach it to the container
     scene = new THREE.Scene();
 
@@ -519,25 +533,25 @@ export function update_3d_view() {
     camera.position.set(cameraPosition.x, cameraPosition.y, cameraPosition.z);  // Camera at (10,10,1)
     camera.lookAt(0, 0, 0);          // Looking at (0,0,0)
 
-    if (env.get_3d_view() == "P/L")
+    if (global_data.get_3d_view() == "P/L")
         [curve_data, zero_point] = create_pl_vs_time_and_price_surface();
-    else if (env.get_3d_view() == "Delta")
+    else if (global_data.get_3d_view() == "Delta")
         [curve_data, zero_point] = create_greek_vs_time_and_price_surface(1);
-    else if (env.get_3d_view() == "Gamma")
+    else if (global_data.get_3d_view() == "Gamma")
         [curve_data, zero_point] = create_greek_vs_time_and_price_surface(2);
-    else if (env.get_3d_view() == "Theta")
+    else if (global_data.get_3d_view() == "Theta")
         [curve_data, zero_point] = create_greek_vs_time_and_price_surface(3);
-    else if (env.get_3d_view() == "Vega")
+    else if (global_data.get_3d_view() == "Vega")
         [curve_data, zero_point] = create_greek_vs_time_and_price_surface(4);
-    else if (env.get_3d_view() == "Rho")
+    else if (global_data.get_3d_view() == "Rho")
         [curve_data, zero_point] = create_greek_vs_time_and_price_surface(5);
     else {
-        console.log("Error: " + env.get_3d_view() + " not found");
+        console.log("Error: " + global_data.get_3d_view() + " not found");
         return;
     }
     //console.log(zero_point)
     //console.log(curve_data)
-    display_specific_lines = env.get_3d_view() == "P/L" ? display_specific_lines : false;
+    display_specific_lines = global_data.get_3d_view() == "P/L" ? display_specific_lines : false;
 
     // create the reference plane XY
     let reference_plane = create_reference_plane(zero_point.z);
@@ -612,7 +626,7 @@ export function update_3d_view() {
         const ctx_3 = canvas_3.getContext('2d');
         ctx_3.font = '48px Arial';
         ctx_3.fillStyle = 'blue';
-        ctx_3.fillText(env.get_3d_view(), canvas_3.width / 2, 32);
+        ctx_3.fillText(global_data.get_3d_view(), canvas_3.width / 2, 32);
         const texture_3 = new THREE.CanvasTexture(canvas_3);
         const material_3 = new THREE.SpriteMaterial({ map: texture_3, transparent: true });
         const sprite_3 = new THREE.Sprite(material_3);
@@ -634,7 +648,7 @@ export function update_3d_view() {
 
 
     renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(container.clientWidth, container.clientHeight);
+    renderer.setSize(width, height);
     container.appendChild(renderer.domElement);
 
 

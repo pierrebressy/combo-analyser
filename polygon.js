@@ -1,9 +1,9 @@
-export let log_container = null;  // Initialize log_container to null
+export let polygon_container = null; 
 
-export function add_log_container_in_tab_container(tab_container) {
-  log_container = document.createElement('div');
-  log_container.classList.add('log-container');
-  log_container.id = 'log-container';
+export function add_polygon_container_in_tab_container(tab_container) {
+  polygon_container = document.createElement('div');
+  polygon_container.classList.add('polygon-container');
+  polygon_container.id = 'polygon-container';
 
   // Create header container (for heading + button)
   const headerContainer = document.createElement('div');
@@ -14,17 +14,17 @@ export function add_log_container_in_tab_container(tab_container) {
   // Heading
   const heading = document.createElement('h2');
   heading.classList.add('std-text');
-  heading.textContent = 'LOG';
+  heading.textContent = 'POLYGON.IO ❖';
 
   // Clear Button
   const clearBtn = document.createElement('button');
-  clearBtn.textContent = 'Clear Log';
-  clearBtn.classList.add('clear-log-btn');
+  clearBtn.textContent = 'Button Polygon';
+  clearBtn.classList.add('clear-poly-btn');
   clearBtn.onclick = () => {
     // Remove all children except the headerContainer
-    [...log_container.children].forEach(child => {
+    [...polygon_container.children].forEach(child => {
       if (child !== headerContainer) {
-        log_container.removeChild(child);
+        polygon_container.removeChild(child);
       }
     });
   };
@@ -32,21 +32,21 @@ export function add_log_container_in_tab_container(tab_container) {
   // Assemble header
   headerContainer.appendChild(heading);
   headerContainer.appendChild(clearBtn);
-  log_container.appendChild(headerContainer);
+  polygon_container.appendChild(headerContainer);
 
   // Optional placeholder paragraph
   const paragraph = document.createElement('p');
   paragraph.classList.add('std-text');
   paragraph.textContent = 'Here goes your content.';
-  //log_container.appendChild(paragraph);
+  polygon_container.appendChild(paragraph);
 
   // Add to tab container
-  tab_container.appendChild(log_container);
+  tab_container.appendChild(polygon_container);
 }
 
 
-export function addLog(...args) {
-  if (log_container === null) {
+export function addPolygonLog(...args) {
+  if (polygon_container === null) {
     //console.error("Log container is not initialized.");
     return;
   }
@@ -118,5 +118,5 @@ if (isBlinker) {
   //logMessage.textContent = `[${timestamp}] ${formattedMessage}`;
   //logMessage.textContent = formattedMessage;
   
-  log_container.appendChild(logMessage);
+  polygon_container.appendChild(logMessage);
 }

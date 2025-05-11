@@ -55,6 +55,7 @@ export function display_combos_list() {
         .text("Choose combo: ");
 
 }
+
 export function display_local_status() {
 
     const local_status_container = d3.select("#local-status-container")
@@ -126,6 +127,7 @@ export function display_local_status() {
     });
 
 }
+
 export function display_days_left_slider() {
 
     //console.log("display_days_left_slider",global_data);
@@ -154,6 +156,7 @@ export function display_days_left_slider() {
     });
 
 }
+
 export function display_checkbox_for_volatility_mode() {
 
     const volatility_main_container = d3.select("#volatility-main-container")
@@ -223,6 +226,7 @@ export function display_checkbox_for_volatility_mode() {
         draw_graph();
     });
 }
+
 export function display_volatility_sliders() {
 
     const per_leg_volatility_container = d3.select("#per-leg-volatility-container")
@@ -281,6 +285,7 @@ export function display_volatility_sliders() {
         draw_graph();
     });
 }
+
 export function display_sigma_selector() {
     const sigma_selector_container = d3.select("#sigma-selector-container")
     sigma_selector_container.selectAll("*").remove();
@@ -334,12 +339,14 @@ export function display_sigma_selector() {
         .text(d => d);
 
 }
+
 function handleRadioChange() {
     if (this.checked) {
         global_data.set_3d_view(this.value);
         update_3d_view();
     }
 }
+
 function add_view3d_control_sliders(view3d_controler_container) {
     let zoomGroup = document.createElement('div');
     zoomGroup.style.display = "flex";
@@ -520,6 +527,7 @@ function add_view3d_control_sliders(view3d_controler_container) {
     zoomGroup.appendChild(cmapStyleContainer);
 
 }
+
 function add_view3d_controler_container_in_view3d_container(view3d_container) {
     const view3d_controler_container = document.createElement('div');
     view3d_controler_container.classList.add('view3d-controler-container');
@@ -539,6 +547,7 @@ function add_view3d_controler_container_in_view3d_container(view3d_container) {
     add_view3d_control_sliders(view3d_controler_container);
 
 }
+
 function add_view3d_control_radio(view3d_controler_container) {
     let radioGroup = document.createElement('div');
     radioGroup.id = 'radio-group';
@@ -553,6 +562,7 @@ function add_view3d_control_radio(view3d_controler_container) {
     new RadioButton('3d-options', 'Rho', handleRadioChange).appendTo(radioGroup);
     view3d_controler_container.appendChild(radioGroup);
 }
+
 function add_view3d_gragh_container_in_view3d_container(view3d_container) {
     const view3d_graph_container = document.createElement('div');
     view3d_graph_container.classList.add('view3d-graph-container');
@@ -568,6 +578,26 @@ function add_view3d_gragh_container_in_view3d_container(view3d_container) {
 
     view3d_container.appendChild(view3d_graph_container);
 }
+
+function create_left_container() {
+
+    const leftContainer = document.createElement('div');
+    leftContainer.classList.add('left-container');
+    leftContainer.id = 'left-container';
+
+    const leftContent = document.createElement('div');
+    const leftHeading = document.createElement('h2');
+    leftHeading.textContent = 'LEFT CONTAINER';
+    const leftParagraph = document.createElement('p');
+    leftParagraph.textContent = 'Here goes your left content.';
+    leftContent.appendChild(leftHeading);
+    leftContent.appendChild(leftParagraph);
+
+    leftContainer.appendChild(leftContent);
+
+    return leftContainer;
+}
+
 function add_parameters_container_in_tab_container(tab_container) {
     let param_container = document.createElement('div');
     param_container.classList.add('param-container');
@@ -630,6 +660,92 @@ function add_parameters_container_in_tab_container(tab_container) {
     tab_container.appendChild(param_container);
 
 }
+
+function create_theme_container() {
+    const theme_container = document.createElement('text');
+    theme_container.classList.add('theme-container');
+    theme_container.id = 'theme-container';
+    let heading = document.createElement('text');
+    heading.classList.add('std-text');
+    heading.textContent = get_dark_mode() == "DARK" ? "🌞 " : "🌙 "
+    heading.style.cursor = "pointer";
+    heading.style.fontSize = "20px";
+    heading.onclick = () => {
+        set_dark_mode(get_dark_mode() == "DARK" ? 0 : 1);
+        heading.textContent = get_dark_mode() == "DARK" ? "🌞 " : "🌙 "
+        d3.select("body").classed("dark-mode", get_dark_mode() == "DARK");
+        d3.select("body").classed("light-mode", get_dark_mode() != "DARK");
+        update_3d_view();
+    }
+    theme_container.appendChild(heading);
+    return theme_container;
+}
+
+function create_right_container(tab_active) {
+    let container;
+    const right_container = document.createElement('div');
+    right_container.classList.add('right-container');
+    right_container.id = 'right-container';
+
+    const tabs_container = document.createElement('div');
+    tabs_container.classList.add('tabs-container');
+    tabs_container.id = 'tabs-container';
+    right_container.appendChild(tabs_container);
+
+    tabs_manager = new TabsManager(tabs_container, "main-right-tabs");
+
+    tabs_manager.tabs_selector_container.appendChild(create_theme_container());
+
+    container = tabs_manager.add_tab('P/L Graph', 'pl');
+    container = tabs_manager.add_tab('3D View', 'view3d', update_3d_view);
+    add_view3d_controler_container_in_view3d_container(container);
+    add_view3d_gragh_container_in_view3d_container(container);
+
+
+    container = tabs_manager.add_tab('Combo Builder', 'option-chain');
+    add_option_chain_container_in_tab_container(container);
+
+    container = tabs_manager.add_tab('Parameters', 'parameters');
+    add_parameters_container_in_tab_container(container);
+
+    container = tabs_manager.add_tab('Logs', 'log');
+    add_log_container_in_tab_container(container);
+
+    container = tabs_manager.add_tab('Polygon.io', 'polygon');
+    add_polygon_container_in_tab_container(container);
+
+    tabs_manager.activate_last_tab();
+
+    return right_container;
+
+}
+
+export function create_main_frame_original() {
+
+    let tab_active = cookie_manager.get_cookie("tab_active");
+    if (tab_active === undefined) {
+        tab_active = global_data.get_tab_active();
+        cookie_manager.set_cookie("tab_active", tab_active, 7);
+    }
+
+    const body = document.body;
+    let leftContainer = create_left_container();
+    let rightContainer = create_right_container(tab_active);
+    body.appendChild(leftContainer);
+    body.appendChild(rightContainer);
+
+    if (get_dark_mode() == "DARK") {
+        d3.select("body").classed("dark-mode", true);
+        d3.select("body").classed("light-mode", false);
+    } else {
+        d3.select("body").classed("dark-mode", false);
+        d3.select("body").classed("light-mode", true);
+    }
+    addLog("TEST", { error: true, blink: true });
+    addPolygonLog("TEST", { warning: true, blink: true });
+    return;
+}
+
 export function get_container_size(container_id) {
     const container = d3.select(container_id);
     let width = 0;
@@ -643,6 +759,7 @@ export function get_container_size(container_id) {
     //console.log("Height:", rect.height);
     return { width: width, height: height };
 }
+
 function insert_text_header(container, text) {
 
     const head_container = document.createElement('div');
@@ -657,16 +774,24 @@ function insert_text_header(container, text) {
     head_text.textContent = text;
     container.appendChild(head_text);
 }
+
 function update_right_container_size() {
-    let right_size = get_container_size("#pl-container");
+    let right_size = get_container_size("#pl-right-header");
     //console.log("update_right_container_size -> right_size", right_size);
     global_data.update_window_data(right_size);
     display_pl_tab();
+
 }
-function add_left_and_right_containers_in_container(parent_container) {
+
+function add_view3d_in_view3d_container(view3D_container) {
+    add_view3d_controler_container_in_view3d_container(view3D_container);
+    add_view3d_gragh_container_in_view3d_container(view3D_container);
+}
+
+function add_left_and_right_containers_in_pl_container(pl_container) {
     const pl_headerContainer = document.createElement('div');
     pl_headerContainer.classList.add('pl-split-container');
-    parent_container.appendChild(pl_headerContainer);
+    pl_container.appendChild(pl_headerContainer);
 
     const leftContainer = document.createElement('div');
     leftContainer.classList.add('left-container');
@@ -678,6 +803,7 @@ function add_left_and_right_containers_in_container(parent_container) {
     rightContainer.id = 'pl-right-header';
     pl_headerContainer.appendChild(rightContainer);
 }
+
 function prepare_left_container() {
     let left_container = d3.select("#pl-left-header");
     left_container.selectAll("*").remove();
@@ -735,20 +861,23 @@ function prepare_right_container() {
     update_3d_view();
 }
 export function display_pl_tab() {
+
     const isHidden = d3.select("#pl-container").classed("hidden");
     //console.log("Is hidden by class:", isHidden);
     if (!isHidden) {
-        let right_size = get_container_size("#pl-container");
+        let right_size = get_container_size("#pl-right-header");
         //console.log("[display] -> right_size", right_size);
         global_data.update_window_data(right_size);
     }
 
+    prepare_left_container();
     prepare_right_container();
 }
 function resize_display() {
-    //console.log("[resize_display] Resizing display");
+    console.log("[resize_display] Resizing display");
     display_pl_tab();
 }
+
 export function create_main_frame() {
 
     if (get_dark_mode() == "DARK") {
@@ -766,25 +895,22 @@ export function create_main_frame() {
     main_container.id = 'main-container';
     body.appendChild(main_container);
 
-    let main_tabs_manager = new TabsManager(main_container, "main");
+    let main_tabs_manager = new TabsManager(main_container, "main-tabs");
 
     let graphs_tab_container = main_tabs_manager.add_tab('Graphs', 'graphs', update_right_container_size);
 
-    add_left_and_right_containers_in_container(graphs_tab_container);
-    prepare_left_container();
-
-    const right_container = document.getElementById("pl-right-header");
-    let graphs_tabs_manager = new TabsManager(right_container, "graphs");
-    let pl_container = graphs_tabs_manager.add_tab('P/L', 'pl', draw_graph);
+    let graphs_tabs_manager = new TabsManager(graphs_tab_container, "graphs-tabs");
+    let pl_container = graphs_tabs_manager.add_tab('P/L', 'pl');
     let view3D_container = graphs_tabs_manager.add_tab('3D View', 'view3d');
-    add_view3d_controler_container_in_view3d_container(view3D_container);
-    add_view3d_gragh_container_in_view3d_container(view3D_container);
 
+    add_left_and_right_containers_in_pl_container(pl_container);
+    add_view3d_in_view3d_container(view3D_container);
 
     let combo_builder_tab_container = main_tabs_manager.add_tab('Combo Builder', 'combo-builder');
     let parameters_tab_container = main_tabs_manager.add_tab('Parameters', 'parameters');
     let log_tab_container = main_tabs_manager.add_tab('Log', 'log');
     let polygon_tab_container = main_tabs_manager.add_tab('Polygon', 'polygon');
+
 
     add_option_chain_container_in_tab_container(combo_builder_tab_container);
     add_parameters_container_in_tab_container(parameters_tab_container);
@@ -796,12 +922,15 @@ export function create_main_frame() {
     main_tabs_manager.activate_last_tab();
     graphs_tabs_manager.activate_last_tab();
 
+    display_pl_tab();
     window.addEventListener("resize", resize_display);
+
     addLog("TEST", { error: true, blink: true });
     addPolygonLog("TEST", { warning: true, blink: true });
 
 
 }
+
 function setup_container_resize_observer(container) {
     const observer = new MutationObserver((mutationsList) => {
         for (const mutation of mutationsList) {
@@ -825,7 +954,7 @@ function setup_container_resize_observer(container) {
     });
 
     function onContainerVisible() {
-        let right_size = get_container_size("#pl-container");
+        let right_size = get_container_size("#pl-right-header");
         //console.log("-> right_size", right_size);
         global_data.update_window_data(right_size);
 

@@ -1,6 +1,4 @@
-
-
-.log-container {
+.polygon-container {
   padding: 10px;
   background-color: var(--matrix-bg);
   border: 1px solid var(--matrix-dim);
@@ -13,7 +11,7 @@
   box-shadow: 0 0 10px var(--matrix-green);
 }
 
-.clear-log-btn {
+.clear-polygon-btn {
   background-color: transparent;
   color: var(--matrix-green);
   border: 1px solid var(--matrix-green);
@@ -24,38 +22,9 @@
   transition: all 0.2s ease-in-out;
 }
 
-.clear-log-btn:hover {
+.clear-polygon-btn:hover {
   background-color: var(--matrix-hover);
   color: #000;
   box-shadow: 0 0 5px var(--matrix-green);
-}
-
-.log-line {
-  padding: 0px 0;
-}
-
-.log-line.warn {
-  color: var(--matrix-text-warning);
-  font-weight: bold ;
-}
-
-.log-line.error {
-  color: var(--matrix-text-error);
-  font-weight: bold ;
-}
-
-.log-line.blink {
-  animation: blink-animation 1s steps(2, start) infinite;
-}
-
-@keyframes blink-animation {
-  0%   { opacity: 0; }
-  20%  { opacity: 0; }
-  21%  { opacity: 1; }
-  100% { opacity: 1; }
-}
-
-.log-line.timestamp {
-  color: var(--matrix-dim);
 }
 

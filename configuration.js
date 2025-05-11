@@ -38,12 +38,12 @@ export class Environment {
         this.config = config;
 
         // uncomment to overide the combo to use, stored in a cookie
-        //cookie_manager.set_cookie("combo", "LONG CALL", 1);
-        //cookie_manager.set_cookie("combo", "LONG PUT", 1);
-        //cookie_manager.set_cookie("combo", "Combo Builder", 1);
+        //cookie_manager.set_cookie("combo_name", "LONG CALL", 1);
+        //cookie_manager.set_cookie("combo_name", "LONG PUT", 1);
+        //cookie_manager.set_cookie("combo_name", "Combo Builder", 1);
 
-        let combo = cookie_manager.get_cookie("combo");
-        console.log("**** combo=", combo);
+        let combo = cookie_manager.get_cookie("combo_name");
+        console.log("**** combo_name=", combo);
 
         if (combo != null) {
             console.log("Will use combo from cookie: ", combo);
@@ -51,7 +51,7 @@ export class Environment {
         else {
             combo = this.default_combo;
             console.log("No combo in cookie, using default combo", combo);
-            cookie_manager.set_cookie("combo", combo, 1);
+            cookie_manager.set_cookie("combo_name", combo, 1);
         }
 
         this.config.active.combo = combo;
@@ -73,7 +73,7 @@ export class Environment {
         if (this.combo == null) {
             console.log("Error: combo " + combo + "not found in config");
             this.config.active.combo = this.default_combo;
-            cookie_manager.set_cookie("combo", this.default_combo, 1);
+            cookie_manager.set_cookie("combo_name", this.default_combo, 1);
             console.log("setting cookie to " + this.default_combo);
             this.combo = this.get_combo_params();
         }

@@ -1,10 +1,12 @@
 import { cookie_manager } from './cookie.js';
 
+let tab_contanier_id=1;
 
 export class TabsManager {
-  constructor(main_container, manager_name) {
 
-    this.main_container = main_container;
+  constructor(parent_container, manager_name) {
+
+    this.parent_container = parent_container;
     this.selectors = [];
     this.containers = [];
     this.manager_name = manager_name;
@@ -12,18 +14,21 @@ export class TabsManager {
     this.tabs_selector_container = document.createElement('div');
     this.tabs_selector_container.classList.add('tabs-selector-container');
     this.tabs_selector_container.id = manager_name + '-tabs-selector-container';
-    this.main_container.appendChild(this.tabs_selector_container);
+    this.parent_container.appendChild(this.tabs_selector_container);
 
     this.tab_container = document.createElement('div');
-    this.tab_container.classList.add('tab-container');
-    this.tab_container.id = 'tab-container';
-    this.main_container.appendChild(this.tab_container);
+    this.tab_container.classList.add('tabs-container');
+    this.tab_container.id = `tabs-container-${tab_contanier_id}`;
+    tab_contanier_id++;
+    this.parent_container.appendChild(this.tab_container);
 
   }
 
   add_tab(tab_label, tab_name, callback, params) {
-    const tab_class_name = tab_name + '-tab-container';
+
+    const tab_class_name = tab_name + '-tabs-container';
     const class_name = tab_name + '-container';
+    //console.log("[add_tab] tab_label=", tab_label, "tab_name=", tab_name, "class_name=", class_name);
     let selector = this.add_tab_selector(tab_label, tab_class_name, callback, params);
     this.selectors.push({
       selector: selector,
@@ -50,19 +55,30 @@ export class TabsManager {
   activate_tab(selector_name) {
     this.selectors.forEach(selector => {
       if (selector.name === selector_name) {
+        //console.log("[activate_tab] A1 selector=", selector.selector.classList);
         selector.selector.classList.add('active');
+        selector.selector.classList.add('selected');
+        //console.log("[activate_tab] A2 selector=", selector.selector.classList);
         cookie_manager.set_cookie(this.manager_name, selector_name, 7);
       }
       else {
+        //console.log("[activate_tab] R1 selector=", selector.selector.classList);
         selector.selector.classList.remove('active');
+        selector.selector.classList.remove('selected');
+        //console.log("[activate_tab] R2 selector=", selector.selector.classList);
       }
     });
+    //console.log(this.containers);
     this.containers.forEach(container => {
+      //console.log(container);
+      //console.log("[activate_tab] container.name=", container.name, "selector_name=", selector_name);
       if (container.name === selector_name) {
-        container.container.classList.remove('hidden');
+        //console.log("[activate_tab] removing hidden for ", container.class_name);
+        document.getElementById(container.class_name).classList.remove("hidden");
       }
       else {
-        container.container.classList.add('hidden');
+        //console.log("[activate_tab] adding hidden for ", container.class_name);
+        document.getElementById(container.class_name).classList.add("hidden");
       }
     }
     );
@@ -74,8 +90,10 @@ export class TabsManager {
     //console.log("[get_last_active_tab] last_active_tab=", last_active_tab);
     if (last_active_tab === undefined) {
       last_active_tab = this.selectors[0].name;
+      //console.log("[get_last_active_tab] last_active_tab undefined, set to =", last_active_tab);
       cookie_manager.set_cookie(this.manager_name, last_active_tab, 7);
     }
+    //console.log("[get_last_active_tab] returning ", last_active_tab);
     return last_active_tab;
   }
 
@@ -89,7 +107,7 @@ export class TabsManager {
     button.classList.add('tab-button');
     // set the id with the tab_name chars from 0 too 8
 
-    button.setAttribute("id", 'tab-button-' + tab_name.slice(0, 8));
+    button.setAttribute("id", 'button-tab-' + tab_name);//.slice(0, 8));
     button.textContent = tab_name;
     button.onclick = () => this.showTab(button, class_name, tab_name, callback, params);
     this.tabs_selector_container.appendChild(button);
@@ -97,6 +115,7 @@ export class TabsManager {
   }
 
   add_tab_container(tab_name, class_name) {
+    //console.log("[add_tab_container]"+tab_name, class_name);
     let container = document.createElement('div');
     container.classList.add(class_name);
     container.classList.add('hidden');
@@ -107,8 +126,10 @@ export class TabsManager {
 
   showTab(button, tabId, tab_name, callback, params) {
     this.activate_tab(tab_name);
-    if (callback)
+    if (callback) {
       callback(params);
+
+    }
     return;
   }
 

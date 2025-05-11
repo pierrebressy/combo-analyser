@@ -42,7 +42,7 @@ class OptionChain {
         this.chain = chain;
         this.referencePrice = chain.last_price;
         this.legs = [];
-        if(1) { // 0: reset leg
+        if (1) { // 0: reset leg
             let leg_from_cookie = cookie_manager.load_JSON_from_cookie(this.ticker + "-legs");
             if (leg_from_cookie !== null) {
                 this.legs = leg_from_cookie;
@@ -54,10 +54,10 @@ class OptionChain {
             chain = this.get_chain_for_expiry(expiry)
             let calls = chain.calls;
             let puts = chain.puts;
-            addLog("..... calls=", calls);
-            addLog("..... puts=", puts);
+            //addLog("..... calls=", calls);
+            //addLog("..... puts=", puts);
 
-            addLog("----");
+            //addLog("----");
             // Step 1: Get all unique strikes from both arrays
             const allStrikes = Array.from(new Set([
                 ...calls.map(c => c.strike),
@@ -87,9 +87,9 @@ class OptionChain {
                 ask_price: putAskPrices[strike] ?? null
             }));
 
-            addLog("full_calls:", full_calls);
-            addLog("full_puts:", full_puts);
-            addLog("----");
+            //("full_calls:", full_calls);
+            //addLog("full_puts:", full_puts);
+            //addLog("----");
 
 
 
@@ -98,7 +98,7 @@ class OptionChain {
             //console.log("time_to_expiry=", time_to_expiry);
             const riskFreeRate = 0.04; // Example risk-free rate
             const maxLen = Math.max(full_calls.length, full_puts.length);
-            addLog("maxLen=", maxLen);
+            //addLog("maxLen=", maxLen);
 
             const combined = Array.from({ length: maxLen }, (_, i) => {
                 const call = full_calls[i];
@@ -155,7 +155,7 @@ class OptionChain {
                 td_ask.textContent = (leg.value * 1.0).toFixed(2);
             }
             this.legs = [];
-            const btn = document.getElementById("tab-button-" + leg.expiry);
+            const btn = document.getElementById("button-tab-" + leg.expiry);
             btn.classList.remove("used");
 
         });
@@ -179,7 +179,7 @@ class OptionChain {
         /// remove legs with qty=0
         simplified = simplified.filter(leg => leg.qty !== 0);
         this.legs = simplified;
-        addLog("Simplified Legs:", this.legs);
+        //addLog("Simplified Legs:", this.legs);
         cookie_manager.save_JSON_in_cookie(this.ticker + "-legs", this.legs);
     }
     get_calls_list(expiry) {
@@ -209,14 +209,13 @@ class OptionChain {
                 return e.combined;
             }
         }
-        addLog("getCombined: expiry not found", expiry, { error: true });
+        //addLog("getCombined: expiry not found", expiry, { error: true });
         return null;
     }
 }
 
 function create_selected_contracts_list(option_chain, ticker) {
 
-    console.log(option_chain.legs);
     const selectedListContainer = document.createElement("div");
     selectedListContainer.id = ticker + "-selected-list";
     selectedListContainer.style.marginTop = "20px";
@@ -330,7 +329,7 @@ function update_selected_table(oc) {
         tr.appendChild(td);
 
         td = document.createElement("td");
-        td.textContent = (leg.strike*1.0).toFixed(2);
+        td.textContent = (leg.strike * 1.0).toFixed(2);
         td.style.textAlign = "center";
         tr.appendChild(td);
 
@@ -364,8 +363,9 @@ function update_oc_table(oc) {
         let td_bid;
         let td_ask;
         const expiry_index = oc.expiry.findIndex(e => e.expiry === leg.expiry);
-        const strike_index = oc.expiry[expiry_index].combined.findIndex(e => e.strike === leg.strike);
+        const strike_index = oc.expiry[expiry_index].combined.findIndex(e => (1.0*e.strike) === (1.0*leg.strike));
         count = leg.qty
+        console.log(oc.expiry[expiry_index].combined[strike_index]);
         if (leg.type === "call") {
             oc.expiry[expiry_index].combined[strike_index].call_count = leg.qty
             value_bid = oc.expiry[expiry_index].combined[strike_index].call_bid;
@@ -385,7 +385,7 @@ function update_oc_table(oc) {
         td_bid.dataset.originalColor = td_bid.style.backgroundColor;  // Save current bg
         td_ask.dataset.originalColor = td_ask.style.backgroundColor;  // Save current bg
 
-        const btn = document.getElementById("tab-button-" + leg.expiry);
+        const btn = document.getElementById("button-tab-" + leg.expiry);
         if (count == 0) {
             btn.classList.remove("used");
         }
@@ -417,8 +417,8 @@ export async function add_option_chain_container_in_tab_container(tab_container)
     heading.textContent = 'TICKERS OPTION CHAIN';
 
     // Assemble header
-    headerContainer.appendChild(heading);
-    oc_container.appendChild(headerContainer);
+    //headerContainer.appendChild(heading);
+    //oc_container.appendChild(headerContainer);
 
     let oc_tabs_manager = new TabsManager(oc_container, "oc-tabs-manager");
     let container;
@@ -433,7 +433,7 @@ export async function add_option_chain_container_in_tab_container(tab_container)
         const cleaned_ticker = ticker.replace(/[\^\$]/g, "");
         option_chain[cleaned_ticker] = loaded_option_chain[ticker];
     });
-
+    let oc_expiries_tabs_manager_list = [];
     for (const ticker of Object.keys(option_chain)) {
 
         let oc = new OptionChain(ticker, option_chain[ticker]);
@@ -444,17 +444,21 @@ export async function add_option_chain_container_in_tab_container(tab_container)
         heading.classList.add('std-text');
         heading.textContent = 'Expiry dates for ' + ticker
 
-        addLog("option_chain for ", ticker, " - expiry dates=", oc.get_expiries_list());
+        //addLog("option_chain for ", ticker, " - expiry dates=", oc.get_expiries_list());
 
-        container.appendChild(heading);
+        //container.appendChild(heading);
 
-        let oc_expiries_tabs_manager = new TabsManager(container, ticker + "oc-expiries-tabs-manager");
+        //console.log("[option_chain] new TabsManager for", ticker + "-oc-expiries-tabs-manager");
+        let oc_expiries_tabs_manager = new TabsManager(container, ticker + "-oc-expiries-tabs-manager");
+        oc_expiries_tabs_manager_list.push(oc_expiries_tabs_manager);
         for (const expiry of oc.get_expiries_list()) {
             const remaining_days = new DateManager(expiry);
             if (remaining_days.remaining_days() > 0) {
-                let container3 = oc_expiries_tabs_manager.add_tab(
-                    expiry + " - " + remaining_days.remaining_days().toFixed(0) + "d",
-                    ticker + '-' + expiry + '-oc');
+                //const tab_label=expiry + " - " + remaining_days.remaining_days().toFixed(0) + "d";
+                const tab_label = expiry;
+                const tab_name = ticker + '-' + expiry + '-oc';
+                //console.log("[option_chain]   add_tab", tab_label, tab_name);
+                let container3 = oc_expiries_tabs_manager.add_tab(tab_label, tab_name);
                 let selector = oc_expiries_tabs_manager.selectors[oc_expiries_tabs_manager.selectors.length - 1].selector;
                 if (remaining_days.is_third_friday()) {
                     selector.classList.add("third-friday");
@@ -463,24 +467,33 @@ export async function add_option_chain_container_in_tab_container(tab_container)
 
             }
         }
+        //console.log(oc_expiries_tabs_manager.tab_container);
         // Add selected contracts list
         const selectedContainer = create_selected_contracts_list(oc, ticker);
-        container.appendChild(selectedContainer);
+        oc_expiries_tabs_manager.tab_container.appendChild(selectedContainer);
 
-        oc_expiries_tabs_manager.activate_last_tab();
+        //oc_expiries_tabs_manager.activate_last_tab();
 
         // add the content to the tab when all data are loaded
         setTimeout(() => {
 
-            //    update_selected_table(oc);
+                update_selected_table(oc);
 
         }, 0);
 
     }
-    oc_tabs_manager.activate_last_tab();
+    //console.log("oc_tabs_manager.tab_container=", oc_tabs_manager);
+    //oc_tabs_manager.activate_last_tab();
 
     // Add to tab container
     tab_container.appendChild(oc_container);
+    setTimeout(() => {
+        for (const oc_expiries_tabs_manager of oc_expiries_tabs_manager_list) {
+            oc_expiries_tabs_manager.activate_last_tab();
+        }
+        oc_tabs_manager.activate_last_tab();
+
+    }, 0);
 
 }
 
@@ -559,7 +572,7 @@ class OptionChainTable {
                 qty: (j === 1 || j === 4) ? -1 : 1,
                 offset: 0
             }
-            console.log("leg=", leg);
+            //console.log("leg=", leg);
             oc.add_leg(leg);
             let new_count;
             let value_bid;
@@ -588,15 +601,15 @@ class OptionChainTable {
             td_ask.textContent = ((new_count >= 1) ? (new_count + " x ") : "") + (value_ask * 1.0).toFixed(2)
 
             set_td_bid_ask_bgnd(td_bid, td_ask, new_count);
-
-            const btn = document.getElementById("tab-button-" + leg.expiry);
+            //console.log("button-tab-" + leg.expiry);
+            const btn = document.getElementById("button-tab-" + leg.expiry);
             if (new_count == 0) {
                 btn.classList.remove("used");
             }
             else {
                 btn.classList.add("used");
             }
-            console.log ("oc=", oc);
+            //console.log("oc=", oc);
             update_selected_table(oc);
 
         });
@@ -653,7 +666,6 @@ class OptionChainTable {
         td.style.pointerEvents = "none";
     }
 }
-
 
 async function add_option_chain_table(test_container, oc, expiry) {
 
@@ -743,7 +755,7 @@ async function add_option_chain_table(test_container, oc, expiry) {
         let combined = oc.get_combined_data(expiry);
         //addLog("combined=", combined);
         combined.forEach((row, i) => {
-            addLog("row=", row, i);
+            //addLog("row=", row, i);
             const tr = document.createElement("tr");
 
             const values = [
@@ -854,7 +866,7 @@ async function add_option_chain_table(test_container, oc, expiry) {
 
                     set_td_bid_ask_bgnd(td_bid, td_ask, new_count);
 
-                    const btn = document.getElementById("tab-button-" + leg.expiry);
+                    const btn = document.getElementById("button-tab-" + leg.expiry);
                     if (new_count == 0) {
                         btn.classList.remove("used");
                     }
@@ -880,17 +892,17 @@ async function add_option_chain_table(test_container, oc, expiry) {
         });
     }
     setTimeout(() => {
-        /*
+                //console.log(oc);
                 update_oc_table(oc);
-                const rows = tbody.querySelectorAll("tr");
+                /*const rows = tbody.querySelectorAll("tr");
                 if (rows.length === 0) return;
         
                 const targetRow = rows[closestIndex];
                 targetRow.scrollIntoView({ behavior: "auto", block: "center" });
         
                 // Optional: highlight it
-                targetRow.style.backgroundColor = "#444";
-        */
+                targetRow.style.backgroundColor = "#444";*/
+        
     }, 0);
 
 
@@ -1127,7 +1139,7 @@ function create_json_from_combo(oc) {
     json.simulation.time_to_expiry = remaining_days / 365.;
     json.ticker = oc.ticker;
 
-    console.log("json=", json);
+    //console.log("json=", json);
     cookie_manager.save_JSON_in_cookie("combo-builder", json);
     return json;
 }

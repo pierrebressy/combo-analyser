@@ -11,7 +11,7 @@
                     "price": 19.92
                 }
             ],
-            "name": "Single CALL",
+            "name": "LONG CALL",
             "simulation": {
                 "expiration_offset": 0,
                 "interest_rate": 0,
@@ -35,7 +35,7 @@
                     "price": 10.92
                 }
             ],
-            "name": "Single PUT",
+            "name": "LONG PUT",
             "simulation": {
                 "expiration_offset": 0,
                 "interest_rate": 0,
@@ -64,7 +64,7 @@
                     "price": 19.92
                 }
             ],
-            "name": "Single CALL",
+            "name": "SHORT CALL",
             "simulation": {
                 "expiration_offset": 0,
                 "interest_rate": 0,
@@ -88,7 +88,7 @@
                     "price": 10.92
                 }
             ],
-            "name": "Single PUT",
+            "name": "SHORT PUT",
             "simulation": {
                 "expiration_offset": 0,
                 "interest_rate": 0,
@@ -831,7 +831,7 @@
         "volatility_is_per_leg": false
     },
     "active": {
-        "combo": "LONG CALL",
+        "combo_name": "LONG CALL",
         "U_use_real_values": false
     },
     "graph": {
@@ -891,12 +891,12 @@
             "step": 0.001
         },
         "view_3d": "P/L",
-        "tab_active_list": [
+        "UNUSED_tab_active_list": [
             "P/L Graph",
             "3D View",
             "Logs",
             "Combo Builder"
         ],
-        "tab_active": "Combo Builder"
+        "default_active_tab": "P/L Graph"
     }
 }

@@ -6,7 +6,7 @@ function getNearestYValue(data, xValue) {
 }
 
 export class Knob {
-    constructor(svg, env, values, call_back) {
+    constructor(svg, g_data, values, call_back) {
         this.values = values;
         this.call_back = call_back;
         this.current_value = this.values[0];
@@ -131,7 +131,7 @@ export class Knob {
 }
 
 export class Line {
-    constructor(svg, env) {
+    constructor(svg, g_data) {
         this.line = svg.append("line")
             .attr("x1", 100)
             .attr("y1", 100)
@@ -140,7 +140,7 @@ export class Line {
             .attr("stroke", "red")
             .attr("stroke-width", 1)
             .attr("stroke-dasharray", "5,5")
-            .attr("transform", `translate(${env.get_window_left_margin()},${env.get_window_top_margin()})`);
+            .attr("transform", `translate(${g_data.get_window_left_margin()},${g_data.get_window_top_margin()})`);
     }
     set_position(x1, y1, x2, y2) {
         this.line
@@ -287,21 +287,21 @@ export class HorizontalCursor extends Cursor {
     set_vpos(vpos) {
         this.vpos = vpos;
     }
-    update(env, x) {
+    update(g_data, x) {
 
-        const price = env.get_x_scale().invert(x - env.get_window_left_margin());
+        const price = g_data.get_x_scale().invert(x - g_data.get_window_left_margin());
         const formattedPrice = price.toFixed(0); // Format as %.1f
 
-        this.xscale = env.get_x_scale();
+        this.xscale = g_data.get_x_scale();
 
         this.set_position(
             x - 25,
             this.vpos);
-//            env.get_window_height() - env.get_window_bottom_margin() - env.get_window_bottom_margin() + 4);
+//            g_data.get_window_height() - g_data.get_window_bottom_margin() - g_data.get_window_bottom_margin() + 4);
         this.set_text(formattedPrice);
 
-        //this.textRect.rect_element.attr("transform", `translate(${x - 25}, ${env.get_window_height() - env.get_window_bottom_margin() + 4})`);
-        //this.textRect.text_element.attr("transform", `translate(${x - 25}, ${env.get_window_height() - env.get_window_bottom_margin() + 4})`);
+        //this.textRect.rect_element.attr("transform", `translate(${x - 25}, ${g_data.get_window_height() - g_data.get_window_bottom_margin() + 4})`);
+        //this.textRect.text_element.attr("transform", `translate(${x - 25}, ${g_data.get_window_height() - g_data.get_window_bottom_margin() + 4})`);
         //this.textRect.text_element.select("#" + this.name + "-label-text")
         //    .attr("x", 25)
         //    .text(formattedPrice);
@@ -319,26 +319,26 @@ export class VerticalCursor extends Cursor {
         this.svg = svg;
     }
 
-    update(env, price) {
+    update(g_data, price) {
 
-        this.xscale = env.get_x_scale();
+        this.xscale = g_data.get_x_scale();
 
         let nearestPoint = getNearestYValue(this.data, price);
         let p_and_l_value = nearestPoint.y;
 
         this.set_position(
-            env.get_window_left_margin() - 50,
-            env.get_window_top_margin() + this.yscale(p_and_l_value) - 10);
+            g_data.get_window_left_margin() - 50,
+            g_data.get_window_top_margin() + this.yscale(p_and_l_value) - 10);
         this.set_text(p_and_l_value.toFixed(0));
 
         this.svg.select("#" + this.name + "-hline").remove();
         this.svg.append("line")
             .attr("class", "crosshair-line")
             .attr("id", this.name + "-hline")
-            .attr("x1", env.get_window_left_margin())
-            .attr("x2", env.get_window_left_margin() + this.xscale(price))
-            .attr("y1", this.yscale(p_and_l_value) + env.get_window_top_margin())
-            .attr("y2", this.yscale(p_and_l_value) + env.get_window_top_margin())
+            .attr("x1", g_data.get_window_left_margin())
+            .attr("x2", g_data.get_window_left_margin() + this.xscale(price))
+            .attr("y1", this.yscale(p_and_l_value) + g_data.get_window_top_margin())
+            .attr("y2", this.yscale(p_and_l_value) + g_data.get_window_top_margin())
             .attr("stroke", this.fill)
             .attr("stroke-width", 2)
             .attr("stroke-dasharray", "4,4");
@@ -346,12 +346,11 @@ export class VerticalCursor extends Cursor {
         this.svg.select("#" + this.name + "-dot-y").remove();
         this.svg.append("circle")
             .attr("id", this.name + "-dot-y")
-            .attr("cx", this.xscale(price) + env.get_window_left_margin())
-            .attr("cy", this.yscale(p_and_l_value) + env.get_window_top_margin())
+            .attr("cx", this.xscale(price) + g_data.get_window_left_margin())
+            .attr("cy", this.yscale(p_and_l_value) + g_data.get_window_top_margin())
             .attr("r", 4) // Radius 4
             .attr("fill", this.fill);
 
     }
 
 }
-

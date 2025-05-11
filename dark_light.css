@@ -1,0 +1,50 @@
+body.light-mode {
+    --bg-main: #ffffff;
+    --text-color: #000000;
+    --tabs-inactive-text-color: #000000;
+    --tabs-inactive-bg-color: #f0efef;
+    --tabs-active-text-color: #000000;
+    --tabs-active-bg-color: #a6a6a6;
+    --bg-tabs-selector: #ffffff;
+    --button-active-bg-color: rgb(141, 244, 218);
+    --button-inactive-bg-color: rgb(0, 0, 0);
+    --sigma-area-color: rgba(0, 0, 255, 0.073);
+  --matrix-bg: #ffffff;
+  --matrix-text: hsl(0, 0%, 0%);
+  --matrix-text-warning: hsl(35, 100%, 50%);
+  --matrix-text-error:  hsl(0, 100%, 50%);
+  --matrix-border: hsl(43, 100%, 50%);
+  --matrix-hover: hsl(43, 97%, 38%);
+
+  --exp-path-color: #000000;
+}
+
+body.dark-mode {
+    --bg-main: #2e0065;
+    --text-color: #ffffff;
+    --tabs-inactive-text-color: #b1b0b0;
+    --tabs-inactive-bg-color: #353333;
+    --tabs-active-text-color: #f3f3f3;
+    --tabs-active-bg-color: #8d8d8d;
+    --bg-tabs-selector: #1c1c1c;
+    --button-active-bg-color: rgb(0, 141, 141);
+
+    --bg-main-container: #c7c7c7;
+    --bg-graph-container: #0e0e0e;
+    --bg-combo-builder-container: #0e0e0e;
+    --bg-parameters-container: #0e0e0e;
+    --bg-log-container: #0e0e0e;
+    --bg-polygon-container: #0e0e0e;
+
+    --sigma-area-color: #0278f63a;
+
+  --matrix-bg: #000000;
+  --matrix-text: #28ff5e;
+  --matrix-text-warning: hsl(37, 100%, 50%);
+  --matrix-text-error:  hsl(0, 100%, 50%);
+  --matrix-border: #00ff41;
+  --matrix-hover: #00cc33;
+
+--exp-path-color: #ffffff;
+}
+

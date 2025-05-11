@@ -6,3 +6,4 @@ export const updt_cfg_cmd = "http://127.0.0.1:5000/update-config";
 export const get_cfg_cmd = "http://127.0.0.1:5000/get-config";
 export const get_price_cmd = "http://127.0.0.1:5000/price/";
 export const get_combo_tpl_cmd = "http://127.0.0.1:5000/get-combo-templates";
+export const get_polygon_price_cmd = "http://127.0.0.1:5000/polygon/";

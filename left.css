@@ -3,7 +3,7 @@
   min-width: 300px;
   background-color: var(--bg-left);
   padding: 2px;
-  height: 97vh;
+  height: 100%;
 }
 
 body.light-mode {
@@ -22,6 +22,9 @@ body.light-mode {
 body.dark-mode {
   --text-active-color: hsl(63, 100%, 58%);
   --text-inactive-color: #808080;
+  --text-local-color: hsl(0, 90%, 57%);
+  --text-remote-color: #0bff81;
+
   --bg-local-status: #363535;
   --bg-combo-list: #770000;
   --bg-days-left: #02520e;
@@ -113,6 +116,18 @@ input[type="checkbox"] {
   display: block;
   margin-bottom: 5px;
   color: var(--text-inactive-color);
+}
+
+.text-remote-mode-active {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--text-remote-color);
+}
+
+.text-local-mode-active {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--text-local-color);
 }
 
 /* === Containers spéciaux === */

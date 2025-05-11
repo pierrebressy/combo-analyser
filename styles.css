@@ -1,38 +1,9 @@
+html,
 body {
+    height: 100%;
     margin: 0;
-    padding: 2px;
-    display: flex;
     font-family: Menlo, monospace;
     font-size: 12px;
-    height: 100vh;
-    background-color: var(--bg-main);
-    color: var(--text-color);
-}
-
-/* Light theme (default) */
-body.light-mode {
-    --bg-main: #ffffff;
-    --bg-left: #ffffff;
-    --bg-right: #ffffff;
-    --text-color: #000000;
-
-    --gradient-start: #ffffff;
-    --exp-path-color: #000000;
-    --horizontal-grid-color: lightgray;
-    --sigma-area-color: rgba(0, 0, 255, 0.073);
-}
-
-/* Dark theme */
-body.dark-mode {
-    --bg-main: #1e1e1e;
-    --bg-left: #1e1e1e;
-    --bg-right: #1e1e1e;
-    --text-color: #ffffff;
-
-    --gradient-start: #000000;
-    --exp-path-color: #ffffff;
-    --horizontal-grid-color: #444444;
-    --sigma-area-color: #0278f63a;
 }
 
 .std-text {
@@ -41,8 +12,127 @@ body.dark-mode {
     color: var(--text-color);
 }
 
+.main-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background-color: var(--bg-main-container);
+}
+
+.graphs-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--bg-graph-container);
+}
+.combo-builder-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--bg-combo-builder-container);
+}
+.parameters-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--bg-parameters-container);
+}
+.log-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--bg-log-container);
+}
+.polygon-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--bg-polygon-container);
+}
+
+.pl-container {
+    padding: 0px;
+    width: 100%;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background-color: var(--bg-combo-builder-container);
+}
+
+.pl-split-container {
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  width: 100%;
+}
+
+.left-container {
+  flex: 0 0 20%; /* 20% fixed width */
+  height: 100%;
+  background-color: #666;
+  color: #FFFFFF;
+  display: flex;
+  flex-direction: column;  /* 🔁 stack children vertically */
+  justify-content: flex-start; /* 🔝 align items to the top */
+  align-items: flex-start;     /* ⬅️ optional: align to the left */
+}
+
+.right-container-old {
+  flex: 1; /* remaining 70% */
+  height: 100%;
+    background-color: var(--bg-right);
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.right-container {
+  flex: 1; /* remaining 70% */
+  height: 100%;
+  width: 100%;
+    background-color: var(--bg-right);
+  color: #FFFFFF;
+  display: flex;
+  flex-direction: column;  /* 🔁 stack children vertically */
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+
+.view3d_container {
+    padding: 5px;
+    width: 100%;
+    flex: 1;
+    height: 100%;
+    background-color: var(--bg-combo-builder-container);
+}
 
 
 
+.hidden {
+    display: none;
+}
+
+.yyyactive {
+    background-color: #00ad3a;
+}
 
 
+
+.status-icon {
+  display: none;
+  margin-right: 5px;
+}
+
+/* Show sun in dark mode */
+body.dark-mode .sun-icon {
+  display: inline;
+}
+
+/* Show moon in light mode */
+body.light-mode .moon-icon {
+  display: inline;
+}
+.status-icon {
+  transition: opacity 0.3s ease;
+}
