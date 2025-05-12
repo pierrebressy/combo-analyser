@@ -151,3 +151,34 @@
   color: #f00;
   cursor: pointer;
 }
+
+
+
+
+.custom-button {
+  margin-right: 10px;
+  margin-bottom: 4px;
+  background-color: #222;
+  color: #fff;
+  float: right;
+  transition: background-color 0.3s ease;
+}
+
+.combo-dropdown {
+  background-color: #222;  /* darker background */
+  border: 1px solid #444;
+  color: #fff;             /* white text for contrast */
+  box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+  font-family: Menlo, monospace;
+  font-size: 14px;
+  padding: 4px;
+}
+
+.combo-option {
+  cursor: pointer;
+  background-color: #222;  /* darker background */
+}
+
+.combo-option:hover {
+  background-color: #bf0d0d;
+}

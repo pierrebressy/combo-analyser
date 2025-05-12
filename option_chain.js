@@ -273,8 +273,65 @@ function create_selected_contracts_list(option_chain, ticker) {
         option_chain.clear_legs();
         update_selected_table(option_chain);
     });
-
     selectedContainer.appendChild(clearBtn);
+
+
+    ////////////////
+
+    const comboOptions = ["LONG CALL", "SHORT CALL", "CUSTOM"];
+    const openComboCreationSelector = document.createElement("button");
+    openComboCreationSelector.id = "clear-selected";
+    openComboCreationSelector.classList.add("clear-button");
+    openComboCreationSelector.textContent = "Combo selector";
+
+
+    // Create the dropdown container (hidden by default)
+    const dropdown = document.createElement("div");
+    dropdown.classList.add("combo-dropdown");
+    dropdown.style.display = "none"; // hidden by default
+    dropdown.style.position = "absolute";
+    dropdown.style.background = "#eee";
+    dropdown.style.border = "1px solid #ccc";
+    dropdown.style.padding = "5px";
+    dropdown.style.zIndex = "1000";
+
+    // Add options to dropdown
+    comboOptions.forEach(optionText => {
+        const option = document.createElement("div");
+        option.textContent = optionText;
+        option.classList.add("combo-option");
+        option.style.padding = "4px";
+        option.style.cursor = "pointer";
+        option.addEventListener("click", () => {
+            console.log("Selected:", optionText);
+            dropdown.style.display = "none";
+            //openComboCreationSelector.textContent = optionText; // optional: update button
+        });
+        dropdown.appendChild(option);
+    });
+
+    // Toggle dropdown on button click
+    openComboCreationSelector.addEventListener("click", () => {
+        dropdown.style.display = dropdown.style.display === "none" ? "block" : "none";
+    });
+
+    // Add to DOM
+
+    selectedContainer.appendChild(openComboCreationSelector);
+
+    selectedContainer.appendChild(dropdown);
+    // Optional: position dropdown under the button
+    openComboCreationSelector.addEventListener("click", () => {
+        const rect = openComboCreationSelector.getBoundingClientRect();
+        dropdown.style.top = `${rect.bottom + window.scrollY}px`;
+        dropdown.style.left = `${rect.left + window.scrollX}px`;
+    });
+
+
+
+
+    ////////////////
+
 
     // Table
     const table = document.createElement("table");
@@ -363,9 +420,9 @@ function update_oc_table(oc) {
         let td_bid;
         let td_ask;
         const expiry_index = oc.expiry.findIndex(e => e.expiry === leg.expiry);
-        const strike_index = oc.expiry[expiry_index].combined.findIndex(e => (1.0*e.strike) === (1.0*leg.strike));
+        const strike_index = oc.expiry[expiry_index].combined.findIndex(e => (1.0 * e.strike) === (1.0 * leg.strike));
         count = leg.qty
-        console.log(oc.expiry[expiry_index].combined[strike_index]);
+        //console.log(oc.expiry[expiry_index].combined[strike_index]);
         if (leg.type === "call") {
             oc.expiry[expiry_index].combined[strike_index].call_count = leg.qty
             value_bid = oc.expiry[expiry_index].combined[strike_index].call_bid;
@@ -477,7 +534,7 @@ export async function add_option_chain_container_in_tab_container(tab_container)
         // add the content to the tab when all data are loaded
         setTimeout(() => {
 
-                update_selected_table(oc);
+            update_selected_table(oc);
 
         }, 0);
 
@@ -892,17 +949,17 @@ async function add_option_chain_table(test_container, oc, expiry) {
         });
     }
     setTimeout(() => {
-                //console.log(oc);
-                update_oc_table(oc);
-                /*const rows = tbody.querySelectorAll("tr");
-                if (rows.length === 0) return;
-        
-                const targetRow = rows[closestIndex];
-                targetRow.scrollIntoView({ behavior: "auto", block: "center" });
-        
-                // Optional: highlight it
-                targetRow.style.backgroundColor = "#444";*/
-        
+        //console.log(oc);
+        update_oc_table(oc);
+        /*const rows = tbody.querySelectorAll("tr");
+        if (rows.length === 0) return;
+ 
+        const targetRow = rows[closestIndex];
+        targetRow.scrollIntoView({ behavior: "auto", block: "center" });
+ 
+        // Optional: highlight it
+        targetRow.style.backgroundColor = "#444";*/
+
     }, 0);
 
 

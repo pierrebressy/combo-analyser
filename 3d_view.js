@@ -4,6 +4,8 @@ import { get_two_colors_cmap } from './global.js';
 import { get_show_hplane } from './global.js';
 import { get_show_3dbox } from './global.js';
 import { global_data } from './main_script.js';
+import { get_container_size } from './frame.js';
+import { draw_graph } from './2d_graph.js';
 
 export let x_camera = 20;
 export let y_camera = 20;
@@ -56,8 +58,10 @@ class Generic3DSurface {
         this.yscale = d3.scaleLinear()
             .domain([this.y_min, this.y_max])
             .range([-this.half_width, this.half_width]);
+
+        const absMax = Math.max(Math.abs(this.min_data), Math.abs(this.max_data));
         this.zscale = d3.scaleLinear()
-            .domain([this.min_data, this.max_data])
+            .domain([-absMax, absMax])
             .range([-this.half_width, this.half_width]);
 
         this.xrange = d3.range(this.x_min, this.x_max + 1e-5, this.x_step);
@@ -73,7 +77,6 @@ class Generic3DSurface {
         };
     }
 }
-
 class GreekSurface extends Generic3DSurface {
 
     run(greek_index) {
@@ -97,7 +100,6 @@ class GreekSurface extends Generic3DSurface {
         return [this.xrange, this.yrange, this.matrixData];
     }
 }
-
 class PLSurface extends Generic3DSurface {
 
     run() {
@@ -119,8 +121,6 @@ class PLSurface extends Generic3DSurface {
         return [this.xrange, this.yrange, this.matrixData];
     }
 }
-
-
 function create_3dbox(z) {
     let reference_plane = new THREE.Group();
     let plane_color = 0x505050; // Gray color
@@ -232,16 +232,47 @@ function create_reference_plane(z) {
 }
 function create_reference_arrows(z) {
     let ref_arrow = new THREE.Group();
-    const arrowX = new THREE.ArrowHelper(new THREE.Vector3(1, 0, 0), new THREE.Vector3(0, 0, 0), 5, 0xff0000);
-    arrowX.position.z += z;
+
+
+    const base = new THREE.Vector3(-ref_plane_half_size, -ref_plane_half_size, -ref_plane_half_size);
+    const len = ref_plane_half_size * 2;
+
+    const headLength = len * 0.05;
+    const headWidth = headLength * 0.5;
+
+    // X-axis arrow (red)
+    const arrowX = new THREE.ArrowHelper(
+        new THREE.Vector3(1, 0, 0), // direction X
+        base.clone(),               // origin
+        len,
+        0xff0000,
+        headLength,
+        headWidth
+    );
+
+    // Y-axis arrow (green)
+    const arrowY = new THREE.ArrowHelper(
+        new THREE.Vector3(0, 1, 0), // direction Y
+        base.clone(),
+        len,
+        0x00ff00,
+        headLength,
+        headWidth
+    );
+
+    // Z-axis arrow (blue)
+    const arrowZ = new THREE.ArrowHelper(
+        new THREE.Vector3(0, 0, 1), // direction Z
+        base.clone(),
+        len,
+        0x0000ff,
+        headLength,
+        headWidth
+    );
+
     ref_arrow.add(arrowX);
-    const arrowY = new THREE.ArrowHelper(new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, 0, 0), 5, 0x00ff00);
-    arrowY.position.z += z;
     ref_arrow.add(arrowY);
-    const arrowZ = new THREE.ArrowHelper(new THREE.Vector3(0, 0, 1), new THREE.Vector3(0, 0, 0), 5, 0x0000FF);
-    arrowZ.position.z += z;
     ref_arrow.add(arrowZ);
-    //ref_arrow.position.z += z;
     return ref_arrow;
 }
 function create_pl_vs_time_and_price_surface() {
@@ -275,8 +306,10 @@ function create_specific_lines() {
     let price_to_yscale = d3.scaleLinear()
         .domain([min_price, max_price])
         .range([-ref_plane_half_size, ref_plane_half_size]);
+
+    const absMax = Math.max(Math.abs(min_p_and_l), Math.abs(max_p_and_l));
     let zscale = d3.scaleLinear()
-        .domain([min_p_and_l, max_p_and_l])
+        .domain([-absMax, absMax])
         .range([-ref_plane_half_size, ref_plane_half_size]);
 
 
@@ -377,6 +410,10 @@ function create_mesh_color_heatmap(curve_data, z) {
     const zValues = matrixData.map(p => p.z);
     const zMin = Math.min(...zValues);
     const zMax = Math.max(...zValues);
+
+    const zAbsMax = Math.max(Math.abs(zMin), Math.abs(zMax));
+
+
     let k = 0;
     for (let i = 0; i < widthSeg; i++) {
         for (let j = 0; j < heightSeg; j++) {
@@ -390,13 +427,30 @@ function create_mesh_color_heatmap(curve_data, z) {
 
             // Normalize Z and convert to color
             const color = new THREE.Color();
-            if (get_two_colors_cmap()) {
+            if (0) { //get_two_colors_cmap()) {
                 const zNorm = (point.z - zMin) / (zMax - zMin); // [0, 1]
                 color.setHSL((zNorm) * 0.33, 1.0, 0.5); // green (0.33) → red (0)
             }
-            else {
+            else if (0) {
                 const zNorm = (point.z - zMin) / (zMax - zMin); // [0, 1]
                 color.setHSL((1 - zNorm) * 0.7, 1.0, 0.5); // 0.7 (blue) → 0 (red)    
+            }
+            else {
+
+                // Diverging color map: red (neg) - orange (zero) - green (pos)
+                const zNorm = point.z / zAbsMax; // range [-1, 1]
+
+                let hue;
+                if (zNorm < 0) {
+                    // From red (0) to orange (0.08)
+                    hue = 0.08 * (1 + zNorm); // zNorm = -1 → 0 (red), zNorm = 0 → 0.08 (orange)
+                } else {
+                    // From orange (0.08) to green (0.33)
+                    hue = 0.08 + (0.33 - 0.08) * zNorm; // zNorm = 0 → 0.08, zNorm = 1 → 0.33
+                }
+
+                color.setHSL(hue, 1.0, 0.5);
+
             }
 
             colorArray[k + 0] = color.r;
@@ -491,11 +545,7 @@ function cleanupThree() {
     scene = null;
     camera = null;
 }
-
-
 export function update_3d_view() {
-
-
 
     const display_reference_plane = get_show_hplane();
     const display_reference_arrows = get_show_hplane();
@@ -510,9 +560,17 @@ export function update_3d_view() {
     let height = 0;
     width = global_data.get_window_width()
     height = global_data.get_window_height()
-    //console.log("view3d Width:", width);
-    //console.log("view3d Height:", height);
+    console.log("update_3d_view:  Width:", width);
+    console.log("update_3d_view:  Height:", height);
+    if (width == 0 || height == 0) {
+        let right_size = get_container_size("#pl-right-header");
+        let right_tabs_size = get_container_size("#view3d-controler-container");
+        right_size.height = right_size.height - right_tabs_size.height;
+        console.log("update_3d_view -> right_size", right_size);
+        global_data.update_window_data(right_size);
+        draw_graph();
 
+    }
     //let container = document.getElementById('view3d-graph-container');
     let container = document.getElementById('view3d-container');
 
@@ -599,7 +657,7 @@ export function update_3d_view() {
         const material_1 = new THREE.SpriteMaterial({ map: texture_1, transparent: true });
         const sprite_1 = new THREE.Sprite(material_1);
         sprite_1.scale.set(2, .5, 1); // Adjust as needed
-        sprite_1.position.set(0, 5, zero_point.z); // Offset from center (so it orbits)
+        sprite_1.position.set(0, ref_plane_half_size, zero_point.z); // Offset from center (so it orbits)
         pivot_1.add(sprite_1);
 
         const pivot_2 = new THREE.Object3D();
@@ -615,7 +673,7 @@ export function update_3d_view() {
         const material_2 = new THREE.SpriteMaterial({ map: texture_2, transparent: true });
         const sprite_2 = new THREE.Sprite(material_2);
         sprite_2.scale.set(2, .5, 1); // Adjust as needed
-        sprite_2.position.set(5, 0, zero_point.z); // Offset from center (so it orbits)
+        sprite_2.position.set(ref_plane_half_size, -ref_plane_half_size, -ref_plane_half_size); // Offset from center (so it orbits)
         pivot_2.add(sprite_2);
 
         const pivot_3 = new THREE.Object3D();
@@ -631,7 +689,7 @@ export function update_3d_view() {
         const material_3 = new THREE.SpriteMaterial({ map: texture_3, transparent: true });
         const sprite_3 = new THREE.Sprite(material_3);
         sprite_3.scale.set(2, .5, 1); // Adjust as needed
-        sprite_3.position.set(0, 0, zero_point.z); // Offset from center (so it orbits)
+        sprite_3.position.set(-ref_plane_half_size, ref_plane_half_size, -ref_plane_half_size); // Offset from center (so it orbits)
         pivot_3.add(sprite_3);
     }
 

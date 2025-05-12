@@ -806,12 +806,12 @@ export function compute_data_to_display() {
     global_data.set_pl_at_exp_data(compute_p_and_l_data(get_volatility_is_per_leg(), 0));
     global_data.set_pl_at_init_data(compute_p_and_l_data(get_volatility_is_per_leg(), global_data.get_time_to_expiry_of_active_combo()));
     global_data.set_pl_at_sim_data(compute_p_and_l_data(get_volatility_is_per_leg(), global_data.get_time_for_simulation_of_active_combo()));
-    
+
     global_data.set_greeks_data(compute_greeks_data(get_volatility_is_per_leg()));
 }
 function svg_cleanup_old(svg) {
     if (!svg) {
-            
+
         svg = d3.select("#pl-right-header")
             .append("svg")
             .attr("width", "100%")
@@ -825,7 +825,7 @@ function svg_cleanup_old(svg) {
 }
 function svg_cleanup(svg) {
     if (!svg) {
-            
+
         svg = d3.select("#pl-container")
             .append("svg")
             .attr("width", "100%")
@@ -843,6 +843,13 @@ export function draw_graph() {
     //console.log("[draw_graph] window size:", global_data.get_window_width(), global_data.get_window_height());
     if (global_data.get_window_width() < 100 || global_data.get_window_height() < 100) {
         console.log("[draw_graph] window size too small");
+        let right_size = get_container_size("#pl-right-header");
+        let right_tabs_size = get_container_size("#view3d-controler-container");
+        right_size.height = right_size.height - right_tabs_size.height;
+        console.log("draw_graph -> right_size", right_size);
+        global_data.update_window_data(right_size);
+
+
         return;
     }
     const p_and_l_area_height = global_data.get_graph_p_and_l_ratio() * global_data.get_window_height() - global_data.get_window_vspacer_margin();
