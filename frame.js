@@ -658,9 +658,7 @@ function insert_text_header(container, text) {
     container.appendChild(head_text);
 }
 function update_right_container_size() {
-    let right_size = get_container_size("#pl-container");
-    //console.log("update_right_container_size -> right_size", right_size);
-    global_data.update_window_data(right_size);
+    onGraphContainerVisible();
     display_pl_tab();
 }
 function add_left_and_right_containers_in_container(parent_container) {

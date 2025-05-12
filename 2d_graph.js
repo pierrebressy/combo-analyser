@@ -846,8 +846,11 @@ export function draw_graph() {
         console.log("[draw_graph] window size too small");
         return;
     }
+    console.log("[draw_graph] window size:", global_data.get_window_width(), global_data.get_window_height());
     const p_and_l_area_height = global_data.get_graph_p_and_l_ratio() * global_data.get_window_height() - global_data.get_window_vspacer_margin();
     const greeks_graph_height = global_data.get_window_height() - p_and_l_area_height;
+    console.log("[draw_graph] p_and_l_area_height:", p_and_l_area_height);
+    console.log("[draw_graph] greeks_graph_height:", greeks_graph_height);
     let p_and_l_graph_area = svg
         .append("g")
         .attr("transform", `translate(0,0)`)
@@ -875,4 +878,8 @@ export function draw_graph() {
     add_crosshair();
 
     update_3d_view();
+}
+
+
+export function draw_graph_old() {
 }

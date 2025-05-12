@@ -633,13 +633,14 @@ export function update_3d_view() {
 
     let width = 0;
     let height = 0;
+    onGraphContainerVisible();
     width = global_data.get_window_width()
     height = global_data.get_window_height()
-    console.log("update_3d_view:  Width:", width);
-    console.log("update_3d_view:  Height:", height);
-    if (width == 0 || height == 0) {
-        onGraphContainerVisible();
-    }
+    //console.log("update_3d_view:  Width:", width);
+    //console.log("update_3d_view:  Height:", height);
+    //if (width == 0 || height == 0) {
+    //    onGraphContainerVisible();
+    //}
 
     //let container = document.getElementById('view3d-graph-container');
     let container = document.getElementById('view3d-container');
@@ -786,4 +787,7 @@ export function update_3d_view() {
     renderer.render(scene, camera);
 
 
+}
+
+export function update_3d_view_old() {
 }
