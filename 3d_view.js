@@ -186,7 +186,7 @@ function create_3dbox(z) {
 }
 function create_reference_plane(z) {
     let reference_plane = new THREE.Group();
-    let plane_color = 0xa0a0a0; // Gray color
+    const plane_color = getComputedStyle(document.body).getPropertyValue("--ref-plane-color").trim();
     let points;
     let geometry;
     let material;
@@ -301,11 +301,12 @@ function create_specific_lines() {
 
     }
 
+    const black_material_color = getComputedStyle(document.body).getPropertyValue("--black-material-color").trim();
     const black_geometry = new THREE.BufferGeometry().setFromPoints(black_points);
     const black_line = new MeshLine();
     black_line.setGeometry(black_geometry);
     const black_material = new MeshLineMaterial({
-        color: new THREE.Color(get_dark_mode() ? 0xffffff : 0x000000),
+        color: new THREE.Color(black_material_color),
         lineWidth: 0.1, // real visible width!
         transparent: true,
         depthTest: false
@@ -314,11 +315,12 @@ function create_specific_lines() {
     lines.add(black_mesh_line);
 
 
+    const green_material_color = getComputedStyle(document.body).getPropertyValue("--green-material-color").trim();
     const green_geometry = new THREE.BufferGeometry().setFromPoints(green_points);
     const green_line = new MeshLine();
     green_line.setGeometry(green_geometry);
     const green_material = new MeshLineMaterial({
-        color: new THREE.Color(0x008000),
+        color: new THREE.Color(green_material_color),
         lineWidth: 0.1, // real visible width!
         transparent: true,
         depthTest: false
@@ -327,11 +329,12 @@ function create_specific_lines() {
     lines.add(green_mesh_line);
 
 
+    const orange_material_color = getComputedStyle(document.body).getPropertyValue("--orange-material-color").trim();
     const orange_geometry = new THREE.BufferGeometry().setFromPoints(orange_points);
     const orange_line = new MeshLine();
     orange_line.setGeometry(orange_geometry);
     const orange_material = new MeshLineMaterial({
-        color: new THREE.Color(0xFFA500),
+        color: new THREE.Color(orange_material_color),
         lineWidth: 0.1, // real visible width!
         transparent: true,
         depthTest: false
@@ -380,31 +383,21 @@ function create_mesh_color_heatmap(curve_data, z) {
 
             // Normalize Z and convert to color
             const color = new THREE.Color();
-            if (0) { //get_two_colors_cmap()) {
-                const zNorm = (point.z - zMin) / (zMax - zMin); // [0, 1]
-                color.setHSL((zNorm) * 0.33, 1.0, 0.5); // green (0.33) → red (0)
+            // Diverging color map: red (neg) - orange (zero) - green (pos)
+            const zNorm = point.z / zAbsMax; // range [-1, 1]
+
+            let hue;
+            if (zNorm < 0) {
+                // From red (0) to orange (0.08)
+                hue = 0.08 * (1 + zNorm); // zNorm = -1 → 0 (red), zNorm = 0 → 0.08 (orange)
+            } else {
+                // From orange (0.08) to green (0.33)
+                hue = 0.08 + (0.33 - 0.08) * zNorm; // zNorm = 0 → 0.08, zNorm = 1 → 0.33
             }
-            else if (0) {
-                const zNorm = (point.z - zMin) / (zMax - zMin); // [0, 1]
-                color.setHSL((1 - zNorm) * 0.7, 1.0, 0.5); // 0.7 (blue) → 0 (red)    
-            }
-            else {
 
-                // Diverging color map: red (neg) - orange (zero) - green (pos)
-                const zNorm = point.z / zAbsMax; // range [-1, 1]
+            color.setHSL(hue, 1.0, 0.5);
 
-                let hue;
-                if (zNorm < 0) {
-                    // From red (0) to orange (0.08)
-                    hue = 0.08 * (1 + zNorm); // zNorm = -1 → 0 (red), zNorm = 0 → 0.08 (orange)
-                } else {
-                    // From orange (0.08) to green (0.33)
-                    hue = 0.08 + (0.33 - 0.08) * zNorm; // zNorm = 0 → 0.08, zNorm = 1 → 0.33
-                }
 
-                color.setHSL(hue, 1.0, 0.5);
-
-            }
 
             colorArray[k + 0] = color.r;
             colorArray[k + 1] = color.g;
@@ -425,7 +418,8 @@ function create_mesh_color_heatmap(curve_data, z) {
         opacity: 1
     });
 
-    const materialWireframe = new THREE.LineBasicMaterial({ color: 0x000000 }); // black wireframe
+    const black_material_color = getComputedStyle(document.body).getPropertyValue("--black-material-color").trim();
+    const materialWireframe = new THREE.LineBasicMaterial({ color: black_material_color }); // black wireframe
     const mesh = new THREE.Mesh(geometry, materialSurface);
     const wireframe = new THREE.LineSegments(new THREE.WireframeGeometry(geometry), materialWireframe);
     return [mesh, wireframe];
@@ -433,38 +427,7 @@ function create_mesh_color_heatmap(curve_data, z) {
 function activate_3d() {
     update_3d_view();
 }
-export function UNUSED_update_3d_view_ref() {
-    const view_container = d3.select("#view3d-graph-container")
-    view_container.selectAll("*").remove();
 
-    const container = document.getElementById('view3d-graph-container');
-
-    // Create a canvas renderer and attach it to the container
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(container.clientWidth, container.clientHeight);
-    container.appendChild(renderer.domElement);
-
-    // Create a cube
-    const geometry = new THREE.BoxGeometry();
-    const material = new THREE.MeshNormalMaterial(); // colorful shading
-    const cube = new THREE.Mesh(geometry, material);
-    scene.add(cube);
-
-    camera.position.z = 2;
-
-    // Animation loop
-    function animate() {
-        requestAnimationFrame(animate);
-        cube.rotation.x += 0.01;
-        cube.rotation.y += 0.01;
-        renderer.render(scene, camera);
-    }
-
-    animate();
-
-}
 function cleanupThree() {
     if (animationId) {
         cancelAnimationFrame(animationId);
@@ -503,8 +466,9 @@ function draw_x_axis_arrow(scene) {
     const ref_plane_half_size = 10;
     const height = 2 * ref_plane_half_size;
 
+    const material_color = getComputedStyle(document.body).getPropertyValue("--xaxis-material-color").trim();
     const geometry = new THREE.CylinderGeometry(r, r, height, 32);
-    const material = new THREE.MeshStandardMaterial({ color: 0xff0000 });
+    const material = new THREE.MeshStandardMaterial({ color: material_color });
     const cylinder = new THREE.Mesh(geometry, material);
 
     // Position: center between (-size, y, z) and (+size, y, z)
@@ -524,8 +488,9 @@ function draw_y_axis_arrow(scene) {
     const ref_plane_half_size = 10;
     const height = 2 * ref_plane_half_size;
 
+    const material_color = getComputedStyle(document.body).getPropertyValue("--yaxis-material-color").trim();
     const geometry = new THREE.CylinderGeometry(r, r, height, 32);
-    const material = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
+    const material = new THREE.MeshStandardMaterial({ color: material_color });
     const cylinder = new THREE.Mesh(geometry, material);
 
     // Position: center along Y axis, between -size and +size
@@ -548,7 +513,8 @@ function draw_z_axis_arrow(scene) {
     const geometry = new THREE.CylinderGeometry(r, r, height, 32);
 
     // Create material (any style you like)
-    const material = new THREE.MeshStandardMaterial({ color: 0x0000FF });
+    const material_color = getComputedStyle(document.body).getPropertyValue("--zaxis-material-color").trim();
+    const material = new THREE.MeshStandardMaterial({ color: material_color });
 
     // Create mesh
     const cylinder = new THREE.Mesh(geometry, material);
@@ -590,16 +556,17 @@ export function update_3d_view() {
     //console.log("update_3d_view:  Width:", width);
     //console.log("update_3d_view:  Height:", height);
 
-    //let container = document.getElementById('view3d-graph-container');
     let container = document.getElementById('view3d-container');
 
 
     // Create a canvas renderer and attach it to the container
     scene = new THREE.Scene();
 
-    scene.background = new THREE.Color(get_dark_mode() ? '#1e1e1e' : '#ffffee');
+    const material_color = getComputedStyle(document.body).getPropertyValue("--bg-main").trim();
+    scene.background = new THREE.Color(material_color);
     camera = new THREE.PerspectiveCamera(cameraPosition.fov, window.innerWidth / window.innerHeight, 0.1, 100);
     camera.up.set(0, 0, 1);          // Make Z the "up" direction
+
 
     let theta = cameraPosition.z_rotation / 180.0 * Math.PI;
     let alpha = cameraPosition.view_angle / 180.0 * Math.PI;

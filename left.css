@@ -14,7 +14,7 @@ body.light-mode {
   --bg-days-left: #02520e69;
   --bg-volatility-main: #0f026f59;
   --bg-per-leg-volatility: hsl(247, 42%, 69%);
-  --bg-mean-volatility: #1e1e1e;
+  --bg-mean-volatility: #afaeae;
   --bg-combo-templater: #1e1e1e;
   --bg-sigma-selector: #06a4ff;
 }

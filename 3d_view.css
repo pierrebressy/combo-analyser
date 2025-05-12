@@ -1,0 +1,17 @@
+body.light-mode {
+    --ref-plane-color: #0055ff;
+    --black-material-color: #000000;
+    --green-material-color: #03a200;
+    --orange-material-color: #f8ae00;
+}
+
+body.dark-mode {
+    --ref-plane-color: #ffffff;
+    --black-material-color: #ffffff;
+    --green-material-color: #03a200;
+    --orange-material-color: #f8ae00;
+
+    --xaxis-material-color: #ff0000;
+    --yaxis-material-color: #00ff00;
+    --zaxis-material-color: #0000ff;
+}
