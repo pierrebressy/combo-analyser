@@ -841,11 +841,10 @@ export function draw_graph() {
 
     svg = svg_cleanup(svg);
     //console.log("[draw_graph] window size:", global_data.get_window_width(), global_data.get_window_height());
-    if (1 || global_data.get_window_width() < 100 || global_data.get_window_height() < 100) {
+    onGraphContainerVisible();
+    if (global_data.get_window_width() < 100 || global_data.get_window_height() < 100) {
         console.log("[draw_graph] window size too small");
-        onGraphContainerVisible();
-
-        //return;
+        return;
     }
     const p_and_l_area_height = global_data.get_graph_p_and_l_ratio() * global_data.get_window_height() - global_data.get_window_vspacer_margin();
     const greeks_graph_height = global_data.get_window_height() - p_and_l_area_height;
