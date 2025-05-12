@@ -1,50 +1,131 @@
 body.light-mode {
-    --bg-main: #ffffff;
-    --text-color: #000000;
-    --tabs-inactive-text-color: #000000;
-    --tabs-inactive-bg-color: #f0efef;
-    --tabs-active-text-color: #000000;
-    --tabs-active-bg-color: #a6a6a6;
-    --bg-tabs-selector: #ffffff;
-    --button-active-bg-color: rgb(141, 244, 218);
-    --button-inactive-bg-color: rgb(0, 0, 0);
-    --sigma-area-color: rgba(0, 0, 255, 0.073);
+  --bg-main: #ffffff;
+  --text-color: #000000;
+
+  /* containers */
+  --bg-main-container: #ffffff;
+  --bg-graph-container: #ffffff;
+  --bg-left-container: #ffffff;
+  --bg-right-container: #ffffff;
+  --bg-combo-builder-container: #ffffff;
+  --bg-parameters-container: #ffffff;
+  --bg-log-container: #ffffff;
+  --bg-polygon-container: #ffffff;
+
+  /* tabs */
+  --bg-tabs-selector-container: #ffffff;
+
+  --tab-button-inactive-bg-color: rgb(141, 142, 141);
+  --tab-button-inactive-text-color: rgb(255, 255, 255);
+
+  --tab-button-hover-bg-color: rgb(0, 171, 134);
+  --tab-button-hover-text-color: rgb(255, 255, 255);
+
+  --tab-button-selected-bg-color: rgb(255, 255, 255);
+  --tab-button-selected-text-color: rgb(0, 0, 0);
+
+  --tab-button-active-text-color: rgb(0, 171, 134);
+  --tab-button-active-bg-color: rgb(255, 255, 255);
+
+  --zero-crossing-line-color : rgb(203, 139, 1);
+  --zero-crossing-text-color : rgb(0, 0, 0);
+
+  --pl-sim-path-color: #02c322;
+  --pl-exp-path-color: rgb(0, 0, 0);
+  --pl-init-path-color: rgb(255, 174, 0);
+
+  --gradient-start: #ffffff;
+  --positive-gradient-stop: #019f28;
+  --negative-gradient-stop: #ff0000;
+
+  --crosshair-line-color:#00bc2f;
+
+  --current-price-rect-color: #0055ff;
+  --current-price-text-color: #ffffff;
+
+  --call-rect-color: #ff0000;
+  --put-rect-color: #00be39;
+  --put-call-text-color: #ffffff;
+
+  --horizontal-grid-color: #9d9b9b;
+
+
+
+
+
+  --sigma-area-color: rgba(0, 0, 255, 0.073);
   --matrix-bg: #ffffff;
   --matrix-text: hsl(0, 0%, 0%);
   --matrix-text-warning: hsl(35, 100%, 50%);
-  --matrix-text-error:  hsl(0, 100%, 50%);
+  --matrix-text-error: hsl(0, 100%, 50%);
   --matrix-border: hsl(43, 100%, 50%);
   --matrix-hover: hsl(43, 97%, 38%);
 
-  --exp-path-color: #000000;
 }
 
 body.dark-mode {
-    --bg-main: #000000;
-    --text-color: #ffffff;
-    --tabs-inactive-text-color: #b1b0b0;
-    --tabs-inactive-bg-color: #353333;
-    --tabs-active-text-color: #f3f3f3;
-    --tabs-active-bg-color: #8d8d8d;
-    --bg-tabs-selector: #1c1c1c;
-    --button-active-bg-color: rgb(0, 141, 141);
+  --bg-main: #000000;
+  --text-color: #ffffff;
 
-    --bg-main-container: #c7c7c7;
-    --bg-graph-container: #0e0e0e;
-    --bg-combo-builder-container: #0e0e0e;
-    --bg-parameters-container: #0e0e0e;
-    --bg-log-container: #0e0e0e;
-    --bg-polygon-container: #0e0e0e;
+  /* containers */
+  --bg-main-container: #000000;
+  --bg-graph-container: #000000;
+  --bg-left-container: #000000;
+  --bg-right-container: #000000;
+  --bg-combo-builder-container: #000000;
+  --bg-parameters-container: #000000;
+  --bg-log-container: #000000;
+  --bg-polygon-container: #000000;
 
-    --sigma-area-color: #0278f63a;
+  /* tabs */
+  --bg-tabs-selector-container: #000000;
+
+  --tab-button-inactive-bg-color: rgb(141, 142, 141);
+  --tab-button-inactive-text-color: rgb(255, 255, 255);
+
+  --tab-button-hover-bg-color: rgb(0, 171, 134);
+  --tab-button-hover-text-color: rgb(255, 255, 255);
+
+  --tab-button-selected-bg-color: rgb(255, 255, 255);
+  --tab-button-selected-text-color: rgb(0, 0, 0);
+
+  --tab-button-active-text-color: rgb(0, 171, 134);
+  --tab-button-active-bg-color: rgb(255, 255, 255);
+
+
+  --zero-crossing-line-color : rgb(255, 174, 0);
+  --zero-crossing-text-color : rgb(0, 0, 0);
+
+  --pl-sim-path-color: #017c16;
+  --pl-exp-path-color: rgb(255, 255, 255);
+  --pl-init-path-color: rgb(255, 174, 0);
+
+  --gradient-start: #000000;
+  --positive-gradient-stop: #019f28;
+  --negative-gradient-stop: #ff0000;
+
+  --crosshair-line-color:#00ff40;
+
+  --current-price-rect-color: #0055ff;
+  --current-price-text-color: #ffffff;
+
+  --call-rect-color: #ff0000;
+  --put-rect-color: #00be39;
+  --put-call-text-color: #ffffff;
+
+  --horizontal-grid-color: #535252;
+
+
+
+
+
+  --sigma-area-color: #0278f63a;
 
   --matrix-bg: #000000;
   --matrix-text: #28ff5e;
   --matrix-text-warning: hsl(37, 100%, 50%);
-  --matrix-text-error:  hsl(0, 100%, 50%);
+  --matrix-text-error: hsl(0, 100%, 50%);
   --matrix-border: #00ff41;
   --matrix-hover: #00cc33;
 
---exp-path-color: #ffffff;
 }
-

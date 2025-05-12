@@ -10,7 +10,7 @@ import { addLog } from './log.js';
 import { get_use_computed_volatility } from './global.js';
 import { global_data } from './main_script.js';
 
-import { get_container_size, onGraphContainerVisible } from './frame.js';
+import { onGraphContainerVisible } from './frame.js';
 
 let pl_at_expiration_cursor;
 let pl_at_initial_cursor;
@@ -21,7 +21,7 @@ let price_cursor;
 let memo_price_at_mouse_down = 0;
 
 
-export function compute_greeks_data_for_price(greek_index, use_legs_volatility, get_use_real_values, price) {
+export function compute_greeks_data_for_price(greek_index, use_legs_volatility, price) {
 
     const use_computed_volatility = get_use_computed_volatility();
 
@@ -53,7 +53,7 @@ function compute_greeks_data(use_legs_volatility) {
 
         let greek_index = 0;
         for (greek_index = 0; greek_index < num_greeks; greek_index++) {
-            let data = compute_greeks_data_for_price(greek_index, use_legs_volatility, get_use_real_values, price);
+            let data = compute_greeks_data_for_price(greek_index, use_legs_volatility, price);
             greeks_data[greek_index].push(data);
         }
         if (global_data.get_combo_params().legs.length == 1) {
@@ -308,8 +308,6 @@ export function add_grid(graph, y_scale) {
         .call(d3.axisBottom(global_data.get_x_scale()))
         .selectAll(".tick text")
         .remove();
-
-
     const y_axis_grid = d3.axisLeft(y_scale)
         .tickSize(-global_data.get_window_width() + global_data.get_window_left_margin() + global_data.get_window_right_margin())
         .tickFormat("");
@@ -340,7 +338,7 @@ export function draw_p_and_l(graph, scale) {
 
     green_gradient.append("stop")
         .attr("offset", "100%")
-        .attr("stop-color", "green");
+        .attr("stop-color", "var(--positive-gradient-stop)");
 
     // Red gradient for negative areas
     const red_gradient = defs.append("linearGradient")
@@ -354,7 +352,7 @@ export function draw_p_and_l(graph, scale) {
 
     red_gradient.append("stop")
         .attr("offset", "100%")
-        .attr("stop-color", "red");
+        .attr("stop-color", "var(--negative-gradient-stop)");
 
     // Define the area generator for positive values (above zero)
     const area_below = d3.area()
@@ -388,7 +386,7 @@ export function draw_p_and_l(graph, scale) {
     graph.append("path")
         .datum(global_data.get_pl_at_exp_data())
         .attr("fill", "none")
-        .attr("stroke", "var(--exp-path-color)")
+        .attr("stroke", "var(--pl-exp-path-color)")
         .attr("stroke-width", 2)
         .attr("d", d3.line()
             .x(d => global_data.get_x_scale()(d.x))
@@ -407,15 +405,15 @@ export function draw_p_and_l(graph, scale) {
             .attr("x2", global_data.get_x_scale()(x))
             .attr("y1", scale.range()[0])  // Bottom of graph
             .attr("y2", scale.range()[1])          // y = 0 line
-            .attr("stroke", "orange")
+            .attr("stroke", "var(--zero-crossing-line-color)")
             .attr("stroke-dasharray", "4,4")  // Dashed line
             .attr("stroke-width", 1);
 
-        let zero_crossing_label = new TextRect(graph, "price", "orange");
+        let zero_crossing_label = new TextRect(graph, "price", "var(--zero-crossing-line-color)");
         zero_crossing_label.set_rect_position(global_data.get_x_scale()(x) - zero_crossing_label.get_width() / 2, scale.range()[0]);
         zero_crossing_label.set_text_position(global_data.get_x_scale()(x), scale.range()[0]);
         zero_crossing_label.set_text(x.toFixed(1));
-        zero_crossing_label.set_text_color("black");
+        zero_crossing_label.set_text_color("var(--zero-crossing-text-color)");
         zero_crossing_label.show();
     });
 
@@ -425,7 +423,7 @@ export function draw_p_and_l(graph, scale) {
     graph.append("path")
         .datum(global_data.get_pl_at_sim_data())
         .attr("fill", "none")
-        .attr("stroke", "green")
+        .attr("stroke", "var(--pl-sim-path-color)")
         .attr("stroke-width", 2)
         .attr("d", d3.line()
             .x(d => global_data.get_x_scale()(d.x))
@@ -437,7 +435,7 @@ export function draw_p_and_l(graph, scale) {
     graph.append("path")
         .datum(global_data.get_pl_at_init_data())
         .attr("fill", "none")
-        .attr("stroke", "orange")
+        .attr("stroke", "var(--pl-init-path-color)")
         .attr("stroke-width", 2)
         .attr("d", d3.line()
             .x(d => global_data.get_x_scale()(d.x))
@@ -457,7 +455,7 @@ export function add_crosshair() {
         .attr("id", "crosshair-x")
         .attr("y1", global_data.get_window_top_margin())
         .attr("y2", global_data.get_window_height() - global_data.get_window_bottom_margin())
-        .attr("stroke", "green")
+        .attr("stroke", "var(--crosshair-line-color)")
         .attr("stroke-width", 1)
         .attr("stroke-dasharray", "4,4");
 
@@ -467,7 +465,7 @@ export function add_crosshair() {
         .attr("id", "crosshair-y")
         .attr("x1", global_data.get_window_left_margin())
         .attr("x2", global_data.get_window_width() - global_data.get_window_right_margin())
-        .attr("stroke", "green")
+        .attr("stroke", "var(--crosshair-line-color)")
         .attr("stroke-width", 1)
         .attr("stroke-dasharray", "4,4");
 
@@ -548,7 +546,7 @@ export function display_current_price(svg) {
     const x_position = global_data.get_x_scale()(global_data.get_underlying_price());
     let l = new Line(svg, global_data);
     l.set_position(x_position, -14, x_position, global_data.get_window_height());
-    l.set_color("#0055FF");
+    l.set_color("var(--current-price-rect-color)");
 
     let label = new TextRect(svg, "current_price", "#0055FF");
     label.set_width(80);
@@ -559,7 +557,7 @@ export function display_current_price(svg) {
         global_data.get_window_left_margin() + global_data.get_x_scale()(global_data.get_underlying_price()),
         global_data.get_button_default_text_vpos() + 8);
     label.set_text(`${global_data.get_underlying_price().toFixed(1)}`);
-    label.set_text_color("white");
+    label.set_text_color("var(--current-price-text-color)");
     label.text_element.style("cursor", "grabbing")
     label.show();
 
@@ -607,9 +605,9 @@ export function display_strike_buttons() {
         const x_position = global_data.get_x_scale()(option.strike);
         let l = new Line(svg, global_data);
         l.set_position(x_position, -14, x_position, global_data.get_window_height());
-        l.set_color(option.type === "call" ? "red" : "green");
+        l.set_color(option.type === "call" ? "var(--call-rect-color)" : "var(--put-rect-color)");
 
-        let label = new TextRectPlus(svg, "strike", option.type === "call" ? "red" : "green", option.expiration_offset);
+        let label = new TextRectPlus(svg, "strike", option.type === "call" ? "var(--call-rect-color)" : "var(--put-rect-color)", option.expiration_offset);
         label.set_width(80);
         label.set_rect_position(
             global_data.get_window_left_margin() + global_data.get_x_scale()(option.strike) - label.get_width() / 2,
@@ -619,7 +617,7 @@ export function display_strike_buttons() {
             global_data.get_button_default_text_vpos() - 14);
         let ot = option.type === "call" ? "C" : "P";
         label.set_text(` ${option.qty} ${ot} ${(1.0 * option.strike).toFixed(1)}`);
-        label.set_text_color("white");
+        label.set_text_color("var(--put-call-text-color)");
         label.text_element.style("cursor", "grabbing")
         label.show();
         //strike_label.text_element.attr("class", "draggable-button")
@@ -789,7 +787,7 @@ export function display_p_and_l_graph(p_and_l_area, p_and_l_area_height) {
         .attr("y", 0)
         .attr("width", p_and_l_graph_width)
         .attr("height", p_and_l_graph_height)
-        .attr("fill", "var(--bg-right)");
+        .attr("fill", "var(--bg-right-container)");
 
     p_and_l_graph.append("g")
         .attr("class", "y-axis")
@@ -808,20 +806,6 @@ export function compute_data_to_display() {
     global_data.set_pl_at_sim_data(compute_p_and_l_data(get_volatility_is_per_leg(), global_data.get_time_for_simulation_of_active_combo()));
 
     global_data.set_greeks_data(compute_greeks_data(get_volatility_is_per_leg()));
-}
-function svg_cleanup_old(svg) {
-    if (!svg) {
-
-        svg = d3.select("#pl-right-header")
-            .append("svg")
-            .attr("width", "100%")
-            .attr("height", "100%")
-            .attr("width", "100%")
-            .attr("height", "100%")
-            .style("display", "block");
-    }
-    svg.selectAll("*").remove();
-    return svg;
 }
 function svg_cleanup(svg) {
     if (!svg) {
@@ -878,8 +862,4 @@ export function draw_graph() {
     add_crosshair();
 
     update_3d_view();
-}
-
-
-export function draw_graph_old() {
 }

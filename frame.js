@@ -21,7 +21,6 @@ import { cookie_manager } from './cookie.js';
 import { add_polygon_container_in_tab_container, addPolygonLog } from './polygon.js';
 import { global_data } from './main_script.js';
 
-let tabs_manager;
 
 export function display_combos_list() {
 
@@ -829,7 +828,6 @@ function onGraphPLContainerVisible() {
     onGraphContainerVisible();
     draw_graph();
 }
-
 export function onGraphView3DContainerVisible() {
     console.log("+++ onGraphView3DContainerVisible");
     onGraphContainerVisible();

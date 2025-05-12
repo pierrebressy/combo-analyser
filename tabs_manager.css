@@ -1,5 +1,5 @@
 .tabs-selector-container {
-  background-color: var(--bg-tabs-selector);
+  background-color: var(--bg-tabs-selector-container);
   padding: 4px;
 }
 
@@ -9,28 +9,30 @@
   height: 100%;
   width: 100%;
   flex-direction: column;
-  /*border: 1px solid black;*/
 }
 
 .tab-button {
   padding: 8px 15px;
   font-size: 12px;
-  color: var(--text-color);
-  background-color: rgb(66, 66, 66);
+  color: var(--tab-button-inactive-text-color);
+  background-color: var(--tab-button-inactive-bg-color);
   cursor: pointer;
   transition: background-color 0.4s;
   margin-right: 5px;
-  border-radius: 3px;
+  border-radius: 5px;
 }
 
 .tab-button:hover {
-  background-color: var(--button-active-bg-color);
+  color: var(--tab-button-hover-text-color);
+  background-color: var(--tab-button-hover-bg-color);
 }
 
 .tab-button:active {
-  font-weight: bold;
+  color: var(--tab-button-active-text-color);
+  background-color: var(--tab-button-active-bg-color);
 }
 
 .tab-button.selected {
-  background-color: #9b9a9a
+  color: var(--tab-button-selected-text-color);
+  background-color: var(--tab-button-selected-bg-color);
 }

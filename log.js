@@ -44,7 +44,6 @@ export function add_log_container_in_tab_container(tab_container) {
   tab_container.appendChild(log_container);
 }
 
-
 export function addLog(...args) {
   if (log_container === null) {
     //console.error("Log container is not initialized.");

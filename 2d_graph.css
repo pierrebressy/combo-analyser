@@ -1,13 +1,3 @@
-.XXX-pl-container {
-    background-color: var(--bg-right);
-    width: 100%;
-    background-color: var(--bg-right);
-    padding: 0px;
-    font-family: Menlo, monospace;
-    font-size: 12px;
-    height: 90vh;
-}
-
 .floating-window {
     position: absolute;
     background: white;
@@ -20,6 +10,8 @@
     font-size: 12px;
     border-radius: 5px;
     min-width: 120px;
+    color: var(--text-color);
+    background-color: var(--bg-main);
 }
 
 .floating-window .title {
@@ -28,6 +20,8 @@
     margin-bottom: 10px;
     font-family: Menlo, monospace;
     font-size: 12px;
+    color: var(--text-color);
+    background-color: var(--bg-main);
 }
 
 .red-dot {
@@ -39,7 +33,6 @@
     top: 10px;
     right: 10px;
 }
-
 
 .green-dot {
     width: 15px;
@@ -129,46 +122,76 @@
 body.light-mode .y-axis text {
     fill: #000000;
     stroke: none;
+    font-weight: normal;
+}
+body.light-mode .y-axis path,
+body.light-mode .y-axis line {
+    stroke: #000000;
+}
+body.light-mode .x-axis path,
+body.light-mode .x-axis line {
+    stroke: #000000;
 }
 
-/* Dark mode axis styling */
+body.light-mode .y-axis-greek text {
+    fill: #000;
+    stroke: #000000;
+    /* important */
+    font-weight: normal;
+}
+
+body.light-mode .y-axis-greek path,
+body.light-mode .y-axis-greek line {
+    stroke: #000;
+}
+
+
+body.light-mode .y-grid text {
+    fill: #000000;
+    stroke: none;
+    font-weight: normal;
+}
+body.light-mode .y-grid path,
+body.light-mode .y-grid line {
+    stroke: #000000;
+}
+
+
+
+
+
 body.dark-mode .y-axis text {
     fill: #ffffff;
     stroke: none;
 }
-/* Light mode axis style */
-body.light-mode .x-axis path,
-body.light-mode .x-axis line {
-    stroke: #000;
-}
 
-/* Dark mode axis style */
 body.dark-mode .x-axis path,
 body.dark-mode .x-axis line {
     stroke: #fff;
 }
 
-body.light-mode .y-axis-greek text {
-    fill: #000;
-    stroke: none;  /* important */
-    font-weight: normal;
-}
-
-/* Dark mode */
 body.dark-mode .y-axis-greek text {
     fill: #fff;
-    stroke: none;  /* important */
+    stroke: none;
+    /* important */
     font-weight: normal;
-}
-body.light-mode .y-axis-greek path,
-body.light-mode .y-axis-greek line {
-    stroke: #000;
 }
 
 body.dark-mode .y-axis-greek path,
 body.dark-mode .y-axis-greek line {
     stroke: #fff;
 }
+
+body.dark-mode .y-grid text {
+    fill: #ffffff;
+    stroke: none;
+    font-weight: normal;
+}
+body.dark-mode .y-grid path,
+body.dark-mode .y-grid line {
+    stroke: #ffffff;
+}
+
 
 .y-label-std-text {
     fill: var(--text-color);

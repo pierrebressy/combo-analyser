@@ -1,11 +1,9 @@
 import { compute_p_and_l_data_for_price, compute_data_to_display, compute_greeks_data_for_price } from './2d_graph.js';
 import { get_dark_mode } from './global.js';
-import { get_two_colors_cmap } from './global.js';
 import { get_show_hplane } from './global.js';
 import { get_show_3dbox } from './global.js';
 import { global_data } from './main_script.js';
-import { get_container_size, onGraphContainerVisible } from './frame.js';
-import { draw_graph } from './2d_graph.js';
+import { onGraphContainerVisible } from './frame.js';
 
 export let x_camera = 20;
 export let y_camera = 20;
@@ -87,7 +85,7 @@ class GreekSurface extends Generic3DSurface {
 
                 const use_legs_volatility = false
                 const get_use_real_values = false
-                let z = compute_greeks_data_for_price(greek_index, use_legs_volatility, get_use_real_values, x);
+                let z = compute_greeks_data_for_price(greek_index, use_legs_volatility, x);
                 this.matrixData[count] = {
                     x: this.xscale(x),
                     y: this.yscale(y),
@@ -229,51 +227,6 @@ function create_reference_plane(z) {
         // Add the line to the scene
     }
     return reference_plane;
-}
-function create_reference_arrows(z) {
-    let ref_arrow = new THREE.Group();
-
-
-    const base = new THREE.Vector3(-ref_plane_half_size, -ref_plane_half_size, -ref_plane_half_size);
-    const len = ref_plane_half_size * 2;
-
-    const headLength = len * 0.05;
-    const headWidth = headLength * 0.5;
-
-    // X-axis arrow (red)
-    const arrowX = new THREE.ArrowHelper(
-        new THREE.Vector3(1, 0, 0), // direction X
-        base.clone(),               // origin
-        len,
-        0xff0000,
-        headLength,
-        headWidth
-    );
-
-    // Y-axis arrow (green)
-    const arrowY = new THREE.ArrowHelper(
-        new THREE.Vector3(0, 1, 0), // direction Y
-        base.clone(),
-        len,
-        0x00ff00,
-        headLength,
-        headWidth
-    );
-
-    // Z-axis arrow (blue)
-    const arrowZ = new THREE.ArrowHelper(
-        new THREE.Vector3(0, 0, 1), // direction Z
-        base.clone(),
-        len,
-        0x0000ff,
-        headLength,
-        headWidth
-    );
-
-    ref_arrow.add(arrowX);
-    ref_arrow.add(arrowY);
-    ref_arrow.add(arrowZ);
-    return ref_arrow;
 }
 function create_pl_vs_time_and_price_surface() {
     let surface = new PLSurface();
@@ -545,8 +498,47 @@ function cleanupThree() {
     scene = null;
     camera = null;
 }
+function draw_x_axis_arrow(scene) {
+    const r = 0.1;
+    const ref_plane_half_size = 10;
+    const height = 2 * ref_plane_half_size;
 
-function test_z(scene) {
+    const geometry = new THREE.CylinderGeometry(r, r, height, 32);
+    const material = new THREE.MeshStandardMaterial({ color: 0xff0000 });
+    const cylinder = new THREE.Mesh(geometry, material);
+
+    // Position: center between (-size, y, z) and (+size, y, z)
+    cylinder.position.set(
+        0,                         // midpoint on X
+        -ref_plane_half_size,
+        -ref_plane_half_size
+    );
+
+    // Rotate to align with X axis (Y → X => rotate Z axis)
+    cylinder.rotation.z = Math.PI / 2;
+
+    scene.add(cylinder);
+}
+function draw_y_axis_arrow(scene) {
+    const r = 0.1;
+    const ref_plane_half_size = 10;
+    const height = 2 * ref_plane_half_size;
+
+    const geometry = new THREE.CylinderGeometry(r, r, height, 32);
+    const material = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
+    const cylinder = new THREE.Mesh(geometry, material);
+
+    // Position: center along Y axis, between -size and +size
+    cylinder.position.set(
+        -ref_plane_half_size,
+        0, // midpoint on Y
+        -ref_plane_half_size
+    );
+
+    // No rotation needed for Y
+    scene.add(cylinder);
+}
+function draw_z_axis_arrow(scene) {
     // Parameters
     const r = 0.1;                         // Cylinder radius
     const ref_plane_half_size = 10;      // Reference size
@@ -574,51 +566,10 @@ function test_z(scene) {
     // Add to scene
     scene.add(cylinder);
 }
-function test_x(scene) {
-    const r = 0.1;
-    const ref_plane_half_size = 10;
-    const height = 2 * ref_plane_half_size;
-
-    const geometry = new THREE.CylinderGeometry(r, r, height, 32);
-    const material = new THREE.MeshStandardMaterial({ color: 0xff0000 });
-    const cylinder = new THREE.Mesh(geometry, material);
-
-    // Position: center between (-size, y, z) and (+size, y, z)
-    cylinder.position.set(
-        0,                         // midpoint on X
-        -ref_plane_half_size,
-        -ref_plane_half_size
-    );
-
-    // Rotate to align with X axis (Y → X => rotate Z axis)
-    cylinder.rotation.z = Math.PI / 2;
-
-    scene.add(cylinder);
-}
-function test_y(scene) {
-    const r = 0.1;
-    const ref_plane_half_size = 10;
-    const height = 2 * ref_plane_half_size;
-
-    const geometry = new THREE.CylinderGeometry(r, r, height, 32);
-    const material = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
-    const cylinder = new THREE.Mesh(geometry, material);
-
-    // Position: center along Y axis, between -size and +size
-    cylinder.position.set(
-        -ref_plane_half_size,
-        0, // midpoint on Y
-        -ref_plane_half_size
-    );
-
-    // No rotation needed for Y
-    scene.add(cylinder);
-}
-
-function draw_axis(scene) {
-    test_z(scene);
-    test_y(scene);
-    test_x(scene);
+function draw_axis_arrows(scene) {
+    draw_x_axis_arrow(scene);
+    draw_y_axis_arrow(scene);
+    draw_z_axis_arrow(scene);
 }
 export function update_3d_view() {
 
@@ -638,9 +589,6 @@ export function update_3d_view() {
     height = global_data.get_window_height()
     //console.log("update_3d_view:  Width:", width);
     //console.log("update_3d_view:  Height:", height);
-    //if (width == 0 || height == 0) {
-    //    onGraphContainerVisible();
-    //}
 
     //let container = document.getElementById('view3d-graph-container');
     let container = document.getElementById('view3d-container');
@@ -693,10 +641,8 @@ export function update_3d_view() {
         scene.add(box3d);
 
     // create the 3 arrows referencial axes X,Y,Z
-//    let ref_arrow = create_reference_arrows(zero_point.z);
     if (display_reference_arrows)
-//        scene.add(ref_arrow);
-        draw_axis(scene);
+        draw_axis_arrows(scene);
 
     let mesh_data = create_mesh_color_heatmap(curve_data, zero_point.z);
     if (display_curve) {
@@ -763,31 +709,15 @@ export function update_3d_view() {
         pivot_3.add(sprite_3);
     }
 
-
-    const raycaster = new THREE.Raycaster();
-    const mouse = new THREE.Vector2();
     const planeZ = new THREE.Plane(new THREE.Vector3(0, 0, zero_point.z), -zero_point.z); // z = 0
     const planeHelper = new THREE.PlaneHelper(planeZ, 2 * ref_plane_half_size, 0xadd8e6); // size, color (light blue)
     scene.add(planeHelper);
-
-
-
-
-
 
     renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(width, height);
     container.appendChild(renderer.domElement);
 
-
-
-
     camera.position.set(cameraPosition.x, cameraPosition.y, cameraPosition.z);
 
     renderer.render(scene, camera);
-
-
-}
-
-export function update_3d_view_old() {
 }

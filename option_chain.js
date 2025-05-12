@@ -575,6 +575,7 @@ class OptionChainTable {
         this.hoverLabel = document.createElement("div");
         this.hoverLabel.classList.add("hover-label");
         document.body.appendChild(this.hoverLabel);
+
     }
     add_rows(oc) {
         let rows = oc.get_combined_data(this.expiry);
@@ -755,20 +756,6 @@ async function add_option_chain_table(test_container, oc, expiry) {
     option_chain_container.classList.add('table-container');
     option_chain_container.id = 'table-container';
     test_container.appendChild(option_chain_container);
-
-    const hoverLabel = document.createElement("div");
-    hoverLabel.classList.add("hover-label");
-    /*    hoverLabel.style.position = "absolute";
-        hoverLabel.style.backgroundColor = "#000";
-        hoverLabel.style.color = "#fff";
-        hoverLabel.style.padding = "2px 6px";
-        hoverLabel.style.borderRadius = "4px";
-        hoverLabel.style.fontSize = "12px";
-        hoverLabel.style.pointerEvents = "none";
-        hoverLabel.style.display = "none";
-        hoverLabel.style.zIndex = "1000";*/
-    document.body.appendChild(hoverLabel);
-
 
     const headers = ["IV (mid)", "Call Bid", "Call Ask", "Strike", "Put Bid", "Put Ask", "IV (mid)"];
     const col_types = ["call-iv", "call-bid", "call-ask", "strike", "put-bid", "put-ask", "put-iv"];
