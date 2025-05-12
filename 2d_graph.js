@@ -10,7 +10,7 @@ import { addLog } from './log.js';
 import { get_use_computed_volatility } from './global.js';
 import { global_data } from './main_script.js';
 
-import { get_container_size } from './frame.js';
+import { get_container_size, onGraphContainerVisible } from './frame.js';
 
 let pl_at_expiration_cursor;
 let pl_at_initial_cursor;
@@ -841,16 +841,11 @@ export function draw_graph() {
 
     svg = svg_cleanup(svg);
     //console.log("[draw_graph] window size:", global_data.get_window_width(), global_data.get_window_height());
-    if (global_data.get_window_width() < 100 || global_data.get_window_height() < 100) {
+    if (1 || global_data.get_window_width() < 100 || global_data.get_window_height() < 100) {
         console.log("[draw_graph] window size too small");
-        let right_size = get_container_size("#pl-right-header");
-        let right_tabs_size = get_container_size("#view3d-controler-container");
-        right_size.height = right_size.height - right_tabs_size.height;
-        console.log("draw_graph -> right_size", right_size);
-        global_data.update_window_data(right_size);
+        onGraphContainerVisible();
 
-
-        return;
+        //return;
     }
     const p_and_l_area_height = global_data.get_graph_p_and_l_ratio() * global_data.get_window_height() - global_data.get_window_vspacer_margin();
     const greeks_graph_height = global_data.get_window_height() - p_and_l_area_height;

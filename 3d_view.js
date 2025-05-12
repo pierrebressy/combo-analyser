@@ -4,7 +4,7 @@ import { get_two_colors_cmap } from './global.js';
 import { get_show_hplane } from './global.js';
 import { get_show_3dbox } from './global.js';
 import { global_data } from './main_script.js';
-import { get_container_size } from './frame.js';
+import { get_container_size, onGraphContainerVisible } from './frame.js';
 import { draw_graph } from './2d_graph.js';
 
 export let x_camera = 20;
@@ -563,14 +563,9 @@ export function update_3d_view() {
     console.log("update_3d_view:  Width:", width);
     console.log("update_3d_view:  Height:", height);
     if (width == 0 || height == 0) {
-        let right_size = get_container_size("#pl-right-header");
-        let right_tabs_size = get_container_size("#view3d-controler-container");
-        right_size.height = right_size.height - right_tabs_size.height;
-        console.log("update_3d_view -> right_size", right_size);
-        global_data.update_window_data(right_size);
-        draw_graph();
-
+        onGraphContainerVisible();
     }
+    
     //let container = document.getElementById('view3d-graph-container');
     let container = document.getElementById('view3d-container');
 

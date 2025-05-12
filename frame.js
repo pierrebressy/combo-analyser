@@ -791,8 +791,8 @@ export function create_main_frame() {
     add_log_container_in_tab_container(log_tab_container);
     add_polygon_container_in_tab_container(polygon_tab_container);
 
-    setup_container_resize_observer(pl_container, onGraphContainerVisible);
-    setup_container_resize_observer(view3D_container, onGraphContainerVisible);
+    setup_container_resize_observer(pl_container, onGraphPLContainerVisible);
+    setup_container_resize_observer(view3D_container, onGraphView3DContainerVisible);
 
     main_tabs_manager.activate_last_tab();
     graphs_tabs_manager.activate_last_tab();
@@ -826,14 +826,25 @@ function setup_container_resize_observer(container, callback) {
     });
 
 }
+function onGraphPLContainerVisible() {
+    console.log("*** onGraphPLContainerVisible");
+    onGraphContainerVisible();
+    draw_graph();
+}
 
-function onGraphContainerVisible() {
-    let right_size = get_container_size("#pl-right-header");
-    let right_tabs_size = get_container_size("#view3d-controler-container");
-    right_size.height = right_size.height - right_tabs_size.height;
-    console.log("onGraphContainerVisible -> right_size", right_size);
-    global_data.update_window_data(right_size);
-
+export function onGraphView3DContainerVisible() {
+    console.log("+++ onGraphView3DContainerVisible");
+    onGraphContainerVisible();
     draw_graph();
     update_3d_view();
+
+}
+export function onGraphContainerVisible() {
+    let right_size = get_container_size("#pl-right-header");
+    console.log("onGraphContainerVisible -> pl-right-header", right_size);
+    let right_tabs_size = get_container_size("#graphs-tabs-selector-container");
+    console.log("onGraphContainerVisible -> view3d-controler-container", right_tabs_size);
+    right_size.height = right_size.height - right_tabs_size.height;
+    console.log("onGraphContainerVisible -> size", right_size);
+    global_data.update_window_data(right_size);
 }
