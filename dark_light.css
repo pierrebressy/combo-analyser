@@ -20,7 +20,7 @@ body.light-mode {
 }
 
 body.dark-mode {
-    --bg-main: #2e0065;
+    --bg-main: #000000;
     --text-color: #ffffff;
     --tabs-inactive-text-color: #b1b0b0;
     --tabs-inactive-bg-color: #353333;

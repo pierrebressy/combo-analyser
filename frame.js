@@ -462,7 +462,7 @@ function add_view3d_control_sliders(view3d_controler_container) {
     slider_zoom_label.style.width = "55px"; // 👈 fixed space
     sliderZoomContainer.appendChild(slider_zoom_label);
     sliderZoomContainer.appendChild(slider_zoom);
-    zoomGroup.appendChild(sliderZoomContainer);
+    //zoomGroup.appendChild(sliderZoomContainer);
 
 
     const showHplaneContainer = document.createElement("div");
@@ -481,7 +481,7 @@ function add_view3d_control_sliders(view3d_controler_container) {
     });
     showHplaneContainer.appendChild(showHplane_label);
     showHplaneContainer.appendChild(showHplane_checkbox);
-    zoomGroup.appendChild(showHplaneContainer);
+    //zoomGroup.appendChild(showHplaneContainer);
 
     const show3DBoxContainer = document.createElement("div");
     show3DBoxContainer.setAttribute("class", "simple_checkbox")
@@ -517,7 +517,7 @@ function add_view3d_control_sliders(view3d_controler_container) {
     });
     cmapStyleContainer.appendChild(cmapStyle_label);
     cmapStyleContainer.appendChild(cmapStyle_checkbox);
-    zoomGroup.appendChild(cmapStyleContainer);
+    //zoomGroup.appendChild(cmapStyleContainer);
 
 }
 function add_view3d_controler_container_in_view3d_container(view3d_container) {

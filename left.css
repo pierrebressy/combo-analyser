@@ -87,7 +87,7 @@ body.dark-mode {
 
 /* === Checkbox === */
 .simple_checkbox {
-  background-color: var(--bg-main);
+  background-color:var(--bg-main);
   width: 100px;
 }
 
