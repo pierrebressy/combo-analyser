@@ -19,7 +19,7 @@ export let cameraPosition = {
     fov: 40,
     z_rotation: 30,
     z_zoom_factor: 0.7,
-    view_angle: 30
+    view_angle: 10
 };
 const ref_plane_half_size = 10;
 window.activate_3d = activate_3d;
@@ -545,6 +545,81 @@ function cleanupThree() {
     scene = null;
     camera = null;
 }
+
+function test_z(scene) {
+    // Parameters
+    const r = 0.1;                         // Cylinder radius
+    const ref_plane_half_size = 10;      // Reference size
+    const height = 2 * ref_plane_half_size;
+
+    // Create cylinder geometry (oriented along Y by default)
+    const geometry = new THREE.CylinderGeometry(r, r, height, 32);
+
+    // Create material (any style you like)
+    const material = new THREE.MeshStandardMaterial({ color: 0x0000FF });
+
+    // Create mesh
+    const cylinder = new THREE.Mesh(geometry, material);
+
+    // Position: center along the Z axis, match the midpoint of the range
+    cylinder.position.set(
+        -ref_plane_half_size,
+        -ref_plane_half_size,
+        0 // middle of -size to +size
+    );
+
+    // Rotate to align with Z axis (default is Y)
+    cylinder.rotation.x = Math.PI / 2;  // Rotate 90° around X
+
+    // Add to scene
+    scene.add(cylinder);
+}
+function test_x(scene) {
+    const r = 0.1;
+    const ref_plane_half_size = 10;
+    const height = 2 * ref_plane_half_size;
+
+    const geometry = new THREE.CylinderGeometry(r, r, height, 32);
+    const material = new THREE.MeshStandardMaterial({ color: 0xff0000 });
+    const cylinder = new THREE.Mesh(geometry, material);
+
+    // Position: center between (-size, y, z) and (+size, y, z)
+    cylinder.position.set(
+        0,                         // midpoint on X
+        -ref_plane_half_size,
+        -ref_plane_half_size
+    );
+
+    // Rotate to align with X axis (Y → X => rotate Z axis)
+    cylinder.rotation.z = Math.PI / 2;
+
+    scene.add(cylinder);
+}
+function test_y(scene) {
+    const r = 0.1;
+    const ref_plane_half_size = 10;
+    const height = 2 * ref_plane_half_size;
+
+    const geometry = new THREE.CylinderGeometry(r, r, height, 32);
+    const material = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
+    const cylinder = new THREE.Mesh(geometry, material);
+
+    // Position: center along Y axis, between -size and +size
+    cylinder.position.set(
+        -ref_plane_half_size,
+        0, // midpoint on Y
+        -ref_plane_half_size
+    );
+
+    // No rotation needed for Y
+    scene.add(cylinder);
+}
+
+function draw_axis(scene) {
+    test_z(scene);
+    test_y(scene);
+    test_x(scene);
+}
 export function update_3d_view() {
 
     const display_reference_plane = get_show_hplane();
@@ -565,7 +640,7 @@ export function update_3d_view() {
     if (width == 0 || height == 0) {
         onGraphContainerVisible();
     }
-    
+
     //let container = document.getElementById('view3d-graph-container');
     let container = document.getElementById('view3d-container');
 
@@ -617,11 +692,10 @@ export function update_3d_view() {
         scene.add(box3d);
 
     // create the 3 arrows referencial axes X,Y,Z
-    let ref_arrow = create_reference_arrows(zero_point.z);
+//    let ref_arrow = create_reference_arrows(zero_point.z);
     if (display_reference_arrows)
-        scene.add(ref_arrow);
-
-
+//        scene.add(ref_arrow);
+        draw_axis(scene);
 
     let mesh_data = create_mesh_color_heatmap(curve_data, zero_point.z);
     if (display_curve) {
@@ -646,13 +720,13 @@ export function update_3d_view() {
         canvas_1.height = 64;
         const ctx_1 = canvas_1.getContext('2d');
         ctx_1.font = '48px Arial';
-        ctx_1.fillStyle = 'green';
-        ctx_1.fillText('Price', canvas_1.width / 2, 32);
+        ctx_1.fillStyle = '#00ff00';
+        ctx_1.fillText('Price', canvas_1.width / 2, 40);
         const texture_1 = new THREE.CanvasTexture(canvas_1);
         const material_1 = new THREE.SpriteMaterial({ map: texture_1, transparent: true });
         const sprite_1 = new THREE.Sprite(material_1);
-        sprite_1.scale.set(2, .5, 1); // Adjust as needed
-        sprite_1.position.set(0, ref_plane_half_size, zero_point.z); // Offset from center (so it orbits)
+        sprite_1.scale.set(4, 1.5, 2); // Adjust as needed
+        sprite_1.position.set(-ref_plane_half_size, ref_plane_half_size, -ref_plane_half_size); // Offset from center (so it orbits)
         pivot_1.add(sprite_1);
 
         const pivot_2 = new THREE.Object3D();
@@ -662,12 +736,12 @@ export function update_3d_view() {
         canvas_2.height = 64;
         const ctx_2 = canvas_2.getContext('2d');
         ctx_2.font = '48px Arial';
-        ctx_2.fillStyle = 'red';
-        ctx_2.fillText('Days', canvas_2.width / 2, 32);
+        ctx_2.fillStyle = '#ff0000';
+        ctx_2.fillText('Days', canvas_2.width / 2, 40);
         const texture_2 = new THREE.CanvasTexture(canvas_2);
         const material_2 = new THREE.SpriteMaterial({ map: texture_2, transparent: true });
         const sprite_2 = new THREE.Sprite(material_2);
-        sprite_2.scale.set(2, .5, 1); // Adjust as needed
+        sprite_2.scale.set(4, 1.5, 2); // Adjust as needed
         sprite_2.position.set(ref_plane_half_size, -ref_plane_half_size, -ref_plane_half_size); // Offset from center (so it orbits)
         pivot_2.add(sprite_2);
 
@@ -678,13 +752,13 @@ export function update_3d_view() {
         canvas_3.height = 64;
         const ctx_3 = canvas_3.getContext('2d');
         ctx_3.font = '48px Arial';
-        ctx_3.fillStyle = 'blue';
-        ctx_3.fillText(global_data.get_3d_view(), canvas_3.width / 2, 32);
+        ctx_3.fillStyle = '#add8e6';
+        ctx_3.fillText(global_data.get_3d_view(), canvas_3.width / 2, 40);
         const texture_3 = new THREE.CanvasTexture(canvas_3);
         const material_3 = new THREE.SpriteMaterial({ map: texture_3, transparent: true });
         const sprite_3 = new THREE.Sprite(material_3);
-        sprite_3.scale.set(2, .5, 1); // Adjust as needed
-        sprite_3.position.set(-ref_plane_half_size, ref_plane_half_size, -ref_plane_half_size); // Offset from center (so it orbits)
+        sprite_3.scale.set(4, 1.5, 1); // Adjust as needed
+        sprite_3.position.set(-ref_plane_half_size, -ref_plane_half_size, ref_plane_half_size); // Offset from center (so it orbits)
         pivot_3.add(sprite_3);
     }
 
