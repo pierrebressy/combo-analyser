@@ -168,34 +168,8 @@ function find_zero_crossings(data) {
 export function draw_greek(graph, scale, data) {
     // Create SVG definitions for gradients
     const defs = graph.append("defs");
-
-    // Green gradient for positive areas
-    const green_gradient = defs.append("linearGradient")
-        .attr("id", "greenGradient")
-        .attr("x1", "0%").attr("y1", "100%")  // Start at bottom
-        .attr("x2", "0%").attr("y2", "0%");   // End at top
-
-    green_gradient.append("stop")
-        .attr("offset", "0%")
-        .attr("stop-color", "white");
-
-    green_gradient.append("stop")
-        .attr("offset", "100%")
-        .attr("stop-color", "green");
-
-    // Red gradient for negative areas
-    const red_gradient = defs.append("linearGradient")
-        .attr("id", "redGradient")
-        .attr("x1", "0%").attr("y1", "0%")   // Start at top
-        .attr("x2", "0%").attr("y2", "100%"); // End at bottom
-
-    red_gradient.append("stop")
-        .attr("offset", "0%")
-        .attr("stop-color", "white");
-
-    red_gradient.append("stop")
-        .attr("offset", "100%")
-        .attr("stop-color", "red");
+    create_green_gradient(defs);
+    create_red_gradient(defs);
 
     // Define the area generator for positive values (above zero)
     const area_below = d3.area()
@@ -230,7 +204,7 @@ export function draw_greek(graph, scale, data) {
     graph.append("path")
         .datum(data)
         .attr("fill", "none")
-        .attr("stroke", "var(--exp-path-color)")
+        .attr("stroke", "var(--pl-exp-path-color)")
         .attr("stroke-width", 2)
         .attr("d", d3.line()
             .x(d => global_data.get_x_scale()(d.x))
@@ -289,6 +263,7 @@ export function draw_one_sigma_area(svg, underlying_current_price, p_and_l_graph
 
 }
 export function add_y_axis_label(graph, graph_height, label) {
+
     graph.append("text")
         .attr("class", "y-label-std-text")             // Add your custom class
         .attr("transform", "rotate(-90)")  // Rotate text for Y-axis
@@ -301,13 +276,27 @@ export function add_y_axis_label(graph, graph_height, label) {
 }
 export function add_grid(graph, y_scale) {
 
-    graph
+    const defs = graph.select("defs").empty()
+        ? graph.append("defs")
+        : graph.select("defs");
+
+    defs.selectAll("#clip-plot-area").remove(); // avoid duplicates
+
+    defs.append("clipPath")
+        .attr("id", "clip-plot-area")
+        .append("rect")
+        .attr("x", 0)
+        .attr("y", 0)
+        .attr("width", p_and_l_graph_width)
+        .attr("height", p_and_l_graph_height);
+    const clipped_group = graph.append("g")
+        .attr("clip-path", "url(#clip-plot-area)");
+    clipped_group
         .append("g")
         .attr("class", "x-axis")
-        .attr("transform", `translate(0,${y_scale(0)})`) // Positioning at the bottom
-        .call(d3.axisBottom(global_data.get_x_scale()))
-        .selectAll(".tick text")
-        .remove();
+        .attr("transform", `translate(0,${y_scale(0)})`)
+        .call(d3.axisBottom(global_data.get_x_scale())).selectAll(".tick text").remove();
+
     const y_axis_grid = d3.axisLeft(y_scale)
         .tickSize(-global_data.get_window_width() + global_data.get_window_left_margin() + global_data.get_window_right_margin())
         .tickFormat("");
@@ -320,27 +309,9 @@ export function add_grid(graph, y_scale) {
         .attr("stroke", "var(--horizontal-grid-color)")
         .attr("stroke-opacity", 0.7)
         .attr("stroke-dasharray", "4,4");
+
 }
-export function draw_p_and_l(graph, scale) {
-
-    // Create SVG definitions for gradients
-    const defs = graph.append("defs");
-
-    // Green gradient for positive areas
-    const green_gradient = defs.append("linearGradient")
-        .attr("id", "greenGradient")
-        .attr("x1", "0%").attr("y1", "100%")  // Start at bottom
-        .attr("x2", "0%").attr("y2", "0%");   // End at top
-
-    green_gradient.append("stop")
-        .attr("offset", "0%")
-        .style("stop-color", "var(--gradient-start)");
-
-    green_gradient.append("stop")
-        .attr("offset", "100%")
-        .attr("stop-color", "var(--positive-gradient-stop)");
-
-    // Red gradient for negative areas
+function create_red_gradient(defs) {
     const red_gradient = defs.append("linearGradient")
         .attr("id", "redGradient")
         .attr("x1", "0%").attr("y1", "0%")   // Start at top
@@ -353,6 +324,38 @@ export function draw_p_and_l(graph, scale) {
     red_gradient.append("stop")
         .attr("offset", "100%")
         .attr("stop-color", "var(--negative-gradient-stop)");
+    return red_gradient;
+}
+function create_green_gradient(defs) {
+    const green_gradient = defs.append("linearGradient")
+        .attr("id", "greenGradient")
+        .attr("x1", "0%").attr("y1", "100%")  // Start at bottom
+        .attr("x2", "0%").attr("y2", "0%");   // End at top
+
+    green_gradient.append("stop")
+        .attr("offset", "0%")
+        .style("stop-color", "var(--gradient-start)");
+
+    green_gradient.append("stop")
+        .attr("offset", "100%")
+        .attr("stop-color", "var(--positive-gradient-stop)");
+    return green_gradient;
+}
+export function draw_p_and_l(graph, scale) {
+
+    // Create SVG definitions for gradients
+    const defs = graph.append("defs");
+    create_green_gradient(defs);
+    create_red_gradient(defs);
+
+    defs.append("clipPath")
+        .attr("id", "clip-plot-area")
+        .append("rect")
+        .attr("x", 0)
+        .attr("y", 0)
+        .attr("width", p_and_l_graph_width)
+        .attr("height", p_and_l_graph_height);
+
 
     // Define the area generator for positive values (above zero)
     const area_below = d3.area()
@@ -371,6 +374,7 @@ export function draw_p_and_l(graph, scale) {
     // Append the positive (green) gradient area
     graph.append("path")
         .datum(global_data.get_pl_at_sim_data())
+        .attr("clip-path", "url(#clip-plot-area)")
         .attr("fill", "url(#greenGradient)") // Apply green gradient
         .attr("opacity", 0.6)
         .attr("d", area_above);
@@ -378,6 +382,7 @@ export function draw_p_and_l(graph, scale) {
     // Append the negative (red) gradient area
     graph.append("path")
         .datum(global_data.get_pl_at_sim_data())
+        .attr("clip-path", "url(#clip-plot-area)")
         .attr("fill", "url(#redGradient)") // Apply red gradient
         .attr("opacity", 0.6)
         .attr("d", area_below);
@@ -385,6 +390,7 @@ export function draw_p_and_l(graph, scale) {
     // Append the line on top
     graph.append("path")
         .datum(global_data.get_pl_at_exp_data())
+        .attr("clip-path", "url(#clip-plot-area)")
         .attr("fill", "none")
         .attr("stroke", "var(--pl-exp-path-color)")
         .attr("stroke-width", 2)
@@ -444,6 +450,9 @@ export function draw_p_and_l(graph, scale) {
         );
 
 }
+let dragging = false;
+let price_shift = 0.;
+
 export function add_crosshair() {
 
     const crosshair = svg.append("g");
@@ -497,15 +506,29 @@ export function add_crosshair() {
             //const mouseX = mousePos[0]- global_data.get_window_left_margin();
             event.preventDefault();  // Prevent default behavior (e.g., text selection)
 
-            if (memo_price_at_mouse_down == 0) {
+            if (!dragging) {
+                dragging = true;
+                console.log("DRAG ON");
                 memo_price_at_mouse_down = price;
                 console.log("start price:", price.toFixed(1));
             }
             else {
+                price_shift = price - memo_price_at_mouse_down;
+                //console.log("shift:", price_shift.toFixed(1));
+                global_data.set_simul_min_price_of_combo(global_data.get_simul_min_price_of_combo() - price_shift);
+                global_data.set_simul_max_price_of_combo(global_data.get_simul_max_price_of_combo() - price_shift);
+                //let svg = d3.select("#pl-container");
+                //svg.selectAll("*").remove();
+                draw_graph();
             }
-
         }
+
+
         else {
+            if (dragging) {
+                dragging = false;
+                console.log("DRAG OFF");
+            }
             memo_price_at_mouse_down = 0;
         }
         if (y < global_data.get_window_top_margin() || y > global_data.get_window_height() - global_data.get_window_bottom_margin()) {
@@ -764,14 +787,17 @@ export function display_greeks_graph(greeks_graph_area, greeks_graphs_height) {
 
     }
 }
+let p_and_l_graph_height;
+let p_and_l_graph_width;
+
 export function display_p_and_l_graph(p_and_l_area, p_and_l_area_height) {
 
     // P&L graph
     const min_p_and_l = global_data.get_min_of_dataset();
     const max_p_and_l = global_data.get_max_of_dataset();
     const padding_p_and_l = (max_p_and_l - min_p_and_l) * 0.1;
-    const p_and_l_graph_height = p_and_l_area_height - global_data.get_window_top_margin() - global_data.get_window_vspacer_margin();
-    const p_and_l_graph_width = global_data.get_window_width() - global_data.get_window_left_margin() - global_data.get_window_right_margin();
+    p_and_l_graph_height = p_and_l_area_height - global_data.get_window_top_margin() - global_data.get_window_vspacer_margin();
+    p_and_l_graph_width = global_data.get_window_width() - global_data.get_window_left_margin() - global_data.get_window_right_margin();
     scale_p_and_l = d3.scaleLinear()
         .domain([min_p_and_l - padding_p_and_l, max_p_and_l + padding_p_and_l])
         .range([p_and_l_graph_height, 0]);
@@ -793,8 +819,10 @@ export function display_p_and_l_graph(p_and_l_area, p_and_l_area_height) {
         .attr("class", "y-axis")
         .call(d3.axisLeft(scale_p_and_l));
 
-    p_and_l_graph.append("g").attr("transform", `translate(0,${scale_p_and_l(0)})`).call(d3.axisBottom(global_data.get_x_scale())).selectAll(".tick text").remove();
-    //p_and_l_graph.attr("clip-path", "url(#clipBox)");
+    p_and_l_graph.append("g")
+        .attr("transform", `translate(0,${p_and_l_graph_height})`)
+        .call(d3.axisBottom(global_data.get_x_scale()))
+
     draw_p_and_l(p_and_l_graph, scale_p_and_l);
     add_grid(p_and_l_graph, scale_p_and_l)
     add_y_axis_label(p_and_l_graph, p_and_l_graph_height, "Profit / Loss ($)");
@@ -821,6 +849,8 @@ function svg_cleanup(svg) {
     svg.selectAll("*").remove();
     return svg;
 }
+let p_and_l_graph_area;
+let p_and_l_area_height;
 export function draw_graph() {
 
     svg = svg_cleanup(svg);
@@ -830,12 +860,12 @@ export function draw_graph() {
         console.log("[draw_graph] window size too small");
         return;
     }
-    console.log("[draw_graph] window size:", global_data.get_window_width(), global_data.get_window_height());
-    const p_and_l_area_height = global_data.get_graph_p_and_l_ratio() * global_data.get_window_height() - global_data.get_window_vspacer_margin();
+    //console.log("[draw_graph] window size:", global_data.get_window_width(), global_data.get_window_height());
+    p_and_l_area_height = global_data.get_graph_p_and_l_ratio() * global_data.get_window_height() - global_data.get_window_vspacer_margin();
     const greeks_graph_height = global_data.get_window_height() - p_and_l_area_height;
-    console.log("[draw_graph] p_and_l_area_height:", p_and_l_area_height);
-    console.log("[draw_graph] greeks_graph_height:", greeks_graph_height);
-    let p_and_l_graph_area = svg
+    //console.log("[draw_graph] p_and_l_area_height:", p_and_l_area_height);
+    //console.log("[draw_graph] greeks_graph_height:", greeks_graph_height);
+    p_and_l_graph_area = svg
         .append("g")
         .attr("transform", `translate(0,0)`)
         .attr("width", global_data.get_window_width())
@@ -861,5 +891,4 @@ export function draw_graph() {
 
     add_crosshair();
 
-    update_3d_view();
 }

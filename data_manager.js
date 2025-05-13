@@ -1,4 +1,5 @@
 import { cookie_manager } from './cookie.js';
+import { fetch_configuration } from './network.js';
 
 export class DataManager {
 
@@ -266,6 +267,7 @@ export class DataManager {
     }
 
     check_if_volatility_is_per_leg() {
+        console.log("DataManager: ", this.computation_params);
         return this.computation_params.volatility_is_per_leg;
     }
 

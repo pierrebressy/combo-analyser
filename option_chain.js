@@ -1168,22 +1168,44 @@ function create_json_from_combo(oc) {
         l.strike = leg.strike;
         l.type = leg.type;
         l.price = leg.value;
+        l.expiry = leg.expiry;
         json.legs.push(l);
     });
+    let soonest_expiry = oc.legs[0].expiry;
+    oc.legs.forEach(leg => {
+        if (leg.expiry < soonest_expiry) {
+            soonest_expiry = leg.expiry;
+        }
+    });
+    let max_price = oc.legs[0].strike;
+    oc.legs.forEach(leg => {
+        if (leg.strike > max_price) {
+            max_price = leg.strike;
+        }
+    });
+    let min_price = oc.legs[0].strike;
+    oc.legs.forEach(leg => {
+        if (leg.strike < min_price) {
+            min_price = leg.strike;
+        }
+    });
+    console.log("min_price=", min_price*0.8);
+    console.log("max_price=", max_price*1.2);
     json.name = "Combo Builder";
     json.simulation = {};
     json.simulation.expiration_offset = 0;
     json.simulation.interest_rate = 0.04;
-    json.simulation.max_price = 300;
+    json.simulation.max_price = max_price*1.2;
     json.simulation.mean_volatility = 0.2;
-    json.simulation.min_price = 100;
+    json.simulation.min_price = min_price*0.8;
     json.simulation.step = 0.5
-    json.simulation.time_for_simulation = 15;
-    const remaining_days = 15; //new DateManager(expiry).remaining_days()
-    json.simulation.time_to_expiry = remaining_days / 365.;
+    const remaining_days = new DateManager(soonest_expiry).remaining_days()
+    console.log("remaining_days=", remaining_days);
+    json.simulation.time_for_simulation = remaining_days;
+    json.simulation.time_to_expiry = remaining_days;
     json.ticker = oc.ticker;
 
-    //console.log("json=", json);
+    console.log("json=", json);
     cookie_manager.save_JSON_in_cookie("combo-builder", json);
     return json;
 }

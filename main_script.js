@@ -17,7 +17,7 @@ async function main(reset_data = false) {
     //set_use_local(true);
 
     global_data = new DataManager(get_use_local())
-    global_data.setup();
+    await global_data.setup();
 
     set_volatility_is_per_leg(global_data.check_if_volatility_is_per_leg());
 

@@ -150,6 +150,7 @@ export function display_days_left_slider() {
         days_left_text.text(`Days left: ${this.value}/${global_data.get_time_to_expiry_of_active_combo()}`);
         global_data.set_time_for_simulation_of_active_combo(parseFloat(this.value));
         draw_graph();
+        update_3d_view();
     });
 
 }
@@ -254,6 +255,7 @@ export function display_volatility_sliders() {
                 option.iv = parseFloat(this.value / 100.0);
             }
             draw_graph();
+        update_3d_view();
         });
 
     });
@@ -278,6 +280,7 @@ export function display_volatility_sliders() {
         mean_vol_text.text("Mean Volatility " + (this.value * 1.0).toFixed(1) + "%");
         global_data.set_mean_volatility_of_combo(global_data.get_use_real_values(), parseFloat(this.value / 100.0));
         draw_graph();
+        update_3d_view();
     });
 }
 export function display_sigma_selector() {
@@ -824,7 +827,7 @@ function setup_container_resize_observer(container, callback) {
 
 }
 function onGraphPLContainerVisible() {
-    console.log("*** onGraphPLContainerVisible");
+    //console.log("*** onGraphPLContainerVisible");
     onGraphContainerVisible();
     draw_graph();
 }
@@ -837,10 +840,10 @@ export function onGraphView3DContainerVisible() {
 }
 export function onGraphContainerVisible() {
     let right_size = get_container_size("#pl-right-header");
-    console.log("onGraphContainerVisible -> pl-right-header", right_size);
+    //console.log("onGraphContainerVisible -> pl-right-header", right_size);
     let right_tabs_size = get_container_size("#graphs-tabs-selector-container");
-    console.log("onGraphContainerVisible -> view3d-controler-container", right_tabs_size);
+    //console.log("onGraphContainerVisible -> view3d-controler-container", right_tabs_size);
     right_size.height = right_size.height - right_tabs_size.height;
-    console.log("onGraphContainerVisible -> size", right_size);
+    //console.log("onGraphContainerVisible -> size", right_size);
     global_data.update_window_data(right_size);
 }
