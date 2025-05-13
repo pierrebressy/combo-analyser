@@ -52,11 +52,11 @@
 
 
 .oc-dark-bg {
-  background-color: #282828;
+  background-color: #067d1d;
 }
 .oc-dark-bg.na {
-  background-color: #5f5f5f;
-  color: #9a9898
+  background-color: var(--bg-td-na);
+  color: var(--text-td-na);
 }
 .oc-dark-bg.bid {
   background-color: rgb(182, 0, 0);

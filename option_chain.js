@@ -5,7 +5,7 @@ import { compute_iv_dichotomy } from './iv.js';
 import { computeOptionPrice } from './computation.js';
 import { cookie_manager } from './cookie.js';
 import { DateManager } from './date.js';
-
+import { create_red_gradient, create_green_gradient } from './2d_graph.js';
 let display_profile = false;
 
 function get_td_bid_ask(expiry, strike, type) {
@@ -15,9 +15,7 @@ function get_td_bid_ask(expiry, strike, type) {
     const td_ask = document.querySelector(selector_ask);
     return { td_bid, td_ask };
 }
-
 function set_td_bgnd(td, count) {
-    td.classList.add("oc-dark-bg");
     td.classList.remove("bid");
     td.classList.remove("ask");
     if (count < 0) {
@@ -29,12 +27,10 @@ function set_td_bgnd(td, count) {
     else {
     }
 }
-
 function set_td_bid_ask_bgnd(td_bid, td_ask, count) {
     set_td_bgnd(td_bid, Math.min(count, 0));
     set_td_bgnd(td_ask, Math.max(count, 0));
 }
-
 class OptionChain {
 
     constructor(ticker, chain) {
@@ -140,7 +136,6 @@ class OptionChain {
         }
         //console.log("this.expiry=", this.expiry);
     }
-
     clear_legs() {
         this.legs.forEach(leg => {
             let l = this.get_expiries_list();
@@ -161,7 +156,6 @@ class OptionChain {
         });
         cookie_manager.save_JSON_in_cookie(this.ticker + "-legs", this.legs);
     }
-
     add_leg(leg) {
         this.legs.push(leg);
         this.simplify_legs_table();
@@ -212,348 +206,54 @@ class OptionChain {
         //addLog("getCombined: expiry not found", expiry, { error: true });
         return null;
     }
-}
-
-function create_selected_contracts_list(option_chain, ticker) {
-
-    const selectedListContainer = document.createElement("div");
-    selectedListContainer.id = ticker + "-selected-list";
-    selectedListContainer.style.marginTop = "20px";
-    selectedListContainer.style.padding = "10px";
-    selectedListContainer.style.backgroundColor = "#111";
-    selectedListContainer.style.color = "#fff";
-    selectedListContainer.style.border = "1px solid #444";
-
-    selectedListContainer.querySelector("ul");
-
-    const selectedContainer = document.createElement("div");
-    selectedContainer.id = ticker + "-selected-container";
-    selectedContainer.style.marginTop = "20px";
-    selectedContainer.style.padding = "10px";
-    selectedContainer.style.backgroundColor = "#111";
-    selectedContainer.style.color = "#fff";
-    selectedContainer.style.border = "1px solid #444";
-
-
-    selectedContainer.innerHTML = ""; // Clear previous content
-
-    // Title
-    const title = document.createElement("strong");
-    title.textContent = `Selected Options for ${ticker}`;
-    selectedContainer.appendChild(title);
-
-    // save Button
-    const saveBtn = document.createElement("button");
-    saveBtn.id = "save-selected";
-    saveBtn.classList.add("clear-button");
-    saveBtn.textContent = "Save Combo";
-    saveBtn.addEventListener("click", () => {
-        create_json_from_combo(option_chain)
-    });
-    selectedContainer.appendChild(saveBtn);
-
-    // view Button
-    const viewBtn = document.createElement("button");
-    viewBtn.id = "view-selected";
-    viewBtn.classList.add("clear-button");
-    viewBtn.textContent = "View Combo Profile";
-    viewBtn.addEventListener("click", () => {
-        display_profile = true;
-        open_modal_window(option_chain)
-    });
-
-    selectedContainer.appendChild(viewBtn);
-
-    // Clear Button
-    const clearBtn = document.createElement("button");
-    clearBtn.id = "clear-selected";
-    clearBtn.classList.add("clear-button");
-    clearBtn.textContent = "Clear";
-    clearBtn.addEventListener("click", () => {
-        option_chain.clear_legs();
-        update_selected_table(option_chain);
-    });
-    selectedContainer.appendChild(clearBtn);
-
-
-    ////////////////
-
-    const comboOptions = ["LONG CALL", "SHORT CALL", "CUSTOM"];
-    const openComboCreationSelector = document.createElement("button");
-    openComboCreationSelector.id = "clear-selected";
-    openComboCreationSelector.classList.add("clear-button");
-    openComboCreationSelector.textContent = "Combo selector";
-
-
-    // Create the dropdown container (hidden by default)
-    const dropdown = document.createElement("div");
-    dropdown.classList.add("combo-dropdown");
-    dropdown.style.display = "none"; // hidden by default
-    dropdown.style.position = "absolute";
-    dropdown.style.background = "#eee";
-    dropdown.style.border = "1px solid #ccc";
-    dropdown.style.padding = "5px";
-    dropdown.style.zIndex = "1000";
-
-    // Add options to dropdown
-    comboOptions.forEach(optionText => {
-        const option = document.createElement("div");
-        option.textContent = optionText;
-        option.classList.add("combo-option");
-        option.style.padding = "4px";
-        option.style.cursor = "pointer";
-        option.addEventListener("click", () => {
-            console.log("Selected:", optionText);
-            dropdown.style.display = "none";
-            //openComboCreationSelector.textContent = optionText; // optional: update button
-        });
-        dropdown.appendChild(option);
-    });
-
-    // Toggle dropdown on button click
-    openComboCreationSelector.addEventListener("click", () => {
-        dropdown.style.display = dropdown.style.display === "none" ? "block" : "none";
-    });
-
-    // Add to DOM
-
-    selectedContainer.appendChild(openComboCreationSelector);
-
-    selectedContainer.appendChild(dropdown);
-    // Optional: position dropdown under the button
-    openComboCreationSelector.addEventListener("click", () => {
-        const rect = openComboCreationSelector.getBoundingClientRect();
-        dropdown.style.top = `${rect.bottom + window.scrollY}px`;
-        dropdown.style.left = `${rect.left + window.scrollX}px`;
-    });
-
-
-
-
-    ////////////////
-
-
-    // Table
-    const table = document.createElement("table");
-    table.id = ticker + "-selected-table";
-    table.style.cssText = `
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 10px;
-    `;
-
-    // Thead
-    const thead = document.createElement("thead");
-    const headerRow = document.createElement("tr");
-    headerRow.style.backgroundColor = "#222";
-
-    ["Qty", "Type", "Strike", "Expiration", "Premium"].forEach(text => {
-        const th = document.createElement("th");
-        th.textContent = text;
-        headerRow.appendChild(th);
-    });
-
-    thead.appendChild(headerRow);
-    table.appendChild(thead);
-
-    // Tbody
-    const tbody = document.createElement("tbody");
-    table.appendChild(tbody);
-
-    // Append the table to the container
-    selectedContainer.appendChild(table);
-
-    return selectedContainer;
-}
-
-function update_selected_table(oc) {
-
-    const selectedTableBody = document.querySelector(`#${oc.ticker}-selected-table tbody`);
-    selectedTableBody.innerHTML = "";
-
-    oc.legs.sort((a, b) => a.strike - b.strike);
-    oc.legs.forEach(leg => {
-        const tr = document.createElement("tr");
-
-        let td = document.createElement("td");
-        td.textContent = leg.qty
-        td.style.textAlign = "center";
-        tr.appendChild(td);
-
-        td = document.createElement("td");
-        td.textContent = leg.type.toUpperCase()
-        td.style.textAlign = "center";
-        tr.appendChild(td);
-
-        td = document.createElement("td");
-        td.textContent = (leg.strike * 1.0).toFixed(2);
-        td.style.textAlign = "center";
-        tr.appendChild(td);
-
-        td = document.createElement("td");
-        td.textContent = leg.expiry
-        td.style.textAlign = "center";
-        tr.appendChild(td);
-
-        td = document.createElement("td");
-        td.textContent = leg.value.toFixed(2);
-        td.style.textAlign = "center";
-        tr.appendChild(td);
-
-        selectedTableBody.appendChild(tr);
-
-    });
-    if (oc.legs.length > 0) {
-        open_modal_window(oc);
-    }
-    else {
-        close_modal_window();
-    }
-}
-
-function update_oc_table(oc) {
-
-    oc.legs.forEach(leg => {
-        let count;
-        let value_bid;
-        let value_ask;
-        let td_bid;
-        let td_ask;
-        const expiry_index = oc.expiry.findIndex(e => e.expiry === leg.expiry);
-        const strike_index = oc.expiry[expiry_index].combined.findIndex(e => (1.0 * e.strike) === (1.0 * leg.strike));
-        count = leg.qty
-        //console.log(oc.expiry[expiry_index].combined[strike_index]);
-        if (leg.type === "call") {
-            oc.expiry[expiry_index].combined[strike_index].call_count = leg.qty
-            value_bid = oc.expiry[expiry_index].combined[strike_index].call_bid;
-            value_ask = oc.expiry[expiry_index].combined[strike_index].call_ask;
-        }
-        else {
-            oc.expiry[expiry_index].combined[strike_index].put_count = leg.qty
-            value_bid = oc.expiry[expiry_index].combined[strike_index].put_bid;
-            value_ask = oc.expiry[expiry_index].combined[strike_index].put_ask;
-        }
-        ({ td_bid, td_ask } = get_td_bid_ask(leg.expiry, leg.strike, leg.type));
-        td_bid.textContent = ((count <= -1) ? (count + " x ") : "") + (value_bid * 1.0).toFixed(2)
-        td_ask.textContent = ((count >= 1) ? (count + " x ") : "") + (value_ask * 1.0).toFixed(2)
-
-        set_td_bid_ask_bgnd(td_bid, td_ask, count);
-
-        td_bid.dataset.originalColor = td_bid.style.backgroundColor;  // Save current bg
-        td_ask.dataset.originalColor = td_ask.style.backgroundColor;  // Save current bg
-
-        const btn = document.getElementById("button-tab-" + leg.expiry);
-        if (count == 0) {
-            btn.classList.remove("used");
-        }
-        else {
-            btn.classList.add("used");
-        }
-
-    });
-}
-
-export async function add_option_chain_container_in_tab_container(tab_container) {
-
-
-    //addLog("option_chain #tickers=", Object.keys(option_chain).length);
-
-    let oc_container = document.createElement('div');
-    oc_container.classList.add('oc-container');
-    oc_container.id = 'oc-container';
-
-    // Create header container (for heading + button)
-    const headerContainer = document.createElement('div');
-    headerContainer.style.display = 'flex';
-    headerContainer.style.justifyContent = 'space-between';
-    headerContainer.style.alignItems = 'center';
-
-    // Heading
-    const heading = document.createElement('h2');
-    heading.classList.add('std-text');
-    heading.textContent = 'TICKERS OPTION CHAIN';
-
-    // Assemble header
-    //headerContainer.appendChild(heading);
-    //oc_container.appendChild(headerContainer);
-
-    let oc_tabs_manager = new TabsManager(oc_container, "oc-tabs-manager");
-    let container;
-
-
-
-
-    let loaded_option_chain = await load_local_option_chain();
-    const option_chain = {};
-
-    Object.keys(loaded_option_chain).forEach(ticker => {
-        const cleaned_ticker = ticker.replace(/[\^\$]/g, "");
-        option_chain[cleaned_ticker] = loaded_option_chain[ticker];
-    });
-    let oc_expiries_tabs_manager_list = [];
-    for (const ticker of Object.keys(option_chain)) {
-
-        let oc = new OptionChain(ticker, option_chain[ticker]);
-
-        container = oc_tabs_manager.add_tab(ticker, ticker + '-oc');//, open_modal_window, oc);
-
-        const heading = document.createElement('h2');
-        heading.classList.add('std-text');
-        heading.textContent = 'Expiry dates for ' + ticker
-
-        //addLog("option_chain for ", ticker, " - expiry dates=", oc.get_expiries_list());
-
-        //container.appendChild(heading);
-
-        //console.log("[option_chain] new TabsManager for", ticker + "-oc-expiries-tabs-manager");
-        let oc_expiries_tabs_manager = new TabsManager(container, ticker + "-oc-expiries-tabs-manager");
-        oc_expiries_tabs_manager_list.push(oc_expiries_tabs_manager);
-        for (const expiry of oc.get_expiries_list()) {
-            const remaining_days = new DateManager(expiry);
-            if (remaining_days.remaining_days() > 0) {
-                //const tab_label=expiry + " - " + remaining_days.remaining_days().toFixed(0) + "d";
-                const tab_label = expiry;
-                const tab_name = ticker + '-' + expiry + '-oc';
-                //console.log("[option_chain]   add_tab", tab_label, tab_name);
-                let container3 = oc_expiries_tabs_manager.add_tab(tab_label, tab_name);
-                let selector = oc_expiries_tabs_manager.selectors[oc_expiries_tabs_manager.selectors.length - 1].selector;
-                if (remaining_days.is_third_friday()) {
-                    selector.classList.add("third-friday");
-                }
-                add_option_chain_table(container3, oc, expiry);
-
+    save_to_cookie(cookie_name) {
+        let json = {};
+        json.ticker = this.ticker;
+        json.legs = [];
+        let soonest_expiry = this.legs[0].expiry;
+        let max_price = this.legs[0].strike;
+        let min_price = this.legs[0].strike;
+        this.legs.forEach(leg => {
+            let l = {};
+            l.expiration_offset = leg.offset;
+            l.qty = leg.qty;
+            l.iv = 0.2;
+            l.strike = leg.strike;
+            l.type = leg.type;
+            l.price = leg.value;
+            l.expiry = leg.expiry;
+            json.legs.push(l);
+            if (leg.expiry < soonest_expiry) {
+                soonest_expiry = leg.expiry;
             }
-        }
-        //console.log(oc_expiries_tabs_manager.tab_container);
-        // Add selected contracts list
-        const selectedContainer = create_selected_contracts_list(oc, ticker);
-        oc_expiries_tabs_manager.tab_container.appendChild(selectedContainer);
+            if (leg.strike > max_price) {
+                max_price = leg.strike;
+            }
+            if (leg.strike < min_price) {
+                min_price = leg.strike;
+            }
+        });
+        console.log("min_price=", min_price*0.8);
+        console.log("max_price=", max_price*1.2);
+        json.name = "Combo Builder";
+        json.simulation = {};
+        json.simulation.expiration_offset = 0;
+        json.simulation.interest_rate = 0.04;
+        json.simulation.max_price = max_price*1.2;
+        json.simulation.mean_volatility = 0.2;
+        json.simulation.min_price = min_price*0.8;
+        json.simulation.step = 0.5
+        const remaining_days = new DateManager(soonest_expiry).remaining_days()
+        console.log("remaining_days=", remaining_days);
+        json.simulation.time_for_simulation = remaining_days;
+        json.simulation.time_to_expiry = remaining_days;
+        json.ticker = this.ticker;
 
-        //oc_expiries_tabs_manager.activate_last_tab();
-
-        // add the content to the tab when all data are loaded
-        setTimeout(() => {
-
-            update_selected_table(oc);
-
-        }, 0);
-
+        console.log("json=", json);
+        cookie_manager.save_JSON_in_cookie(cookie_name, json);
+        return json;
     }
-    //console.log("oc_tabs_manager.tab_container=", oc_tabs_manager);
-    //oc_tabs_manager.activate_last_tab();
-
-    // Add to tab container
-    tab_container.appendChild(oc_container);
-    setTimeout(() => {
-        for (const oc_expiries_tabs_manager of oc_expiries_tabs_manager_list) {
-            oc_expiries_tabs_manager.activate_last_tab();
-        }
-        oc_tabs_manager.activate_last_tab();
-
-    }, 0);
-
 }
-
 class OptionChainTable {
     constructor(cols_attributes, referencePrice, sigma, expiry) {
         this.cols_attributes = cols_attributes;
@@ -724,7 +424,342 @@ class OptionChainTable {
         td.style.pointerEvents = "none";
     }
 }
+function create_selected_contracts_list(option_chain, ticker) {
 
+    const selectedListContainer = document.createElement("div");
+    selectedListContainer.id = ticker + "-selected-list";
+    selectedListContainer.style.marginTop = "20px";
+    selectedListContainer.style.padding = "10px";
+    selectedListContainer.style.backgroundColor = "#111";
+    selectedListContainer.style.color = "#fff";
+    selectedListContainer.style.border = "1px solid #444";
+
+    selectedListContainer.querySelector("ul");
+
+    const selectedContainer = document.createElement("div");
+    selectedContainer.id = ticker + "-selected-container";
+    selectedContainer.style.marginTop = "20px";
+    selectedContainer.style.padding = "10px";
+    selectedContainer.style.backgroundColor = "#111";
+    selectedContainer.style.color = "#fff";
+    selectedContainer.style.border = "1px solid #444";
+
+
+    selectedContainer.innerHTML = ""; // Clear previous content
+
+    // Title
+    const title = document.createElement("strong");
+    title.textContent = `Selected Options for ${ticker}`;
+    selectedContainer.appendChild(title);
+
+    // save Button
+    const saveBtn = document.createElement("button");
+    saveBtn.id = "save-selected";
+    saveBtn.classList.add("clear-button");
+    saveBtn.textContent = "Save Combo";
+    saveBtn.addEventListener("click", () => {
+        option_chain.save_to_cookie("combo-builder");
+    });
+    selectedContainer.appendChild(saveBtn);
+
+    // view Button
+    const viewBtn = document.createElement("button");
+    viewBtn.id = "view-selected";
+    viewBtn.classList.add("clear-button");
+    viewBtn.textContent = "View Combo Profile";
+    viewBtn.addEventListener("click", () => {
+        display_profile = true;
+        open_modal_window(option_chain)
+    });
+
+    selectedContainer.appendChild(viewBtn);
+
+    // Clear Button
+    const clearBtn = document.createElement("button");
+    clearBtn.id = "clear-selected";
+    clearBtn.classList.add("clear-button");
+    clearBtn.textContent = "Clear";
+    clearBtn.addEventListener("click", () => {
+        option_chain.clear_legs();
+        update_selected_table(option_chain);
+    });
+    selectedContainer.appendChild(clearBtn);
+
+
+    ////////////////
+
+    const comboOptions = ["LONG CALL", "SHORT CALL", "CUSTOM"];
+    const openComboCreationSelector = document.createElement("button");
+    openComboCreationSelector.id = "clear-selected";
+    openComboCreationSelector.classList.add("clear-button");
+    openComboCreationSelector.textContent = "Combo selector";
+
+
+    // Create the dropdown container (hidden by default)
+    const dropdown = document.createElement("div");
+    dropdown.classList.add("combo-dropdown");
+    dropdown.style.display = "none"; // hidden by default
+    dropdown.style.position = "absolute";
+    dropdown.style.background = "#eee";
+    dropdown.style.border = "1px solid #ccc";
+    dropdown.style.padding = "5px";
+    dropdown.style.zIndex = "1000";
+
+    // Add options to dropdown
+    comboOptions.forEach(optionText => {
+        const option = document.createElement("div");
+        option.textContent = optionText;
+        option.classList.add("combo-option");
+        option.style.padding = "4px";
+        option.style.cursor = "pointer";
+        option.addEventListener("click", () => {
+            console.log("Selected:", optionText);
+            dropdown.style.display = "none";
+            //openComboCreationSelector.textContent = optionText; // optional: update button
+        });
+        dropdown.appendChild(option);
+    });
+
+    // Toggle dropdown on button click
+    openComboCreationSelector.addEventListener("click", () => {
+        dropdown.style.display = dropdown.style.display === "none" ? "block" : "none";
+    });
+
+    // Add to DOM
+
+    selectedContainer.appendChild(openComboCreationSelector);
+
+    selectedContainer.appendChild(dropdown);
+    // Optional: position dropdown under the button
+    openComboCreationSelector.addEventListener("click", () => {
+        const rect = openComboCreationSelector.getBoundingClientRect();
+        dropdown.style.top = `${rect.bottom + window.scrollY}px`;
+        dropdown.style.left = `${rect.left + window.scrollX}px`;
+    });
+
+
+
+
+    ////////////////
+
+
+    // Table
+    const table = document.createElement("table");
+    table.id = ticker + "-selected-table";
+    table.style.cssText = `
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    `;
+
+    // Thead
+    const thead = document.createElement("thead");
+    const headerRow = document.createElement("tr");
+    headerRow.style.backgroundColor = "#222";
+
+    ["Qty", "Type", "Strike", "Expiration", "Premium"].forEach(text => {
+        const th = document.createElement("th");
+        th.textContent = text;
+        headerRow.appendChild(th);
+    });
+
+    thead.appendChild(headerRow);
+    table.appendChild(thead);
+
+    // Tbody
+    const tbody = document.createElement("tbody");
+    table.appendChild(tbody);
+
+    // Append the table to the container
+    selectedContainer.appendChild(table);
+
+    return selectedContainer;
+}
+function update_selected_table(oc) {
+
+    const selectedTableBody = document.querySelector(`#${oc.ticker}-selected-table tbody`);
+    selectedTableBody.innerHTML = "";
+
+    oc.legs.sort((a, b) => a.strike - b.strike);
+    oc.legs.forEach(leg => {
+        const tr = document.createElement("tr");
+
+        let td = document.createElement("td");
+        td.textContent = leg.qty
+        td.style.textAlign = "center";
+        tr.appendChild(td);
+
+        td = document.createElement("td");
+        td.textContent = leg.type.toUpperCase()
+        td.style.textAlign = "center";
+        tr.appendChild(td);
+
+        td = document.createElement("td");
+        td.textContent = (leg.strike * 1.0).toFixed(2);
+        td.style.textAlign = "center";
+        tr.appendChild(td);
+
+        td = document.createElement("td");
+        td.textContent = leg.expiry
+        td.style.textAlign = "center";
+        tr.appendChild(td);
+
+        td = document.createElement("td");
+        td.textContent = leg.value.toFixed(2);
+        td.style.textAlign = "center";
+        tr.appendChild(td);
+
+        selectedTableBody.appendChild(tr);
+
+    });
+    if (oc.legs.length > 0) {
+        open_modal_window(oc);
+    }
+    else {
+        close_modal_window();
+    }
+}
+function update_oc_table(oc) {
+
+    oc.legs.forEach(leg => {
+        let count;
+        let value_bid;
+        let value_ask;
+        let td_bid;
+        let td_ask;
+        const expiry_index = oc.expiry.findIndex(e => e.expiry === leg.expiry);
+        const strike_index = oc.expiry[expiry_index].combined.findIndex(e => (1.0 * e.strike) === (1.0 * leg.strike));
+        count = leg.qty
+        //console.log(oc.expiry[expiry_index].combined[strike_index]);
+        if (leg.type === "call") {
+            oc.expiry[expiry_index].combined[strike_index].call_count = leg.qty
+            value_bid = oc.expiry[expiry_index].combined[strike_index].call_bid;
+            value_ask = oc.expiry[expiry_index].combined[strike_index].call_ask;
+        }
+        else {
+            oc.expiry[expiry_index].combined[strike_index].put_count = leg.qty
+            value_bid = oc.expiry[expiry_index].combined[strike_index].put_bid;
+            value_ask = oc.expiry[expiry_index].combined[strike_index].put_ask;
+        }
+        ({ td_bid, td_ask } = get_td_bid_ask(leg.expiry, leg.strike, leg.type));
+        td_bid.textContent = ((count <= -1) ? (count + " x ") : "") + (value_bid * 1.0).toFixed(2)
+        td_ask.textContent = ((count >= 1) ? (count + " x ") : "") + (value_ask * 1.0).toFixed(2)
+
+        set_td_bid_ask_bgnd(td_bid, td_ask, count);
+
+        td_bid.dataset.originalColor = td_bid.style.backgroundColor;  // Save current bg
+        td_ask.dataset.originalColor = td_ask.style.backgroundColor;  // Save current bg
+
+        const btn = document.getElementById("button-tab-" + leg.expiry);
+        if (count == 0) {
+            btn.classList.remove("used");
+        }
+        else {
+            btn.classList.add("used");
+        }
+
+    });
+}
+export async function add_option_chain_container_in_tab_container(tab_container) {
+
+
+    //addLog("option_chain #tickers=", Object.keys(option_chain).length);
+
+    let oc_container = document.createElement('div');
+    oc_container.classList.add('oc-container');
+    oc_container.id = 'oc-container';
+
+    // Create header container (for heading + button)
+    const headerContainer = document.createElement('div');
+    headerContainer.style.display = 'flex';
+    headerContainer.style.justifyContent = 'space-between';
+    headerContainer.style.alignItems = 'center';
+
+    // Heading
+    const heading = document.createElement('h2');
+    heading.classList.add('std-text');
+    heading.textContent = 'TICKERS OPTION CHAIN';
+
+    // Assemble header
+    //headerContainer.appendChild(heading);
+    //oc_container.appendChild(headerContainer);
+
+    let oc_tabs_manager = new TabsManager(oc_container, "oc-tabs-manager");
+    let container;
+
+
+
+
+    let loaded_option_chain = await load_local_option_chain();
+    const option_chain = {};
+
+    Object.keys(loaded_option_chain).forEach(ticker => {
+        const cleaned_ticker = ticker.replace(/[\^\$]/g, "");
+        option_chain[cleaned_ticker] = loaded_option_chain[ticker];
+    });
+    let oc_expiries_tabs_manager_list = [];
+    for (const ticker of Object.keys(option_chain)) {
+
+        let oc = new OptionChain(ticker, option_chain[ticker]);
+
+        container = oc_tabs_manager.add_tab(ticker, ticker + '-oc');//, open_modal_window, oc);
+
+        const heading = document.createElement('h2');
+        heading.classList.add('std-text');
+        heading.textContent = 'Expiry dates for ' + ticker
+
+        //addLog("option_chain for ", ticker, " - expiry dates=", oc.get_expiries_list());
+
+        //container.appendChild(heading);
+
+        //console.log("[option_chain] new TabsManager for", ticker + "-oc-expiries-tabs-manager");
+        let oc_expiries_tabs_manager = new TabsManager(container, ticker + "-oc-expiries-tabs-manager");
+        oc_expiries_tabs_manager_list.push(oc_expiries_tabs_manager);
+        for (const expiry of oc.get_expiries_list()) {
+            const remaining_days = new DateManager(expiry);
+            if (remaining_days.remaining_days() > 0) {
+                //const tab_label=expiry + " - " + remaining_days.remaining_days().toFixed(0) + "d";
+                const tab_label = expiry;
+                const tab_name = ticker + '-' + expiry + '-oc';
+                //console.log("[option_chain]   add_tab", tab_label, tab_name);
+                let container3 = oc_expiries_tabs_manager.add_tab(tab_label, tab_name);
+                let selector = oc_expiries_tabs_manager.selectors[oc_expiries_tabs_manager.selectors.length - 1].selector;
+                if (remaining_days.is_third_friday()) {
+                    selector.classList.add("third-friday");
+                }
+                add_option_chain_table(container3, oc, expiry);
+
+            }
+        }
+        //console.log(oc_expiries_tabs_manager.tab_container);
+        // Add selected contracts list
+        const selectedContainer = create_selected_contracts_list(oc, ticker);
+        oc_expiries_tabs_manager.tab_container.appendChild(selectedContainer);
+
+        //oc_expiries_tabs_manager.activate_last_tab();
+
+        // add the content to the tab when all data are loaded
+        setTimeout(() => {
+
+            update_selected_table(oc);
+
+        }, 0);
+
+    }
+    //console.log("oc_tabs_manager.tab_container=", oc_tabs_manager);
+    //oc_tabs_manager.activate_last_tab();
+
+    // Add to tab container
+    tab_container.appendChild(oc_container);
+    setTimeout(() => {
+        for (const oc_expiries_tabs_manager of oc_expiries_tabs_manager_list) {
+            oc_expiries_tabs_manager.activate_last_tab();
+        }
+        oc_tabs_manager.activate_last_tab();
+
+    }, 0);
+
+}
 async function add_option_chain_table(test_container, oc, expiry) {
 
     const referencePrice = oc.get_last_price(expiry);
@@ -1085,34 +1120,8 @@ function draw_profile(graph, x_scale, scale, data) {
 
     // Create SVG definitions for gradients
     const defs = graph.append("defs");
-
-    // Green gradient for positive areas
-    const green_gradient = defs.append("linearGradient")
-        .attr("id", "greenGradient")
-        .attr("x1", "0%").attr("y1", "100%")  // Start at bottom
-        .attr("x2", "0%").attr("y2", "0%");   // End at top
-
-    green_gradient.append("stop")
-        .attr("offset", "0%")
-        .style("stop-color", "var(--gradient-start)");
-
-    green_gradient.append("stop")
-        .attr("offset", "100%")
-        .attr("stop-color", "green");
-
-    // Red gradient for negative areas
-    const red_gradient = defs.append("linearGradient")
-        .attr("id", "redGradient")
-        .attr("x1", "0%").attr("y1", "0%")   // Start at top
-        .attr("x2", "0%").attr("y2", "100%"); // End at bottom
-
-    red_gradient.append("stop")
-        .attr("offset", "0%")
-        .style("stop-color", "var(--gradient-start)");
-
-    red_gradient.append("stop")
-        .attr("offset", "100%")
-        .attr("stop-color", "red");
+    create_red_gradient(defs);
+    create_green_gradient(defs);
 
     // Define the area generator for positive values (above zero)
     const area_below = d3.area()
@@ -1132,21 +1141,21 @@ function draw_profile(graph, x_scale, scale, data) {
     graph.append("path")
         .datum(data)
         .attr("fill", "url(#greenGradient)") // Apply green gradient
-        .attr("opacity", 0)
+        .attr("opacity", 1)
         .attr("d", area_above);
 
     // Append the negative (red) gradient area
     graph.append("path")
         .datum(data)
         .attr("fill", "url(#redGradient)") // Apply red gradient
-        .attr("opacity", 0)
+        .attr("opacity", 1)
         .attr("d", area_below);
 
     // Append the line on top
     graph.append("path")
         .datum(data)
         .attr("fill", "none")
-        .attr("stroke", "var(--exp-path-color)")
+        .attr("stroke", "var(--pl-exp-path-color)")
         .attr("stroke-width", 2)
         .attr("d", d3.line()
             .x(d => x_scale(d.x))
@@ -1154,58 +1163,4 @@ function draw_profile(graph, x_scale, scale, data) {
             .curve(d3.curveBasis) // Optional smoothing
         );
 
-}
-
-function create_json_from_combo(oc) {
-    let json = {};
-    json.ticker = oc.ticker;
-    json.legs = [];
-    oc.legs.forEach(leg => {
-        let l = {};
-        l.expiration_offset = leg.offset;
-        l.qty = leg.qty;
-        l.iv = 0.2;
-        l.strike = leg.strike;
-        l.type = leg.type;
-        l.price = leg.value;
-        l.expiry = leg.expiry;
-        json.legs.push(l);
-    });
-    let soonest_expiry = oc.legs[0].expiry;
-    oc.legs.forEach(leg => {
-        if (leg.expiry < soonest_expiry) {
-            soonest_expiry = leg.expiry;
-        }
-    });
-    let max_price = oc.legs[0].strike;
-    oc.legs.forEach(leg => {
-        if (leg.strike > max_price) {
-            max_price = leg.strike;
-        }
-    });
-    let min_price = oc.legs[0].strike;
-    oc.legs.forEach(leg => {
-        if (leg.strike < min_price) {
-            min_price = leg.strike;
-        }
-    });
-    console.log("min_price=", min_price*0.8);
-    console.log("max_price=", max_price*1.2);
-    json.name = "Combo Builder";
-    json.simulation = {};
-    json.simulation.expiration_offset = 0;
-    json.simulation.interest_rate = 0.04;
-    json.simulation.max_price = max_price*1.2;
-    json.simulation.mean_volatility = 0.2;
-    json.simulation.min_price = min_price*0.8;
-    json.simulation.step = 0.5
-    const remaining_days = new DateManager(soonest_expiry).remaining_days()
-    console.log("remaining_days=", remaining_days);
-    json.simulation.time_for_simulation = remaining_days;
-    json.simulation.time_to_expiry = remaining_days;
-    json.ticker = oc.ticker;
-
-    console.log("json=", json);
-    cookie_manager.save_JSON_in_cookie("combo-builder", json);
-    return json;
 }

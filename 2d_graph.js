@@ -311,7 +311,7 @@ export function add_grid(graph, y_scale) {
         .attr("stroke-dasharray", "4,4");
 
 }
-function create_red_gradient(defs) {
+export function create_red_gradient(defs) {
     const red_gradient = defs.append("linearGradient")
         .attr("id", "redGradient")
         .attr("x1", "0%").attr("y1", "0%")   // Start at top
@@ -326,7 +326,7 @@ function create_red_gradient(defs) {
         .attr("stop-color", "var(--negative-gradient-stop)");
     return red_gradient;
 }
-function create_green_gradient(defs) {
+export function create_green_gradient(defs) {
     const green_gradient = defs.append("linearGradient")
         .attr("id", "greenGradient")
         .attr("x1", "0%").attr("y1", "100%")  // Start at bottom
