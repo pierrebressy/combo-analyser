@@ -1,0 +1,72 @@
+body.dark-mode {
+  --bg-body: #000000;
+  --bg-main-container: #000000;
+  --text-color: #ffffff;
+  --text-inverse-color: #000000;
+
+  --tab-border-color: rgb(0, 0, 0);
+  --tab-button-inactive-bg-color: rgb(141, 142, 141);
+  --tab-button-inactive-text-color: rgb(255, 255, 255);
+  --tab-button-hover-bg-color: rgb(0, 171, 134);
+  --tab-button-hover-text-color: rgb(255, 255, 255);
+  --tab-button-selected-bg-color: rgb(255, 255, 255);
+  --tab-button-selected-text-color: rgb(0, 0, 0);
+  --tab-button-active-text-color: rgb(0, 171, 134);
+  --tab-button-active-bg-color: rgb(255, 255, 255);
+
+  --bg-local-status: #363535;
+  --bg-combo-list: #770000;
+  --bg-days-left: #02520e;
+  --bg-volatility-main: #0e026f;
+  --bg-per-leg-volatility: #0e026f;
+  --bg-mean-volatility: #0e026f;
+  --bg-combo-templater: #1e1e1e;
+  --bg-sigma-selector: #054f7a;
+
+  --zc-line-color: #ff8e2c;
+  --zc-text-color: #ffffff;
+
+  --underlying-line-color: #208fff;
+  --generic-text-color: #ffffff;
+
+  --put-label-color: #01ca04;
+  --call-label-color: #f54848;
+
+  --grid-color: #717171;
+  --label-color: #ffffff;
+  --expiry-line-color: #ffffff;
+  --sim-line-color: #008a2a;
+  --init-line-color: #d28500;
+
+  --black-material-color: #ffffff;
+  --green-material-color: #03a200;
+  --orange-material-color: #f8ae00;
+
+  --matrix-bg: #000000;
+  --matrix-text: #28ff5e;
+  --matrix-text-warning: hsl(37, 100%, 50%);
+  --matrix-text-error: hsl(0, 100%, 50%);
+  --matrix-border: #00ff41;
+  --matrix-hover: #00cc33;
+
+  --th-table-bg: #000000;
+  --th-table-text: #ffffff;
+
+  --selected-bid-bg: #a60000;
+  --selected-ask-bg: #002ea6;
+  --hover-bid-bg: #ffcccc;
+  --hover-ask-bg: #cce0ff;
+
+  --qty-pos-text-color: #8f8fef;
+  --qty-neg-text-color: #f87272;
+
+  --strike-col-bg: #f0f0f0;
+  --strike-col-text: #000000;
+
+  --selected-combo-button-clear-bg: #ca0000;
+  --selected-combo-button-save-bg: #be7f00;
+  --selected-combo-button-add-bg: #03aa0b;
+
+  --selected-combo-button-view-bg: #038dd2;
+
+}

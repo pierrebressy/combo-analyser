@@ -1,0 +1,47 @@
+
+/* === Combo Finder === */
+
+.combo-finder-container {
+  height: 100%;
+  width: 100%;
+  background-color: var(--bg-local-status);
+  position: relative;
+  overflow: hidden;
+}
+
+.polygon-container {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  /* or relative */
+  top: 0;
+  left: 0;
+}
+
+.polygon-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+}
+
+.server-down-msg {
+  color: red;
+  padding: 1em;
+}
+
+.server-down-msg a:visited {
+  color: rgb(0, 255, 217);
+  /* Or any color you prefer */
+}
+
+.server-up-msg {
+  color: rgb(3, 255, 32);
+  padding: 1em;
+}
+
+.server-up-msg a:visited {
+  color: rgb(0, 255, 217);
+  /* Or any color you prefer */
+}
+

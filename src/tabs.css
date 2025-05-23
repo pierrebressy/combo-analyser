@@ -1,0 +1,68 @@
+
+.main-tabs-container {
+  width: 100%;
+  background-color: var(--bg-main-container);
+  border-radius: 0px;
+  justify-content: center;
+}
+
+.main-tab-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  background-color: var(--bg-main-container);
+  border-radius: 8px;
+
+  border-top: 2px solid var(--tab-border-color);
+  padding-top: 0px;
+}
+
+.tab-container {
+  flex: 1;
+  padding: 1px;
+  color: var(--tab-button-inactive-text-color);
+  border-color: var(--tab-border-color);
+  border: 1px solid var(--tab-border-color);
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.2s;
+  border-radius: 8px 8px 0 0;
+  margin: 0 2px;
+}
+
+.tab-button {
+  flex: 1;
+  padding: 12px;
+  background: var(--tab-button-inactive-bg-color);
+  color: var(--tab-button-inactive-text-color);
+  border-color: var(--tab-border-color);
+  border: 1px solid var(--tab-border-color);
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.2s;
+  border-radius: 8px 8px 0 0;
+  margin: 0 2px;
+}
+
+.tab-button:hover {
+  background: var(--tab-button-hover-bg-color);
+  color: var(--tab-button-hover-text-color);
+}
+
+.tab-button.active {
+  background: var(--tab-button-selected-bg-color);
+  border-bottom: 2px solid white;
+  color: var(--tab-button-selected-text-color);
+}
+
+.tab-button-content {
+  border-top: 2px solid var(--tab-border-color);
+  padding-top: 20px;
+  /*  height: 100%;b*/
+  flex: 1;
+  /* <= ceci permet à tab-content de prendre la hauteur disponible */
+  display: flex;
+  flex-direction: column;
+}
+

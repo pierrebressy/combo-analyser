@@ -1,0 +1,115 @@
+/* === Graph === */
+.graphs-tabs-container {
+  height: 4%;
+  /* fixed 20% height */
+  width: 100%;
+  background-color: var(--bg-main-container);
+  border-radius: 8px;
+  justify-content: center;
+}
+
+.graph-tab-container {
+  flex: 1;
+  /* takes remaining space */
+  width: 100%;
+  background-color: var(--bg-main-container);
+  border-radius: 8px;
+
+  border-top: 2px solid var(--tab-border-color);
+  padding-top: 0px;
+}
+
+/* === LEFT === */
+
+.left-container {
+  width: 20%;
+  min-width: 300px;
+  background-color: var(--bg-left);
+  padding: 2px;
+  height: 100%;
+}
+
+
+.local-status-info-container {
+  background-color: var(--bg-local-status);
+  padding: 20px;
+  border-radius: 8px;
+}
+
+.choose-combo-container {
+  background-color: var(--bg-combo-list);
+  padding: 20px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.days-left-container {
+  background-color: var(--bg-days-left);
+  padding: 10px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.volatility-management-container {
+  background-color: var(--bg-volatility-main);
+  padding: 20px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.volatility-checkbox {
+  color: var(--text-color);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.mean-volatility-container {
+  background-color: var(--bg-mean-volatility);
+  padding: 5px 20px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sigma-factors-container {
+  background-color: var(--bg-sigma-selector);
+  color: #ffffff;
+  padding: 5px 20px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sigma-ticks {
+  color: var(--text-color);
+  padding: 2px;
+  display: flex;
+  gap: 12px;
+}
+
+.slider-reverse {
+  width: 100%;
+  transform: scaleX(-1);
+}
+
+
+
+/* === RIGHT === */
+
+.right-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  /* ✅ full width */
+
+}
