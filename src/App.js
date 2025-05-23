@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AppContext } from './AppContext';
 import GraphTab from './GraphTab';
 import ComboBuilderTab from './ComboBuilderTab';
@@ -18,8 +18,8 @@ import './combo-builder.css';
 import './combo-finder.css';
 
 function App() {
-  const reset_local_storage_to_local_config = false;
-  const reset_last_selected_combo_to_long_call = false;
+  const reset_local_storage_to_local_config = true;
+  const reset_last_selected_combo_to_long_call = true;
 
   const [useLocalData, setUseLocalData] = useState(false);
   const [comboFinderConnected, setComboFinderConnected] = useState(false);
