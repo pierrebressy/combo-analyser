@@ -175,8 +175,8 @@ function App() {
               onClick={() => {
                 setActiveTab(tab.id);
                 set_last_main_tab(tab.id);
-                appendTextToLogComponent("Selected tab: " + tab.label);
-                console.log("App.js: setActiveTab(" + tab.id + ")");
+                //appendTextToLogComponent("Selected tab: " + tab.label);
+                //console.log("App.js: setActiveTab(" + tab.id + ")");
               }
               }
             >
