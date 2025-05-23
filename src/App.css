@@ -48,7 +48,7 @@ body {
 
 .std-text.local-mode-active {
   color:#000000;
-  background-color: #ff0000;
+  background-color: #fd8a8a;
 }
 .std-text.local-mode-inactive {
   color:#000000;
@@ -61,7 +61,7 @@ body {
 }
 .std-text.combo-finder-inactive {
   color:#000000;
-  background-color: #ff0000;
+  background-color: #fd8a8a;
 }
 
 .std-text.underlying-changed {

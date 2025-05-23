@@ -192,7 +192,7 @@ function App() {
             <GraphTab dataManager={dataManager} />
           </div>
           <div className="tab-container" style={{ display: activeTab === 'combo-builder' ? 'block' : 'none' }}>
-            <ComboBuilderTab />
+          <ComboBuilderTab />
           </div>
           <div className="tab-container" style={{ display: activeTab === 'combo-finder' ? 'block' : 'none' }}>
             <ComboFinderTab />

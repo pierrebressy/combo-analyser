@@ -31,6 +31,7 @@ export async function load_local_price(ticker) {
 
 export async function load_local_option_chain() {
     try {
+        console.log("Loading local option chain from:", constants.LOCAL_OPTION_CHAIN_FILENAME);
         const url = `${constants.LOCAL_OPTION_CHAIN_FILENAME}?t=${Date.now()}`; // Append timestamp to bust cache
         const response = await fetch(url, { cache: "no-store" }); // Optional: explicit cache control
         if (!response.ok) throw new Error("Failed to load ", constants.LOCAL_OPTION_CHAIN_FILENAME);
