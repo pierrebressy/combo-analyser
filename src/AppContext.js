@@ -8,5 +8,16 @@ export const AppContext = createContext({
     strikesChanged: false,
     setStrikesChanged: () => { },
     comboFinderConnected: false,
-    setComboFinderConnected: () => { }
+    setComboFinderConnected: () => { },
+    dataManager: null,
+    setDataManager: () => { },
+    days_left: null,
+    setDaysLeft: () => { },
+    sigmaIndex: 0,
+    setSigmaIndex: () => { },
+    renderTrigger: 0,
+    setRenderTrigger: () => { },
+    byLeg: false,
+    setByLeg: () => { },
+
 });

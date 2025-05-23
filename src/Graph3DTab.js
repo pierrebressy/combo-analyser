@@ -1,6 +1,9 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useContext } from 'react';
+import { AppContext } from './AppContext';
 import { compute_p_and_l_data_for_price, compute_data_to_display, compute_greeks_data_for_price } from './computation.js';
+import { RadioButton } from './RadioButton.js';
 import * as THREE from 'three';
+
 
 function createLinearScale(domainMin, domainMax, rangeMin, rangeMax) {
   const domainSpan = domainMax - domainMin;
@@ -57,32 +60,32 @@ class Generic3DSurface {
     };
   }
 }
-/*
+
 class GreekSurface extends Generic3DSurface {
 
-  run(greek_index, z_zoom_factor) {
-    //console.log("cameraPosition.z_zoom_factor", cameraPosition.z_zoom_factor);
+  run(dataManager, greek_index, z_zoom_factor) {
     let count = 0;
+    const time_for_simulation = dataManager.get_time_for_simulation_of_active_combo()
     this.xrange.forEach((x, i) => {
       this.yrange.forEach((y, j) => {
 
-        const use_legs_volatility = false
-        const get_use_real_values = false
-        let z = compute_greeks_data_for_price(greek_index, use_legs_volatility, x);
+        const use_legs_volatility = true
+        dataManager.set_time_for_simulation_of_active_combo(y);
+        let z = compute_greeks_data_for_price(dataManager, greek_index, use_legs_volatility, x);
         this.matrixData[count] = {
           x: this.xscale(x),
           y: this.yscale(y),
           z: this.zscale(z.y * z_zoom_factor)
-          //z: this.zscale(z.y * cameraPosition.z_zoom_factor)
         };
 
         count++;
       });
     });
+    dataManager.set_time_for_simulation_of_active_combo(time_for_simulation);
     return [this.xrange, this.yrange, this.matrixData];
   }
 }
-  */
+
 class PLSurface extends Generic3DSurface {
 
   run(global_data, z_zoom_factor) {
@@ -90,7 +93,8 @@ class PLSurface extends Generic3DSurface {
     this.xrange.forEach((x, i) => {
       this.yrange.forEach((y, j) => {
 
-        let z = compute_p_and_l_data_for_price(global_data, true, y, x);
+        const use_legs_volatility = true
+        let z = compute_p_and_l_data_for_price(global_data, use_legs_volatility, y, x);
 
         this.matrixData[count] = {
           x: this.xscale(x),
@@ -231,15 +235,15 @@ function create_pl_vs_time_and_price_surface(dataManager) {
   surface.prepare_dataset([dataManager.get_pl_at_init_data(), dataManager.get_pl_at_sim_data(), dataManager.get_pl_at_exp_data()]);
   return surface.run(dataManager, 1);
 }
-/*
+
 function create_greek_vs_time_and_price_surface(greek_index, dataManager) {
   let surface = new GreekSurface();
   surface.set_x_limits(dataManager.get_simul_min_price_of_combo(), dataManager.get_simul_max_price_of_combo(), 20);
   surface.set_y_limits(0, dataManager.get_time_to_expiry_of_active_combo(), 20);
   surface.prepare_dataset([dataManager.get_greeks_data()[greek_index]]);
-  return [surface.run(greek_index), surface.get_zero_point()];
+  return surface.run(dataManager, greek_index, 1);
 }
-  */
+
 function create_specific_lines(dataManager, cameraPosition) {
 
   let lines = new THREE.Group();
@@ -293,18 +297,18 @@ function create_specific_lines(dataManager, cameraPosition) {
   }
 
   const black_geometry = new THREE.BufferGeometry().setFromPoints(black_points);
-  const black_material = new THREE.LineBasicMaterial({ color: 0xFFFFFF }); 
+  const black_material = new THREE.LineBasicMaterial({ color: 0xFFFFFF });
   const black_line = new THREE.Line(black_geometry, black_material);
   lines.add(black_line);
 
 
   const green_geometry = new THREE.BufferGeometry().setFromPoints(green_points);
-  const green_material = new THREE.LineBasicMaterial({ color: 0x00FF00 }); 
+  const green_material = new THREE.LineBasicMaterial({ color: 0x00FF00 });
   const green_line = new THREE.Line(green_geometry, green_material);
   lines.add(green_line);
 
   const orange_geometry = new THREE.BufferGeometry().setFromPoints(orange_points);
-  const orange_material = new THREE.LineBasicMaterial({ color: 0xf8ae00 }); 
+  const orange_material = new THREE.LineBasicMaterial({ color: 0xf8ae00 });
   const orange_line = new THREE.Line(orange_geometry, orange_material);
   lines.add(orange_line);
 
@@ -588,10 +592,14 @@ function create_rendered(view3d_graph_container) {
   return renderer;
 }
 
-export default function Graph3DTab({ dataManager, byLeg, forceTrigger }) {
+export default function Graph3DTab({ }) {
 
+  const surfaceSelectorRef = useRef(null);
   const controllerRef = useRef(null);
-  const [renderTrigger, setRenderTrigger] = useState(0);
+  const [render3DTrigger, setRender3DTrigger] = useState(0);
+  const { dataManager } = useContext(AppContext);
+  const { renderTrigger } = useContext(AppContext);
+  const { byLeg } = useContext(AppContext);
 
   const cameraPosition = useRef({
     x: 17,
@@ -612,6 +620,14 @@ export default function Graph3DTab({ dataManager, byLeg, forceTrigger }) {
   }
   const set_show_3dbox = (value) => {
   }
+  function handleRadioChange() {
+    if (this.checked) {
+      dataManager.set_3d_view(this.value);
+      console.log("this.value", this.value);
+      setRender3DTrigger(t => t + 1);
+
+    }
+  }
 
   useEffect(() => {
 
@@ -624,15 +640,42 @@ export default function Graph3DTab({ dataManager, byLeg, forceTrigger }) {
         setParentSize({ width: Math.round(width), height: Math.round(height) });
       }
     };
+    const topSelectorWrapper = document.createElement("div");
+    topSelectorWrapper.style.display = "flex";
+    topSelectorWrapper.style.flexDirection = "row";
+    topSelectorWrapper.style.alignItems = "flex-start";
+    topSelectorWrapper.style.justifyContent = "flex-start";
+    topSelectorWrapper.style.width = "100%";
+    topSelectorWrapper.style.gap = "30px";
 
+    const container1 = surfaceSelectorRef.current;
+    container1.innerHTML = '';
+
+    let radioGroup = document.createElement('div');
+    radioGroup.id = 'radio-group';
+    radioGroup.style.display = 'flex';
+    radioGroup.style.flexDirection = 'row';
+    radioGroup.style.alignItems = 'center';
+    radioGroup.style.gap = '12px';
+
+    let radio1 = new RadioButton('3d-options', 'P/L', handleRadioChange);
+    radio1.appendTo(radioGroup);
+    radio1.radio.checked = true;
+    new RadioButton('3d-options', 'Delta', handleRadioChange).appendTo(radioGroup);
+    new RadioButton('3d-options', 'Gamma', handleRadioChange).appendTo(radioGroup);
+    new RadioButton('3d-options', 'Theta', handleRadioChange).appendTo(radioGroup);
+    new RadioButton('3d-options', 'Vega', handleRadioChange).appendTo(radioGroup);
+    new RadioButton('3d-options', 'Rho', handleRadioChange).appendTo(radioGroup);
+    topSelectorWrapper.appendChild(radioGroup);
+    container1.appendChild(topSelectorWrapper);
 
     const topControlsWrapper = document.createElement("div");
     topControlsWrapper.style.display = "flex";
     topControlsWrapper.style.flexDirection = "row";
     topControlsWrapper.style.alignItems = "center";
-    topControlsWrapper.style.justifyContent = "flex-start"; // 👈 Aligne à gauche
+    topControlsWrapper.style.justifyContent = "flex-start";
     topControlsWrapper.style.width = "100%";
-    topControlsWrapper.style.gap = "30px"; // Espacement entre les blocs
+    topControlsWrapper.style.gap = "30px";
 
     const container = controllerRef.current;
     container.innerHTML = '';
@@ -662,7 +705,7 @@ export default function Graph3DTab({ dataManager, byLeg, forceTrigger }) {
     slider_cam_dist.addEventListener("input", function () {
       cameraPosition.current.dist = parseFloat(this.value);
       label_dist.textContent = "dist=" + cameraPosition.current.dist;
-      setRenderTrigger(t => t + 1);
+      setRender3DTrigger(t => t + 1);
     });
 
     topControlsWrapper.appendChild(label_dist);
@@ -685,7 +728,7 @@ export default function Graph3DTab({ dataManager, byLeg, forceTrigger }) {
     slider_zrotation.addEventListener("input", function () {
       cameraPosition.current.z_rotation = parseFloat(this.value);
       label_rot.textContent = "θ=" + cameraPosition.current.z_rotation + "°";
-      setRenderTrigger(t => t + 1);
+      setRender3DTrigger(t => t + 1);
     });
 
     topControlsWrapper.appendChild(label_rot);
@@ -709,7 +752,7 @@ export default function Graph3DTab({ dataManager, byLeg, forceTrigger }) {
       const value = parseFloat(this.value);
       cameraPosition.current.view_angle = value;
       label_view.textContent = "α=" + value + "°";
-      setRenderTrigger(t => t + 1);
+      setRender3DTrigger(t => t + 1);
     });
 
     topControlsWrapper.appendChild(label_view);
@@ -735,7 +778,7 @@ export default function Graph3DTab({ dataManager, byLeg, forceTrigger }) {
 
     show3DBox_checkbox.addEventListener("change", function () {
       set_show_3dbox(this.checked);
-      setRenderTrigger(t => t + 1);
+      setRender3DTrigger(t => t + 1);
     });
 
     topControlsWrapper.appendChild(show3DBox_label);
@@ -769,32 +812,69 @@ export default function Graph3DTab({ dataManager, byLeg, forceTrigger }) {
     light(scene);
 
     compute_data_to_display(dataManager, byLeg);
-    let curve_data = create_pl_vs_time_and_price_surface(dataManager);
-    let mesh_data = create_mesh_color_heatmap(curve_data, 0);
-    scene.add(mesh_data[0]); // mesh surface
+    console.log("dataManager.get_3d_view()", dataManager.get_3d_view());
+    if (dataManager.get_3d_view() === "P/L") {
+      let curve_data = create_pl_vs_time_and_price_surface(dataManager);
+      let mesh_data = create_mesh_color_heatmap(curve_data, 0);
+      scene.add(mesh_data[0]);
+      const lines = create_specific_lines(dataManager, cameraPosition)
+      scene.add(lines);
+    }
+    else if (dataManager.get_3d_view() === "Delta") {
+      let curve_data = create_greek_vs_time_and_price_surface(1, dataManager);
+      console.log("curve_data", curve_data);
+      let mesh_data = create_mesh_color_heatmap(curve_data, 0);
+      scene.add(mesh_data[0]);
+    }
+    else if (dataManager.get_3d_view() === "Gamma") {
+      let curve_data = create_greek_vs_time_and_price_surface(2, dataManager);
+      console.log("curve_data", curve_data);
+      let mesh_data = create_mesh_color_heatmap(curve_data, 0);
+      scene.add(mesh_data[0]);
+    }
+    else if (dataManager.get_3d_view() === "Theta") {
+      let curve_data = create_greek_vs_time_and_price_surface(3, dataManager);
+      console.log("curve_data", curve_data);
+      let mesh_data = create_mesh_color_heatmap(curve_data, 0);
+      scene.add(mesh_data[0]);
+    }
+    else if (dataManager.get_3d_view() === "Vega") {
+      let curve_data = create_greek_vs_time_and_price_surface(4, dataManager);
+      console.log("curve_data", curve_data);
+      let mesh_data = create_mesh_color_heatmap(curve_data, 0);
+      scene.add(mesh_data[0]);
+    }
+    else if (dataManager.get_3d_view() === "Rho") {
+      let curve_data = create_greek_vs_time_and_price_surface(5, dataManager);
+      console.log("curve_data", curve_data);
+      let mesh_data = create_mesh_color_heatmap(curve_data, 0);
+      scene.add(mesh_data[0]);
+    }
 
-    const lines = create_specific_lines(dataManager, cameraPosition)
-    scene.add(lines);
+
 
     renderer.render(scene, camera);
-  }, [dataManager, forceTrigger, byLeg, renderTrigger]);
+  }, [dataManager, renderTrigger, byLeg, render3DTrigger]);
 
 
 
   return (
     <div style={{ height: '100%', width: '100%', display: 'flex', flexDirection: 'column' }}>
+
       <div
         className="view3d-controler-container"
-        style={{ flex: '0 0 5%', width: '100%' }}
+        style={{ flex: '0 0 0%', width: '100%' }}
+        ref={surfaceSelectorRef}
+      />
+      <div
+        className="view3d-controler-container"
+        style={{ flex: '0 0 0%', width: '100%' }}
         ref={controllerRef}
       />
       <div ref={containerRef}
         className="view3d-graph-container"
         style={{ flex: '1 1 auto', width: '100%' }}
       >
-        <label className="std-text">
-          Parent size — Width: {parentSize.width}px, Height: {parentSize.height}px
-        </label>
       </div>
 
 

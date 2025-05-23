@@ -20,6 +20,7 @@ import './combo-finder.css';
 function App() {
   const reset_local_storage_to_local_config = true;
   const reset_last_selected_combo_to_long_call = true;
+  const force_use_local = true;
 
   const [useLocalData, setUseLocalData] = useState(false);
   const [comboFinderConnected, setComboFinderConnected] = useState(false);
@@ -27,6 +28,14 @@ function App() {
   const [strikesChanged, setStrikesChanged] = useState(false);
 
   const [dataManager, setDataManager] = useState(null);
+  const [days_left, setDaysLeft] = useState(null);
+  const [sigmaIndex, setSigmaIndex] = useState(0);
+
+  const [renderTrigger, setRenderTrigger] = useState(0);
+  const [byLeg, setByLeg] = useState(true);
+
+
+
   const [darkMode, setDarkMode] = useState(get_dark_mode() === "DARK");
   const [activeTab, setActiveTab] = useState(get_last_main_tab());
 
@@ -79,10 +88,13 @@ function App() {
 
   useEffect(() => {
     const loadData = async () => {
-
+      console.log("App.js: force_use_local", force_use_local);
+      let local_mode = force_use_local;
       console.log("App.js: loadData()");
-      let local_mode=await is_mode_local()
-      console.log("App.js: is_mode_local()", local_mode);
+      if (!local_mode) {
+        local_mode = await is_mode_local()
+        console.log("App.js: is_mode_local()", local_mode);
+      }
       setUseLocalData(local_mode);
 
       // load the config file and set it in localStorage
@@ -106,8 +118,10 @@ function App() {
 
       // create the DataManager instance
       const instance = new DataManager(local_mode);
-      await  instance.setup(config);
+      await instance.setup(config);
       instance.set_active_combo_name(last_selected_combo);
+      instance.set_underlying_price(170.00);
+      instance.set_3d_view('P/L');
       setDataManager(instance);
       //console.log("App.js: instance", instance);
 
@@ -117,11 +131,6 @@ function App() {
   }, []);
 
 
-  useEffect(() => {
-    if (dataManager === null) {
-      return;
-    }
-  }, [dataManager]);
 
   if (false) {
     return (
@@ -140,7 +149,17 @@ function App() {
       strikesChanged,
       setStrikesChanged,
       comboFinderConnected,
-      setComboFinderConnected
+      setComboFinderConnected,
+      dataManager,
+      setDataManager,
+      days_left,
+      setDaysLeft,
+      sigmaIndex,
+      setSigmaIndex,
+      renderTrigger,
+      setRenderTrigger,
+      byLeg,
+      setByLeg
     }}>
 
 
@@ -189,10 +208,11 @@ function App() {
             <LogComponent />
           </div>
           <div className="tab-container" style={{ display: activeTab === 'graph' ? 'block' : 'none' }}>
-            <GraphTab dataManager={dataManager} />
+            {/*<GraphTab dataManager={dataManager} />*/}
+            <GraphTab />
           </div>
           <div className="tab-container" style={{ display: activeTab === 'combo-builder' ? 'block' : 'none' }}>
-          <ComboBuilderTab />
+            <ComboBuilderTab />
           </div>
           <div className="tab-container" style={{ display: activeTab === 'combo-finder' ? 'block' : 'none' }}>
             <ComboFinderTab />

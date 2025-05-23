@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo, useContext } from 'react';
 import { AppContext } from './AppContext';
 import LocalStatusInfo from './LocalStatusInfo';
 import { cookie_manager } from './cookie';
+import { fetch_price } from './network.js';
 import * as constants from "./consts.js";
 
 import Graph2DTab from './Graph2DTab';
@@ -12,7 +13,6 @@ function set_last_graph_tab(tab_name) {
 }
 function get_last_graph_tab() {
     let mode = cookie_manager.get_cookie(constants.GRAPH_MAIN_TAB_COOKIE);
-    //console.log("[get_last_graph_tab]", mode);
     if (mode === null) {
         mode = 'graph2d';
         set_last_graph_tab(mode);
@@ -23,48 +23,28 @@ function set_last_selected_combo(combo_name) {
     cookie_manager.set_cookie(constants.LAST_SELECTED_COMBO_NAME_COOKIE, combo_name, 365);
 }
 
-export default function GraphTab({ dataManager }) {
+export default function GraphTab() {
 
-    const { useLocalData, underlyingChanged, strikesChanged } = useContext(AppContext);
-    const { setUseLocalData, setUnderlyingChanged, setStrikesChanged } = useContext(AppContext);
+    const { underlyingChanged, strikesChanged } = useContext(AppContext);
+    const { dataManager } = useContext(AppContext);
+    const { useLocalData } = useContext(AppContext);
+    const { days_left, setDaysLeft } = useContext(AppContext);
+    const { sigmaIndex, setSigmaIndex } = useContext(AppContext);
+    const { renderTrigger, setRenderTrigger } = useContext(AppContext);
+    const { byLeg, setByLeg } = useContext(AppContext);
 
-    const [days_left, setDaysLeft] = useState(null);
-    const [byLeg, setByLeg] = useState(true);
     const [computed, setComputed] = useState(false);
     const [num_days, setNumDays] = useState(null);
     const [mean_volatility, setMean_volatility] = useState(null);
     const [selectedCombo, setSelectedCombo] = useState("LONG CALL");
-    const [sigmaIndex, setSigmaIndex] = useState(0);
     const [sigma_factors, setSigmaFactors] = useState([]);
     const [selectedSigma, setSelectedSigma] = useState(0);
     const [combo_options, setComboOptions] = useState(null);
-    const [renderTrigger, setRenderTrigger] = useState(0);
     const [activeTab, setActiveTab] = useState(get_last_graph_tab());
     const tabs = useMemo(() => [
-        {
-            id: 'graph2d',
-            label: '📈 P/L & Greeks Graphs',
-            content: dataManager
-                ?
-                <Graph2DTab
-                    dataManager={dataManager}
-                    byLeg={byLeg}
-                    forceTrigger={renderTrigger}
-                    sigmaIndex={sigmaIndex}
-                />
-                : <div>[GraphTab] Loading chart...</div>
-        },
-        {
-            id: 'graph3d',
-            label: '📈 3D Graphs',
-            content: <Graph3DTab
-                dataManager={dataManager}
-                byLeg={byLeg}
-                forceTrigger={renderTrigger}
-            />
-        }
+        { id: 'graph2d', label: '📈 P/L & Greeks Graphs', content: dataManager ? <Graph2DTab /> : <div>[GraphTab] Waiting data to load Graph2DTab...</div> },
+        { id: 'graph3d', label: '📈 3D Graphs', content: dataManager ? <Graph3DTab /> : <div>[GraphTab] Waiting data to load Graph3DTab...</div> }
     ], [dataManager, renderTrigger, byLeg, underlyingChanged, strikesChanged]);
-
 
     function choose_combo({ selected, setSelected }) {
         if (!combo_options) {
@@ -142,7 +122,7 @@ export default function GraphTab({ dataManager }) {
                             setComputed(e.target.checked);
                             setRenderTrigger(t => t + 1);
                         }}
-                        disabled={!byLeg} // ✅ Disable if "By leg" not checked
+                        disabled={!byLeg}
                     />
                     Computed
                 </label>
@@ -270,15 +250,7 @@ export default function GraphTab({ dataManager }) {
         setSigmaFactors(dataManager.get_sigma_factors());
         setSelectedSigma(sigma_factors[sigmaIndex]);
     }
-/*
-    useEffect(() => {
-        if (dataManager) {
-            setUseLocalData(dataManager.get_use_local_data());
-            setUnderlyingChanged(dataManager.get_underlying_changed());
-            setStrikesChanged(dataManager.get_strikes_changed());
-        }
-    }, [dataManager]);
-*/
+
     useEffect(() => {
         if (dataManager) {
             setComboOptions(dataManager.get_combos_names_list());
@@ -295,10 +267,25 @@ export default function GraphTab({ dataManager }) {
         if (dataManager && selectedCombo) {
             dataManager.set_active_combo(selectedCombo);
             dataManager.active_data.combo_name = selectedCombo;
-            setRenderTrigger(t => t + 1);
         }
-    }, [selectedCombo, dataManager, sigmaIndex]);
+        const loadPrice = async () => {
+            if (dataManager) {
+                if (useLocalData) {
+                    let price = 201.00;
+                    console.log("loaded local price = ", parseFloat(price));
+                    dataManager.set_underlying_price(price);
+                }
+                else {
+                    let price = await fetch_price('AAPL');
+                    console.log("loaded remote price = ", parseFloat(price.price));
+                    dataManager.set_underlying_price(parseFloat(price.price));
+                }
+                setRenderTrigger(t => t + 1);
+            }
+        }
+        loadPrice();
 
+    }, [selectedCombo, dataManager, sigmaIndex]);
 
     useEffect(() => {
         if (dataManager) {
@@ -309,11 +296,14 @@ export default function GraphTab({ dataManager }) {
 
 
 
+
+
     if (!dataManager) {
         return <div>[GraphTab] dataManager is null, loading chart...</div>;
     }
 
-    dataManager.set_underlying_price(194.65);
+    //console.log("*** price ***");
+    //dataManager.set_underlying_price(200.00);
 
     return (
         <div style={{ display: 'flex', height: '100%', gap: '20px', alignItems: 'stretch' }}>
