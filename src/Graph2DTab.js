@@ -263,10 +263,11 @@ export default function Graph2DTab({ }) {
                 },
                 ticks: {
                     callback: (value) => {
-                        let s = (Math.abs(value) % 1).toFixed(2).toString()
+                        let s1 = (Math.abs(value)).toFixed(0).toString()
+                        let z=s1.length;
                         const sign = value < 0 ? '-' : ' ';
-                        s=sign + s;
-                        for (let i = 0; i < 8 - s.length; i++) {
+                        let s=sign + s1;
+                        for (let i = s1.length; i <= 6; i++) {
                             s = ' ' + s;
                         }
                         return s;
@@ -332,10 +333,11 @@ export default function Graph2DTab({ }) {
                 },
                 ticks: {
                     callback: (value) => {
-                        let s = (Math.abs(value) % 1).toFixed(2).toString()
+                        let s1 = (Math.abs(value)).toFixed(0).toString()
+                        let z=s1.length;
                         const sign = value < 0 ? '-' : ' ';
-                        s=sign + s;
-                        for (let i = 0; i < 8 - s.length; i++) {
+                        let s=sign + s1;
+                        for (let i = s1.length; i <= 6; i++) {
                             s = ' ' + s;
                         }
                         return s;
