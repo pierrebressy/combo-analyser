@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState, useContext } from 'react';
-import { AppContext } from './AppContext';
-import { compute_p_and_l_data_for_price, compute_data_to_display, compute_greeks_data_for_price } from './computation.js';
-import { RadioButton } from './RadioButton.js';
+import { AppContext } from '../AppContext';
+import { compute_p_and_l_data_for_price, compute_data_to_display, compute_greeks_data_for_price } from '../utils/computation.js';
+import { RadioButton } from '../components/RadioButton.js';
 import * as THREE from 'three';
 
 

@@ -1,6 +1,6 @@
-import { cookie_manager } from './cookie.js';
-import { fetch_configuration } from './network.js';
-import * as constants from "./consts.js";
+import { cookie_manager } from '../utils/cookie.js';
+import { fetch_configuration } from '../utils/network.js';
+import * as constants from "../utils/consts.js";
 
 export class DataManager {
 

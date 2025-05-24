@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import './LogComponent.css';
+import '../css/LogComponent.css';
 
 let appendExternalLog = null;
 

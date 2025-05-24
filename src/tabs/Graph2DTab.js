@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState, useContext } from 'react';
-import { AppContext } from './AppContext';
+import { AppContext } from '../AppContext';
 import { Line } from 'react-chartjs-2';
 import {
     Chart as ChartJS,
@@ -13,7 +13,7 @@ import {
     Legend
 } from 'chart.js';
 
-import { compute_data_to_display } from './computation.js';
+import { compute_data_to_display } from '../utils/computation.js';
 
 ChartJS.register(
     LineElement,

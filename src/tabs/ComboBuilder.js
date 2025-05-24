@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect, use } from 'react';
-import { load_local_option_chain } from './network.js';
-import { cookie_manager } from './cookie.js';
-import { DateManager } from './date.js';
+import { load_local_option_chain } from '../utils/network.js';
+import { cookie_manager } from '../utils/cookie.js';
+import { DateManager } from '../utils/date.js';
 
 export function createNonModalWindow({ title = 'Quick View', content = 'hello' }) {
   if (document.querySelector('.non-modal-window')) return;
@@ -428,7 +428,7 @@ function OptionChainViewer({ symbol, data }) {
   );
 }
 
-export default function ComboBuilderTab() {
+export default function ComboBuilder() {
   const containerRef = useRef(null);
   const [tabs, setTabs] = useState([]);
   const [activeTab, setActiveTab] = useState(null);

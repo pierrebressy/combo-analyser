@@ -1,21 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { AppContext } from './AppContext';
-import GraphTab from './GraphTab';
-import ComboBuilderTab from './ComboBuilderTab';
-import ComboFinderTab from './ComboFinderTab';
-import LogComponent from './LogComponent';
-import { cookie_manager } from './cookie';
-import { is_mode_local, load_local_config } from './network.js';
-import { DataManager } from './data_manager.js';
-import { appendTextToLogComponent } from './LogComponent';
-import * as constants from "./consts.js";
-import './App.css';
-import './body-dark-mode.css';
-import './body-light-mode.css';
-import './tabs.css';
-import './graphs.css';
-import './combo-builder.css';
-import './combo-finder.css';
+import GraphTab from './tabs/GraphTab';
+import ComboBuilder from './tabs/ComboBuilder';
+import ComboFinder from './tabs/ComboFinder';
+import LogComponent from './components/LogComponent';
+import { cookie_manager } from './utils/cookie';
+import { is_mode_local, load_local_config } from './utils/network.js';
+import { DataManager } from './utils/data_manager.js';
+import { appendTextToLogComponent } from './components/LogComponent';
+import * as constants from "./utils/consts.js";
+import './css/App.css';
+import './css/body-dark-mode.css';
+import './css/body-light-mode.css';
+import './css/tabs.css';
+import './css/graphs.css';
+import './css/combo-builder.css';
+import './css/combo-finder.css';
 
 function App() {
   const reset_local_storage_to_local_config = true;
@@ -162,7 +162,6 @@ function App() {
       setByLeg
     }}>
 
-
       <div className="global-container">
         <div className="top-dark-mode-container">
           <button
@@ -185,7 +184,6 @@ function App() {
           </button>
         </div>
 
-
         <div className="main-tabs-container">
           {tabs.map(tab => (
             <button
@@ -202,32 +200,23 @@ function App() {
           ))}
         </div>
 
-
         <div className="main-tab-container">
           <div className="tab-container" style={{ display: activeTab === 'log' ? 'block' : 'none' }}>
             <LogComponent />
           </div>
           <div className="tab-container" style={{ display: activeTab === 'graph' ? 'block' : 'none' }}>
-            {/*<GraphTab dataManager={dataManager} />*/}
             <GraphTab />
           </div>
           <div className="tab-container" style={{ display: activeTab === 'combo-builder' ? 'block' : 'none' }}>
-            <ComboBuilderTab />
+            <ComboBuilder />
           </div>
           <div className="tab-container" style={{ display: activeTab === 'combo-finder' ? 'block' : 'none' }}>
-            <ComboFinderTab />
+            <ComboFinder />
           </div>
         </div>
-
-
-
       </div>
-
-
     </AppContext.Provider>
-
   );
-
 }
 
 export default App;

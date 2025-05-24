@@ -1,5 +1,4 @@
-import * as constants from "./consts.js";
-//    fetch(constants.COMBO_FINDER_ADDRESS, { method: 'HEAD', mode: 'no-cors' })
+import * as constants from "../utils/consts.js";
 
 export async function is_mode_local() {
     try {

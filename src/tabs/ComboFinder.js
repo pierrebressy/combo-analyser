@@ -1,9 +1,9 @@
 import React, { useRef, useState, useEffect, useContext } from 'react';
-import { AppContext } from './AppContext';
-import * as constants from "./consts.js";
+import { AppContext } from '../AppContext';
+import * as constants from "../utils/consts.js";
 export let polygon_container = null;
 
-export default function ComboFinderTab() {
+export default function ComboFinder() {
   const { setComboFinderConnected } = useContext(AppContext);
   const containerRef = useRef(null);
   const [parentSize, setParentSize] = useState({ width: 0, height: 0 });
