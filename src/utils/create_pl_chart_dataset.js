@@ -37,7 +37,7 @@ export function create_pl_chart_dataset(dataManager) {
             {
                 label: 'Positive',
                 data: yPositive,
-                borderColor: 'green',
+                borderColor: 'rgba(0, 255, 0, 0)',
                 fill: true,
                 backgroundColor: (context) => {
                     const chart = context.chart;
@@ -59,7 +59,7 @@ export function create_pl_chart_dataset(dataManager) {
             {
                 label: 'Negative',
                 data: yNegative,
-                borderColor: 'red',
+                borderColor: 'rgba(255, 0, 0, 0)',
                 fill: true,
                 backgroundColor: (context) => {
                     const chart = context.chart;

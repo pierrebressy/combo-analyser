@@ -31,7 +31,7 @@ export const createPLOptions = (groupId) => ({
             y: {
                 title: {
                     display: true,
-                    text: 'y',
+                    text: 'P/L',
                     color: '#ff0000'
                 },
                 grid: {
