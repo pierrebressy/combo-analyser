@@ -28,6 +28,19 @@ export async function load_local_price(ticker) {
     }
 }
 
+export async function load_local_history(ticker) {
+    try {
+        const url = `local_config/${ticker}.json?t=${Date.now()}`; // Append timestamp to bust cache
+        const response = await fetch(url, { cache: "no-store" }); // Optional: explicit cache control
+        if (!response.ok) throw new Error("Failed to load ", constants.LOCAL_PRICES_FILENAME);
+
+        let local_history = await response.json(); // Parse JSON and store in local_config
+        return local_history;
+    } catch (error) {
+        console.error("Error loading prices:", error);
+    }
+}
+
 export async function load_local_option_chain() {
     try {
         console.log("Loading local option chain from:", constants.LOCAL_OPTION_CHAIN_FILENAME);

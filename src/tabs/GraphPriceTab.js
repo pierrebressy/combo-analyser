@@ -4,7 +4,6 @@ import { Line } from 'react-chartjs-2';
 import { cookie_manager } from '../utils/cookie';
 import * as constants from "../utils/consts.js";
 
-
 import {
     Chart as ChartJS,
     LineElement,
@@ -14,68 +13,69 @@ import {
     Tooltip,
     Legend,
 } from 'chart.js';
+import { load_local_history } from '../utils/network.js';
 
 ChartJS.register(LineElement, CategoryScale, LinearScale, PointElement, Tooltip, Legend);
 
 const customCrosshairPlugin = {
-  id: 'customCrosshair',
-  afterEvent(chart, args) {
-    const { event } = args;
-    chart._mouseX = event?.x;
-    chart._mouseY = event?.y;
-  },
-  afterDraw(chart) {
-    const { ctx, chartArea: { top, bottom, left, right } } = chart;
-    const x = chart._mouseX;
-    const y = chart._mouseY;
+    id: 'customCrosshair',
+    afterEvent(chart, args) {
+        const { event } = args;
+        chart._mouseX = event?.x;
+        chart._mouseY = event?.y;
+    },
+    afterDraw(chart) {
+        const { ctx, chartArea: { top, bottom, left, right } } = chart;
+        const x = chart._mouseX;
+        const y = chart._mouseY;
 
-    if (!x || !y || x < left || x > right || y < top || y > bottom) return;
+        if (!x || !y || x < left || x > right || y < top || y > bottom) return;
 
-    ctx.save();
-    ctx.lineWidth = 1;
-    ctx.setLineDash([4, 4]);
-    ctx.strokeStyle = 'rgba(255, 46, 46, 0.6)';
+        ctx.save();
+        ctx.lineWidth = 1;
+        ctx.setLineDash([4, 4]);
+        ctx.strokeStyle = 'rgba(255, 46, 46, 0.6)';
 
-    // Vertical
-    ctx.beginPath();
-    ctx.moveTo(x, top);
-    ctx.lineTo(x, bottom);
-    ctx.stroke();
+        // Vertical
+        ctx.beginPath();
+        ctx.moveTo(x, top);
+        ctx.lineTo(x, bottom);
+        ctx.stroke();
 
-    // Horizontal
-    ctx.beginPath();
-    ctx.moveTo(left, y);
-    ctx.lineTo(right, y);
-    ctx.stroke();
+        // Horizontal
+        ctx.beginPath();
+        ctx.moveTo(left, y);
+        ctx.lineTo(right, y);
+        ctx.stroke();
 
-    ctx.restore();
-  }
+        ctx.restore();
+    }
 };
 ChartJS.register(customCrosshairPlugin);
 
 
 const drawSigmaZone = (lastPrice, sigma) => ({
-  id: constants.SIGMA_ZONE_PLUGIN_ID,
-  beforeDatasetsDraw(chart) {
-    const { ctx, scales, data } = chart;
-    const { x, y } = scales;
-    const labels = data.labels;
+    id: constants.SIGMA_ZONE_PLUGIN_ID,
+    beforeDatasetsDraw(chart) {
+        const { ctx, scales, data } = chart;
+        const { x, y } = scales;
+        const labels = data.labels;
 
-    if (!lastPrice || !sigma || labels.length < constants.RIGHT_VOID_NUM_POINTS) return;
+        if (!lastPrice || !sigma || labels.length < constants.RIGHT_VOID_NUM_POINTS) return;
 
-    const startX = x.getPixelForValue(labels[labels.length - constants.RIGHT_VOID_NUM_POINTS]);
-    const endX = x.getPixelForValue(labels[labels.length - 1]);
+        const startX = x.getPixelForValue(labels[labels.length - constants.RIGHT_VOID_NUM_POINTS]);
+        const endX = x.getPixelForValue(labels[labels.length - 1]);
 
-    const y1 = y.getPixelForValue(lastPrice + sigma);
-    const y2 = y.getPixelForValue(lastPrice - sigma);
-    const yTop = Math.min(y1, y2);
-    const yBottom = Math.max(y1, y2);
+        const y1 = y.getPixelForValue(lastPrice + sigma);
+        const y2 = y.getPixelForValue(lastPrice - sigma);
+        const yTop = Math.min(y1, y2);
+        const yBottom = Math.max(y1, y2);
 
-    ctx.save();
-    ctx.fillStyle = 'rgba(0, 205, 251, 0.3)';
-    ctx.fillRect(startX, yTop, endX - startX, yBottom - yTop);
-    ctx.restore();
-  }
+        ctx.save();
+        ctx.fillStyle = 'rgba(0, 205, 251, 0.3)';
+        ctx.fillRect(startX, yTop, endX - startX, yBottom - yTop);
+        ctx.restore();
+    }
 });
 export default function GraphPriceTab() {
     const [tickers, setTickers] = useState([]);
@@ -108,6 +108,9 @@ export default function GraphPriceTab() {
                 }
             } catch (err) {
                 console.error("Failed to fetch tickers list", err);
+                const defaultTicker = constants.DEFAULT_TICKER;
+                setSelectedTicker(defaultTicker);
+                fetchAndDraw(defaultTicker);
             }
         };
 
@@ -119,15 +122,15 @@ export default function GraphPriceTab() {
         console.log("Sigma yearly updated:", sigma_yearly);
         const chart = chartPrice.current;
 
-  const plugin = drawSigmaZone(lastClose, sigma_yearly);
+        const plugin = drawSigmaZone(lastClose, sigma_yearly);
 
-  const existingIndex = chart.config.plugins.findIndex(p => p.id === constants.SIGMA_ZONE_PLUGIN_ID);
-  if (existingIndex !== -1) {
-    chart.config.plugins.splice(existingIndex, 1);
-  }
+        const existingIndex = chart.config.plugins.findIndex(p => p.id === constants.SIGMA_ZONE_PLUGIN_ID);
+        if (existingIndex !== -1) {
+            chart.config.plugins.splice(existingIndex, 1);
+        }
 
-  chart.config.plugins.push(plugin);
-chart.update();
+        chart.config.plugins.push(plugin);
+        chart.update();
     }, [sigma_yearly, chartPrice]);
 
     const handleSelectChange = async (e) => {
@@ -148,95 +151,107 @@ chart.update();
     };
 
     const fetchAndDraw = async (ticker) => {
+        let history = [];
         try {
             const res = await fetch(`${constants.HISTORIC_TICKER_CMD}${ticker}`);
             const json = await res.json();
-            const history = json.history;
+            history = json.history;
 
-            if (history && history.length) {
-                const dates = history.map(item => item.date);
-                const prices = history.map(item => item.close_price);
+        } catch (err) {
+            console.error("Failed to fetch price history from backend", err);
 
-                setLastClose(prices[prices.length - 1]);
-                //const sigma = 20; // Replace with actual sigma_yearly if available
-                const logReturns = [];
-                for (let i = 1; i < prices.length; i++) {
-                    const r = Math.log(prices[i] / prices[i - 1]);
-                    if (!isNaN(r) && isFinite(r)) {
-                        logReturns.push(r);
-                    }
+            try {
+                console.log("1-Loading local history for", ticker);
+                const res = await load_local_history(ticker);
+                console.log("2-Loaded local history for", ticker, res);
+                history = res.history;
+                console.log("3-Price history loaded from local file:", history);
+            } catch (err) {
+                console.error("Failed to fetch price history from file", err);
+            }
+        }
+
+        if (history && history.length) {
+            const dates = history.map(item => item.date);
+            const prices = history.map(item => item.close_price);
+
+            setLastClose(prices[prices.length - 1]);
+            //const sigma = 20; // Replace with actual sigma_yearly if available
+            const logReturns = [];
+            for (let i = 1; i < prices.length; i++) {
+                const r = Math.log(prices[i] / prices[i - 1]);
+                if (!isNaN(r) && isFinite(r)) {
+                    logReturns.push(r);
                 }
+            }
 
-                const sma20 = Array(prices.length).fill(null); // initialise avec null pour aligner les index
-                for (let i = 19; i < prices.length; i++) {
-                    const sum = prices.slice(i - 19, i + 1).reduce((a, b) => a + b, 0);
-                    sma20[i] = sum / 20;
-                }
+            const sma20 = Array(prices.length).fill(null); // initialise avec null pour aligner les index
+            for (let i = 19; i < prices.length; i++) {
+                const sum = prices.slice(i - 19, i + 1).reduce((a, b) => a + b, 0);
+                sma20[i] = sum / 20;
+            }
 
 
-                const closingPrices = prices.slice(-252);
-                const mean = closingPrices.reduce((a, b) => a + b, 0) / closingPrices.length;
-                const variance = closingPrices.reduce((sum, p) => sum + Math.pow(p - mean, 2), 0) / (closingPrices.length - 1);
-                const stddev = Math.sqrt(variance);
-                console.log(`Computed stddev for ${ticker}:`, stddev);
-                const sigma = stddev * Math.sqrt(252); // Annualize the standard deviation
-                setSigmaYearly(stddev);
+            const closingPrices = prices.slice(-252);
+            const mean = closingPrices.reduce((a, b) => a + b, 0) / closingPrices.length;
+            const variance = closingPrices.reduce((sum, p) => sum + Math.pow(p - mean, 2), 0) / (closingPrices.length - 1);
+            const stddev = Math.sqrt(variance);
+            console.log(`Computed stddev for ${ticker}:`, stddev);
+            const sigma = stddev * Math.sqrt(252); // Annualize the standard deviation
+            setSigmaYearly(stddev);
 
-                const lastDate = new Date(dates[dates.length - 1]);
-                for (let i = 1; i <= constants.RIGHT_VOID_NUM_POINTS; i++) {
-                    const nextDate = new Date(lastDate);
-                    nextDate.setDate(lastDate.getDate() + i);
-                    const formatted = nextDate.toISOString().split('T')[0];
-                    dates.push(formatted);
-                    prices.push(null);
-                }
+            const lastDate = new Date(dates[dates.length - 1]);
+            for (let i = 1; i <= constants.RIGHT_VOID_NUM_POINTS; i++) {
+                const nextDate = new Date(lastDate);
+                nextDate.setDate(lastDate.getDate() + i);
+                const formatted = nextDate.toISOString().split('T')[0];
+                dates.push(formatted);
+                prices.push(null);
+            }
 
-                setPriceData({
-                    labels: dates,
-                    datasets: [{
-                        label: `${ticker} Price`,
-                        data: prices,
-                        fill: false,
-                        borderColor: 'lightblue',
-                        tension: 0,
-                        animation: false,
+            setPriceData({
+                labels: dates,
+                datasets: [{
+                    label: `${ticker} Price`,
+                    data: prices,
+                    fill: false,
+                    borderColor: 'lightblue',
+                    tension: 0,
+                    animation: false,
 
+                },
+                {
+                    label: 'SMA 20',
+                    data: sma20,
+                    fill: false,
+                    borderColor: 'orange',
+                    borderWidth: 2,
+                    pointRadius: 0,
+                    tension: 0,
+                    animation: false,
+                },
+
+
+                ],
+                options: {
+                    responsive: true,
+                    //maintainAspectRatio: false,
+                    //animation: false,
+                    interaction: {
+                        mode: 'nearest',
+                        intersect: false
                     },
-                    {
-                        label: 'SMA 20',
-                        data: sma20,
-                        fill: false,
-                        borderColor: 'orange',
-                        borderWidth: 2,
-                        pointRadius: 0,
-                        tension: 0,
-                        animation: false,
-                    },
-
-
-                    ],
-                    options: {
-                        responsive: true,
-                        //maintainAspectRatio: false,
-                        //animation: false,
-                        interaction: {
-                            mode: 'nearest',
-                            intersect: false
-                        },
-                        plugins: {
-                            tooltip: {
-                                enabled: true
-                            }
+                    plugins: {
+                        tooltip: {
+                            enabled: true
                         }
                     }
+                }
 
 
-                });
+            });
 
-                cookie_manager.set_cookie(constants.LAST_TICKER, ticker, 365);
-            }
-        } catch (err) {
-            console.error("Failed to fetch price data", err);
+            cookie_manager.set_cookie(constants.LAST_TICKER, ticker, 365);
         }
     };
     return (

@@ -27,5 +27,6 @@ export const SIGMA_ZONE_PLUGIN_ID = 'drawSigmaZone_plugin';
 export const SIGMA_AND_CROSSHAIR_PLUGIN_ID = "sigma_and_crosshair_plugin";
 export const COMBO_PROFILE_PLUGIN_ID = 'combo_profile_plugin';
 
+export const DEFAULT_TICKER = "AAPL";
 export const LAST_TICKER = "AAPL";
 export const RIGHT_VOID_NUM_POINTS = 100;
