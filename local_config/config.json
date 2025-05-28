@@ -245,6 +245,42 @@
                 "mean_volatility": 0.15,
                 "trade_open_by": "2025-03-03"
             }
+        },
+        "Calendar Call Spread": {
+            "legs": [
+                {
+                    "expiration_offset": 0,
+                    "qty": -1,
+                    "iv": 0.306,
+                    "strike": 200,
+                    "type": "call",
+                    "price": 8.33
+                },
+                {
+                    "expiration_offset": 43,
+                    "qty": 1,
+                    "iv": 0.317,
+                    "strike": 200,
+                    "type": "call",
+                    "price": 12.88
+                }
+            ],
+            "name": "Calendar Call Spread",
+            "simulation": {
+                "interest_rate": 0.04,
+                "max_price": 250,
+                "mean_volatility": 0.20,
+                "min_price": 150,
+                "step": 0.1,
+                "time_for_simulation": 14,
+                "time_to_expiry": 37
+            },
+            "ticker": "AAPL",
+            "trade": {
+                "expiration_date": "2025-04-17",
+                "mean_volatility": 0.15,
+                "trade_open_by": "2025-03-03"
+            }
         }
 
     },
