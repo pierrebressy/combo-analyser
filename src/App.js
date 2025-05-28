@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { AppContext } from './AppContext';
+import GraphPriceTab from './tabs/GraphPriceTab';
 import GraphTab from './tabs/GraphTab';
 import ComboBuilder from './tabs/ComboBuilder';
 import ComboFinder from './tabs/ComboFinder';
@@ -40,6 +41,7 @@ function App() {
   const [activeTab, setActiveTab] = useState(get_last_main_tab());
 
   const tabs = [
+    { id: 'graphprice', label: '📈 Price', content: <GraphPriceTab /> },
     { id: 'graph', label: '📈 Graphs' },
     { id: 'combo-builder', label: '🧾 Combo Builder' },
     { id: 'combo-finder', label: '🔍 Combo Finder' },
@@ -95,6 +97,7 @@ function App() {
         local_mode = await is_mode_local()
         console.log("App.js: is_mode_local()", local_mode);
       }
+      console.log("App.js: setUseLocalData", local_mode);
       setUseLocalData(local_mode);
 
       // load the config file and set it in localStorage
@@ -203,6 +206,9 @@ function App() {
         <div className="main-tab-container">
           <div className="tab-container" style={{ display: activeTab === 'log' ? 'block' : 'none' }}>
             <LogComponent />
+          </div>
+          <div className="tab-container" style={{ display: activeTab === 'graphprice' ? 'block' : 'none' }}>
+            <GraphPriceTab />
           </div>
           <div className="tab-container" style={{ display: activeTab === 'graph' ? 'block' : 'none' }}>
             <GraphTab />

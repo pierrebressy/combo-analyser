@@ -1,6 +1,7 @@
 import React from "react";
 import Graph2DTab from './tabs/Graph2DTab';
 import Graph3DTab from './tabs/Graph3DTab';
+import GraphCombiTab from './tabs/GraphCombiTab';
 
 export default class RightContainer extends React.Component {
     constructor(props) {
@@ -12,6 +13,7 @@ export default class RightContainer extends React.Component {
         } = this.props;
 
         const tabs = [
+            { id: 'graphcombi', label: '📈 Ticker Price + Combo', content: <GraphCombiTab /> },
             { id: 'graph2d', label: '📈 P/L & Greeks Graphs', content: <Graph2DTab /> },
             { id: 'graph3d', label: '📈 3D Graphs', content: <Graph3DTab /> }
         ];

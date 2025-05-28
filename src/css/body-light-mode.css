@@ -38,6 +38,8 @@ body.light-mode {
   --sim-line-color: #38c500;
   --init-line-color: #d28500;
 
+  --sigma-area-color: rgba(22, 88, 143, 0.54);
+  --sigma-text-color: #000000;
 
   --xaxis-material-color: #ff0000;
   --yaxis-material-color: #00ff00;

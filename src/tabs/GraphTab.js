@@ -94,6 +94,7 @@ export default function GraphTab() {
                 selectedCombo={selectedCombo}
                 setSelectedCombo={setSelectedCombo}
                 combo_options={combo_options}
+                useLocalData={useLocalData}
 
                 days_left={days_left}
                 setDaysLeft={setDaysLeft}

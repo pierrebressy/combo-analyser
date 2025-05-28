@@ -38,6 +38,9 @@ body.dark-mode {
   --sim-line-color: #008a2a;
   --init-line-color: #d28500;
 
+  --sigma-area-color: rgba(22, 88, 143, 0.54);
+  --sigma-text-color: #ffffff;
+
   --black-material-color: #ffffff;
   --green-material-color: #03a200;
   --orange-material-color: #f8ae00;

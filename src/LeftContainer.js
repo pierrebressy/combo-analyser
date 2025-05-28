@@ -14,6 +14,7 @@ export default class LeftContainer extends React.Component {
 
     render() {
         const { dataManager, selectedCombo, setSelectedCombo, combo_options,
+            useLocalData,
             days_left, num_days, setDaysLeft, setRenderTrigger,
             byLeg, setByLeg, computed, setComputed,
             mean_volatility, setMean_volatility,
@@ -22,7 +23,9 @@ export default class LeftContainer extends React.Component {
 
         return (
             <div className="left-container" style={{ flex: '0 0 20%' }}>
-                <LocalStatusInfo />
+                <LocalStatusInfo 
+                    useLocalData={useLocalData}
+                />
                 <ChooseCombo
                     dataManager={dataManager}
                     selectedCombo={selectedCombo}

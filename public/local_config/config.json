@@ -102,6 +102,42 @@
                 "trade_open_by": "2025-03-03"
             }
         },
+        "Credit Call Spread": {
+            "legs": [
+                {
+                    "expiration_offset": 0,
+                    "qty": -1,
+                    "iv": 0.387,
+                    "strike": 175,
+                    "type": "call",
+                    "price": 27.5
+                },
+                {
+                    "expiration_offset": 0,
+                    "qty": 1,
+                    "iv": 0.306,
+                    "strike": 200,
+                    "type": "call",
+                    "price": 8.33
+                }
+            ],
+            "name": "Credit Call Spread",
+            "simulation": {
+                "interest_rate": 0.04,
+                "max_price": 230,
+                "mean_volatility": 0.20,
+                "min_price": 150,
+                "step": 0.1,
+                "time_for_simulation": 14,
+                "time_to_expiry": 37
+            },
+            "ticker": "AAPL",
+            "trade": {
+                "expiration_date": "2025-04-17",
+                "mean_volatility": 0.15,
+                "trade_open_by": "2025-03-03"
+            }
+        },
         "Credit Put Spread": {
             "legs": [
                 {
@@ -137,7 +173,80 @@
                 "mean_volatility": 0.15,
                 "trade_open_by": "2025-03-03"
             }
+        },
+        "Debit Call Spread": {
+            "legs": [
+                {
+                    "expiration_offset": 0,
+                    "qty": 1,
+                    "iv": 0.306,
+                    "strike": 200,
+                    "type": "call",
+                    "price": 8.33
+                },
+                {
+                    "expiration_offset": 0,
+                    "qty": -1,
+                    "iv": 0.282,
+                    "strike": 225,
+                    "type": "call",
+                    "price": 0.97
+                }
+            ],
+            "name": "Debit Call Spread",
+            "simulation": {
+                "interest_rate": 0.04,
+                "max_price": 230,
+                "mean_volatility": 0.20,
+                "min_price": 150,
+                "step": 0.1,
+                "time_for_simulation": 14,
+                "time_to_expiry": 37
+            },
+            "ticker": "AAPL",
+            "trade": {
+                "expiration_date": "2025-04-17",
+                "mean_volatility": 0.15,
+                "trade_open_by": "2025-03-03"
+            }
+        },
+        "Debit Put Spread": {
+            "legs": [
+                {
+                    "expiration_offset": 0,
+                    "qty": -1,
+                    "iv": 0.306,
+                    "strike": 200,
+                    "type": "put",
+                    "price": 7.20
+                },
+                {
+                    "expiration_offset": 0,
+                    "qty": 1,
+                    "iv": 0.282,
+                    "strike": 225,
+                    "type": "put",
+                    "price": 25.30
+                }
+            ],
+            "name": "Debit Put Spread",
+            "simulation": {
+                "interest_rate": 0.04,
+                "max_price": 230,
+                "mean_volatility": 0.20,
+                "min_price": 150,
+                "step": 0.1,
+                "time_for_simulation": 14,
+                "time_to_expiry": 37
+            },
+            "ticker": "AAPL",
+            "trade": {
+                "expiration_date": "2025-04-17",
+                "mean_volatility": 0.15,
+                "trade_open_by": "2025-03-03"
+            }
         }
+
     },
     "computation": {
         "greek_scaler": [
