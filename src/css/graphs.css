@@ -53,6 +53,14 @@
   align-items: center;
   gap: 12px;
 }
+.days-expiration-container {
+  background-color: var(--bg-days-expiration);
+  padding: 10px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
 
 .volatility-management-container {
   background-color: var(--bg-volatility-main);

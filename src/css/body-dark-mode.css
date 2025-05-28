@@ -16,8 +16,9 @@ body.dark-mode {
 
   --bg-local-status: #363535;
   --bg-combo-list: #770000;
-  --bg-days-left: #02520e;
-  --bg-volatility-main: #0e026f;
+  --bg-days-left: #037214;
+  --bg-days-expiration: #02520e;
+  --bg-volatility-main: #120095;
   --bg-per-leg-volatility: #0e026f;
   --bg-mean-volatility: #0e026f;
   --bg-combo-templater: #1e1e1e;

@@ -17,6 +17,7 @@ body.light-mode {
   --bg-local-status: #e9e9e9;
   --bg-combo-list: #fcbaba;
   --bg-days-left: #adffb9;
+  --bg-days-expiration: #00b91c;
   --bg-volatility-main: #b0a6ff;
   --bg-per-leg-volatility: #b0a6ff;
   --bg-mean-volatility: #b0a6ff;

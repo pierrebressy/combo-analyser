@@ -3,6 +3,7 @@ import LocalStatusInfo from './components/LocalStatusInfo';
 import ChooseCombo from './components/ChooseCombo';
 import DaysLeft from './components/DaysLeft';
 import VolatilityMgmt from './components/VolatilityMgmt';
+import OneLegExpirationOffset from "./components/OneLegExpirationOffset";
 import MeanVolatility from "./components/MeanVolatility";
 import OneLegVolatility from "./components/OneLegVolatility";
 import SigmaFactor from "./components/SigmaFactor";
@@ -39,6 +40,17 @@ export default class LeftContainer extends React.Component {
                     num_days={num_days}
                     setRenderTrigger={setRenderTrigger}
                 />
+                                        <>
+                            {dataManager.get_combo_params().legs.map((leg, index) =>
+                                <OneLegExpirationOffset
+                                    key={index}
+                                    dataManager={dataManager}
+                                    setRenderTrigger={setRenderTrigger}
+                                    index={index}
+                                />
+                            )}
+                        </>
+
                 <VolatilityMgmt
                     byLeg={byLeg}
                     setByLeg={setByLeg}

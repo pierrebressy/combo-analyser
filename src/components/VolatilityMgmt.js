@@ -10,6 +10,9 @@ export default class VolatilityMgmt extends React.Component {
 
         return (
             <div className="volatility-management-container">
+                <label className="std-text">
+                    Volatility
+                </label>
                 <label className='volatility-checkbox'>
                     <input
                         type="checkbox"
