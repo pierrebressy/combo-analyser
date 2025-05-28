@@ -14,8 +14,8 @@ export default class RightContainer extends React.Component {
 
         const tabs = [
             { id: 'graphcombi', label: '📈 Ticker Price + Combo', content: <GraphCombiTab /> },
-            { id: 'graph2d', label: '📈 P/L & Greeks Graphs', content: <Graph2DTab /> },
-            { id: 'graph3d', label: '📈 3D Graphs', content: <Graph3DTab /> }
+            { id: 'graph2d', label: '📉 P/L & Greeks Graphs', content: <Graph2DTab /> },
+            { id: 'graph3d', label: '📉 3D Graphs', content: <Graph3DTab /> }
         ];
 
         return (

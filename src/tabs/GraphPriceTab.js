@@ -63,18 +63,25 @@ const drawSigmaZone = (lastPrice, sigma) => ({
 
         if (!lastPrice || !sigma || labels.length < constants.RIGHT_VOID_NUM_POINTS) return;
 
-        const startX = x.getPixelForValue(labels[labels.length - constants.RIGHT_VOID_NUM_POINTS]);
-        const endX = x.getPixelForValue(labels[labels.length - 1]);
+        for (let daysForward = 1; daysForward < constants.RIGHT_VOID_NUM_POINTS; daysForward++) {
+            const sigmaDaily = sigma / Math.sqrt(252); // volatilité quotidienne
 
-        const y1 = y.getPixelForValue(lastPrice + sigma);
-        const y2 = y.getPixelForValue(lastPrice - sigma);
-        const yTop = Math.min(y1, y2);
-        const yBottom = Math.max(y1, y2);
+            const upperBound = lastPrice * Math.exp(sigmaDaily * Math.sqrt(daysForward));
+            const lowerBound = lastPrice * Math.exp(-sigmaDaily * Math.sqrt(daysForward));
 
-        ctx.save();
-        ctx.fillStyle = 'rgba(0, 205, 251, 0.3)';
-        ctx.fillRect(startX, yTop, endX - startX, yBottom - yTop);
-        ctx.restore();
+            const startX = x.getPixelForValue(labels[labels.length - constants.RIGHT_VOID_NUM_POINTS + daysForward - 1]);
+            const endX = x.getPixelForValue(labels[labels.length - constants.RIGHT_VOID_NUM_POINTS + daysForward]);
+
+            const y1 = y.getPixelForValue(upperBound);
+            const y2 = y.getPixelForValue(lowerBound);
+            const yTop = Math.min(y1, y2);
+            const yBottom = Math.max(y1, y2);
+
+            ctx.save();
+            ctx.fillStyle = 'rgba(205, 251, 0, 0.24)';
+            ctx.fillRect(startX, yTop, endX - startX, yBottom - yTop);
+            ctx.restore();
+        }
     }
 });
 export default function GraphPriceTab() {
@@ -161,11 +168,8 @@ export default function GraphPriceTab() {
             console.error("Failed to fetch price history from backend", err);
 
             try {
-                console.log("1-Loading local history for", ticker);
                 const res = await load_local_history(ticker);
-                console.log("2-Loaded local history for", ticker, res);
                 history = res.history;
-                console.log("3-Price history loaded from local file:", history);
             } catch (err) {
                 console.error("Failed to fetch price history from file", err);
             }
@@ -191,14 +195,25 @@ export default function GraphPriceTab() {
                 sma20[i] = sum / 20;
             }
 
+            const closingPrices = prices.slice(-253); // need at least 252 returns
+            const logReturnsHV = [];
+            for (let i = 1; i < closingPrices.length; i++) {
+                const ret = Math.log(closingPrices[i] / closingPrices[i - 1]);
+                if (!isNaN(ret) && isFinite(ret)) {
+                    logReturnsHV.push(ret);
+                }
+            }
 
-            const closingPrices = prices.slice(-252);
-            const mean = closingPrices.reduce((a, b) => a + b, 0) / closingPrices.length;
-            const variance = closingPrices.reduce((sum, p) => sum + Math.pow(p - mean, 2), 0) / (closingPrices.length - 1);
-            const stddev = Math.sqrt(variance);
-            console.log(`Computed stddev for ${ticker}:`, stddev);
-            const sigma = stddev * Math.sqrt(252); // Annualize the standard deviation
-            setSigmaYearly(stddev);
+            // Moyenne des rendements log (optionnelle, mais pour le style)
+            const meanLogReturn = logReturnsHV.reduce((a, b) => a + b, 0) / logReturnsHV.length;
+
+            // Écart type des rendements log
+            const varianceHV = logReturnsHV.reduce((sum, r) => sum + Math.pow(r - meanLogReturn, 2), 0) / (logReturnsHV.length - 1);
+            const stddevHV = Math.sqrt(varianceHV);
+            const sigma = stddevHV * Math.sqrt(252); // Annualisation
+
+            console.log(`Computed HV (σ yearly) for ${ticker}:`, sigma);
+            setSigmaYearly(sigma);  // ici, on passe directement l’HV annualisée
 
             const lastDate = new Date(dates[dates.length - 1]);
             for (let i = 1; i <= constants.RIGHT_VOID_NUM_POINTS; i++) {

@@ -92,6 +92,7 @@ export async function fetch_configuration() {
 
 export async function fetch_price(ticker) {
     const response = await fetch(`${constants.GET_PRICE_CMD}` + ticker);
+    console.log("fetch_price response:", response);
     return response.json();
 }
 

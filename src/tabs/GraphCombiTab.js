@@ -65,18 +65,26 @@ const drawSigmaZone = (lastPrice, sigma) => ({
 
         if (!lastPrice || !sigma || labels.length < constants.RIGHT_VOID_NUM_POINTS) return;
 
-        const startX = x.getPixelForValue(labels[labels.length - constants.RIGHT_VOID_NUM_POINTS]);
-        const endX = x.getPixelForValue(labels[labels.length - 1]);
 
-        const y1 = y.getPixelForValue(lastPrice + sigma);
-        const y2 = y.getPixelForValue(lastPrice - sigma);
-        const yTop = Math.min(y1, y2);
-        const yBottom = Math.max(y1, y2);
+        for (let daysForward= 1; daysForward < constants.RIGHT_VOID_NUM_POINTS; daysForward++) {
+            const sigmaDaily = sigma / Math.sqrt(252); // volatilité quotidienne
 
-        ctx.save();
-        ctx.fillStyle = 'rgba(0, 205, 251, 0.3)';
-        ctx.fillRect(startX, yTop, endX - startX, yBottom - yTop);
-        ctx.restore();
+            const upperBound = lastPrice * Math.exp(sigmaDaily * Math.sqrt(daysForward));
+            const lowerBound = lastPrice * Math.exp(-sigmaDaily * Math.sqrt(daysForward));
+
+            const startX = x.getPixelForValue(labels[labels.length - constants.RIGHT_VOID_NUM_POINTS + daysForward - 1]);
+            const endX = x.getPixelForValue(labels[labels.length - constants.RIGHT_VOID_NUM_POINTS + daysForward ]);
+
+            const y1 = y.getPixelForValue(upperBound);
+            const y2 = y.getPixelForValue(lowerBound);
+            const yTop = Math.min(y1, y2);
+            const yBottom = Math.max(y1, y2);
+
+            ctx.save();
+            ctx.fillStyle = 'rgba(205, 251, 0, 0.24)';
+            ctx.fillRect(startX, yTop, endX - startX, yBottom - yTop);
+            ctx.restore();
+        }
     }
 });
 
@@ -86,7 +94,7 @@ const drawComboProfile = (dataManager) => ({
         const { ctx, scales, data } = chart;
         const { x, y } = scales;
         const labels = data.labels;
-        
+
         const startX = x.getPixelForValue(labels[labels.length - constants.RIGHT_VOID_NUM_POINTS]);
         const endX = x.getPixelForValue(labels[labels.length - 1]);
         const legs = dataManager.get_combo_params().legs;
@@ -95,8 +103,8 @@ const drawComboProfile = (dataManager) => ({
             const legPrice = leg.strike;
             ctx.save();
             ctx.beginPath();
-            ctx.moveTo(startX,y.getPixelForValue(legPrice));
-            ctx.lineTo(endX,y.getPixelForValue(legPrice));
+            ctx.moveTo(startX, y.getPixelForValue(legPrice));
+            ctx.lineTo(endX, y.getPixelForValue(legPrice));
             ctx.strokeStyle = '#FF0000';
             ctx.lineWidth = 4;
             ctx.stroke();
@@ -216,98 +224,6 @@ export default function GraphCombiTab() {
         await fetchAndDraw(selectedTicker);
     };
 
-    const fetchAndDraw_old = async (ticker) => {
-        try {
-            const res = await fetch(`${constants.HISTORIC_TICKER_CMD}${ticker}`);
-            const json = await res.json();
-            const history = json.history;
-
-            if (history && history.length) {
-                const dates = history.map(item => item.date);
-                const prices = history.map(item => item.close_price);
-
-                setLastClose(prices[prices.length - 1]);
-                //const sigma = 20; // Replace with actual sigma_yearly if available
-                const logReturns = [];
-                for (let i = 1; i < prices.length; i++) {
-                    const r = Math.log(prices[i] / prices[i - 1]);
-                    if (!isNaN(r) && isFinite(r)) {
-                        logReturns.push(r);
-                    }
-                }
-
-                const sma20 = Array(prices.length).fill(null); // initialise avec null pour aligner les index
-                for (let i = 19; i < prices.length; i++) {
-                    const sum = prices.slice(i - 19, i + 1).reduce((a, b) => a + b, 0);
-                    sma20[i] = sum / 20;
-                }
-
-
-                const closingPrices = prices.slice(-252);
-                const mean = closingPrices.reduce((a, b) => a + b, 0) / closingPrices.length;
-                const variance = closingPrices.reduce((sum, p) => sum + Math.pow(p - mean, 2), 0) / (closingPrices.length - 1);
-                const stddev = Math.sqrt(variance);
-                console.log(`Computed stddev for ${ticker}:`, stddev);
-                const sigma = stddev * Math.sqrt(252); // Annualize the standard deviation
-                setSigmaYearly(stddev);
-
-                const lastDate = new Date(dates[dates.length - 1]);
-                for (let i = 1; i <= constants.RIGHT_VOID_NUM_POINTS; i++) {
-                    const nextDate = new Date(lastDate);
-                    nextDate.setDate(lastDate.getDate() + i);
-                    const formatted = nextDate.toISOString().split('T')[0];
-                    dates.push(formatted);
-                    prices.push(null);
-                }
-
-                setPriceData({
-                    labels: dates,
-                    datasets: [{
-                        label: `${ticker} Price`,
-                        data: prices,
-                        fill: false,
-                        borderColor: 'lightblue',
-                        tension: 0,
-                        animation: false,
-
-                    },
-                    {
-                        label: 'SMA 20',
-                        data: sma20,
-                        fill: false,
-                        borderColor: 'orange',
-                        borderWidth: 2,
-                        pointRadius: 0,
-                        tension: 0,
-                        animation: false,
-                    },
-
-
-                    ],
-                    options: {
-                        responsive: true,
-                        //maintainAspectRatio: false,
-                        //animation: false,
-                        interaction: {
-                            mode: 'nearest',
-                            intersect: false
-                        },
-                        plugins: {
-                            tooltip: {
-                                enabled: true
-                            }
-                        }
-                    }
-
-
-                });
-
-                cookie_manager.set_cookie(constants.LAST_TICKER, ticker, 365);
-            }
-        } catch (err) {
-            console.error("Failed to fetch price data", err);
-        }
-    };
     const fetchAndDraw = async (ticker) => {
         let history = [];
         try {
@@ -319,11 +235,8 @@ export default function GraphCombiTab() {
             console.error("Failed to fetch price history from backend", err);
 
             try {
-                console.log("1-Loading local history for", ticker);
                 const res = await load_local_history(ticker);
-                console.log("2-Loaded local history for", ticker, res);
                 history = res.history;
-                console.log("3-Price history loaded from local file:", history);
             } catch (err) {
                 console.error("Failed to fetch price history from file", err);
             }
@@ -349,14 +262,26 @@ export default function GraphCombiTab() {
                 sma20[i] = sum / 20;
             }
 
+            const closingPrices = prices.slice(-253); // need at least 252 returns
+            const logReturnsHV = [];
+            for (let i = 1; i < closingPrices.length; i++) {
+                const ret = Math.log(closingPrices[i] / closingPrices[i - 1]);
+                if (!isNaN(ret) && isFinite(ret)) {
+                    logReturnsHV.push(ret);
+                }
+            }
 
-            const closingPrices = prices.slice(-252);
-            const mean = closingPrices.reduce((a, b) => a + b, 0) / closingPrices.length;
-            const variance = closingPrices.reduce((sum, p) => sum + Math.pow(p - mean, 2), 0) / (closingPrices.length - 1);
-            const stddev = Math.sqrt(variance);
-            console.log(`Computed stddev for ${ticker}:`, stddev);
-            const sigma = stddev * Math.sqrt(252); // Annualize the standard deviation
-            setSigmaYearly(stddev);
+            // Moyenne des rendements log (optionnelle, mais pour le style)
+            const meanLogReturn = logReturnsHV.reduce((a, b) => a + b, 0) / logReturnsHV.length;
+
+            // Écart type des rendements log
+            const varianceHV = logReturnsHV.reduce((sum, r) => sum + Math.pow(r - meanLogReturn, 2), 0) / (logReturnsHV.length - 1);
+            const stddevHV = Math.sqrt(varianceHV);
+            const sigma = stddevHV * Math.sqrt(252); // Annualisation
+
+            console.log(`Computed HV (σ yearly) for ${ticker}:`, sigma);
+            setSigmaYearly(sigma);  // ici, on passe directement l’HV annualisée
+
 
             const lastDate = new Date(dates[dates.length - 1]);
             for (let i = 1; i <= constants.RIGHT_VOID_NUM_POINTS; i++) {

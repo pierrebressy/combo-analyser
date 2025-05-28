@@ -21,7 +21,7 @@ import './css/combo-finder.css';
 function App() {
   const reset_local_storage_to_local_config = true;
   const reset_last_selected_combo_to_long_call = true;
-  const force_use_local = true;
+  const force_use_local = false;
 
   const [useLocalData, setUseLocalData] = useState(false);
   const [comboFinderConnected, setComboFinderConnected] = useState(false);
@@ -41,8 +41,8 @@ function App() {
   const [activeTab, setActiveTab] = useState(get_last_main_tab());
 
   const tabs = [
-    { id: 'graphprice', label: '📈 Price', content: <GraphPriceTab /> },
-    { id: 'graph', label: '📈 Graphs' },
+    { id: 'graph-price', label: '📈 Stock Price' },
+    { id: 'graph', label: '📈📉Combo Graphs' },
     { id: 'combo-builder', label: '🧾 Combo Builder' },
     { id: 'combo-finder', label: '🔍 Combo Finder' },
     //{ id: 'parameters', label: '⚙️ Parameters'},
@@ -207,7 +207,7 @@ function App() {
           <div className="tab-container" style={{ display: activeTab === 'log' ? 'block' : 'none' }}>
             <LogComponent />
           </div>
-          <div className="tab-container" style={{ display: activeTab === 'graphprice' ? 'block' : 'none' }}>
+          <div className="tab-container" style={{ display: activeTab === 'graph-price' ? 'block' : 'none' }}>
             <GraphPriceTab />
           </div>
           <div className="tab-container" style={{ display: activeTab === 'graph' ? 'block' : 'none' }}>
