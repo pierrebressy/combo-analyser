@@ -50,7 +50,6 @@ export default class LeftContainer extends React.Component {
                                 />
                             )}
                         </>
-
                 <VolatilityMgmt
                     byLeg={byLeg}
                     setByLeg={setByLeg}
