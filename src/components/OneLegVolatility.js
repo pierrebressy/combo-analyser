@@ -10,7 +10,7 @@ export default class OneLegVolatility extends React.Component {
         return (
             <div className="mean-volatility-container">
                 <label className="std-text">
-                    Leg {index + 1}: {dataManager.get_combo_params().legs[index].iv.toFixed(2)}
+                    Leg {dataManager.get_combo_params().legs[index].strike.toFixed(1)}: {dataManager.get_combo_params().legs[index].iv.toFixed(2)}
                 </label>
                 <input
                     type="range"

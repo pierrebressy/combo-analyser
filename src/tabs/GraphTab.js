@@ -22,6 +22,8 @@ export default function GraphTab() {
 
     const { dataManager } = useContext(AppContext);
     const { useLocalData } = useContext(AppContext);
+    const { underlyingChanged } = useContext(AppContext);
+    const { strikesChanged } = useContext(AppContext);
     const { days_left, setDaysLeft } = useContext(AppContext);
     const { sigmaIndex, setSigmaIndex } = useContext(AppContext);
     const { setRenderTrigger } = useContext(AppContext);
@@ -95,6 +97,8 @@ export default function GraphTab() {
                 setSelectedCombo={setSelectedCombo}
                 combo_options={combo_options}
                 useLocalData={useLocalData}
+                underlyingChanged={underlyingChanged}
+                strikesChanged={strikesChanged}
 
                 days_left={days_left}
                 setDaysLeft={setDaysLeft}
