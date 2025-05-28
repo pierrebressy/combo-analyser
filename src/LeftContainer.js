@@ -16,7 +16,7 @@ export default class LeftContainer extends React.Component {
     render() {
         const { dataManager, selectedCombo, setSelectedCombo, combo_options,
             useLocalData,strikesChanged,underlyingChanged,
-            days_left, num_days, setDaysLeft, setRenderTrigger,
+            days_left, num_days, setNumDays, setDaysLeft, setRenderTrigger,
             byLeg, setByLeg, computed, setComputed,
             mean_volatility, setMean_volatility,
             selectedSigma, sigma_factors, sigmaIndex, setSigmaIndex
@@ -33,6 +33,8 @@ export default class LeftContainer extends React.Component {
                     dataManager={dataManager}
                     selectedCombo={selectedCombo}
                     setSelectedCombo={setSelectedCombo}
+                    setNumDays={setNumDays}
+                    setDaysLeft={setDaysLeft}
                     combo_options={combo_options} />
                 <DaysLeft
                     days_left={days_left}

@@ -13,6 +13,8 @@ export const AppContext = createContext({
     setDataManager: () => { },
     days_left: null,
     setDaysLeft: () => { },
+    num_days: 99,
+    setNumDays: () => { },
     sigmaIndex: 0,
     setSigmaIndex: () => { },
     renderTrigger: 0,

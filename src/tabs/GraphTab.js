@@ -63,12 +63,12 @@ export default function GraphTab() {
             if (dataManager) {
                 if (useLocalData) {
                     let price = 201.00;
-                    console.log("loaded local price = ", parseFloat(price));
+                    //console.log("loaded local price = ", parseFloat(price));
                     dataManager.set_underlying_price(price);
                 }
                 else {
                     let price = await fetch_price('AAPL');
-                    console.log("loaded remote price = ", parseFloat(price.price));
+                    //console.log("loaded remote price = ", parseFloat(price.price));
                     dataManager.set_underlying_price(parseFloat(price.price));
                 }
                 setRenderTrigger(t => t + 1);
@@ -95,6 +95,7 @@ export default function GraphTab() {
                 dataManager={dataManager}
                 selectedCombo={selectedCombo}
                 setSelectedCombo={setSelectedCombo}
+                setNumDays={setNumDays}
                 combo_options={combo_options}
                 useLocalData={useLocalData}
                 underlyingChanged={underlyingChanged}

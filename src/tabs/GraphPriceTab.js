@@ -114,7 +114,7 @@ export default function GraphPriceTab() {
                     }
                 }
             } catch (err) {
-                console.error("Failed to fetch tickers list", err);
+                //console.error("Failed to fetch tickers list", err);
                 const defaultTicker = constants.DEFAULT_TICKER;
                 setSelectedTicker(defaultTicker);
                 fetchAndDraw(defaultTicker);
@@ -126,7 +126,7 @@ export default function GraphPriceTab() {
 
     useEffect(() => {
         if (!chartPrice.current) return;
-        console.log("Sigma yearly updated:", sigma_yearly);
+        //console.log("Sigma yearly updated:", sigma_yearly);
         const chart = chartPrice.current;
 
         const plugin = drawSigmaZone(lastClose, sigma_yearly);
@@ -212,7 +212,7 @@ export default function GraphPriceTab() {
             const stddevHV = Math.sqrt(varianceHV);
             const sigma = stddevHV * Math.sqrt(252); // Annualisation
 
-            console.log(`Computed HV (σ yearly) for ${ticker}:`, sigma);
+            //console.log(`Computed HV (σ yearly) for ${ticker}:`, sigma);
             setSigmaYearly(sigma);  // ici, on passe directement l’HV annualisée
 
             const lastDate = new Date(dates[dates.length - 1]);

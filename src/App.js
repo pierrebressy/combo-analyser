@@ -90,25 +90,25 @@ function App() {
 
   useEffect(() => {
     const loadData = async () => {
-      console.log("App.js: force_use_local", force_use_local);
+      //console.log("App.js: force_use_local", force_use_local);
       let local_mode = force_use_local;
-      console.log("App.js: loadData()");
+      //console.log("App.js: loadData()");
       if (!local_mode) {
         local_mode = await is_mode_local()
-        console.log("App.js: is_mode_local()", local_mode);
+        //console.log("App.js: is_mode_local()", local_mode);
       }
-      console.log("App.js: setUseLocalData", local_mode);
+      //console.log("App.js: setUseLocalData", local_mode);
       setUseLocalData(local_mode);
 
       // load the config file and set it in localStorage
       if (reset_local_storage_to_local_config) {
         let local_config = await load_local_config();
-        console.log("App.js: local_config", local_config);
+        //console.log("App.js: local_config", local_config);
         localStorage.setItem(constants.LOCAL_STORAGE_CONFIG, JSON.stringify(local_config));
       }
       // load the config from the localStorage
       let config = JSON.parse(localStorage.getItem(constants.LOCAL_STORAGE_CONFIG));
-      console.log("App.js: config from local storage", config);
+      //console.log("App.js: config from local storage", config);
 
       // load the name of last selected combo from the cookie
       let last_selected_combo = cookie_manager.get_cookie(constants.LAST_SELECTED_COMBO_NAME_COOKIE);
@@ -116,8 +116,8 @@ function App() {
         last_selected_combo = "LONG CALL";
         cookie_manager.set_cookie(constants.LAST_SELECTED_COMBO_NAME_COOKIE, "LONG CALL", 365);
       }
-      console.log("App.js: last_selected_combo", last_selected_combo);
-      console.log("App.js: config", config);
+      //console.log("App.js: last_selected_combo", last_selected_combo);
+      //console.log("App.js: config", config);
 
       // create the DataManager instance
       const instance = new DataManager(local_mode);
@@ -126,7 +126,9 @@ function App() {
       instance.set_underlying_price(170.00);
       instance.set_3d_view('P/L');
       setDataManager(instance);
+      //console.log("---------------------");
       //console.log("App.js: instance", instance);
+      //console.log("---------------------");
 
     }
     loadData();

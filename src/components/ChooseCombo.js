@@ -8,7 +8,7 @@ export default class ChooseCombo extends React.Component {
     }
 
     render() {
-        const { dataManager, selectedCombo, setSelectedCombo, combo_options } = this.props;
+        const { dataManager, selectedCombo, setSelectedCombo, combo_options, setNumDays, setDaysLeft } = this.props;
         if (!combo_options) {
             return <div>Loading ChooseCombo component...</div>;
         }
@@ -24,6 +24,8 @@ export default class ChooseCombo extends React.Component {
                         cookie_manager.set_cookie(constants.LAST_SELECTED_COMBO_NAME_COOKIE, e.target.value, 365);
                         let last_selected_combo = cookie_manager.get_cookie(constants.LAST_SELECTED_COMBO_NAME_COOKIE);
                         dataManager.set_active_combo_name(last_selected_combo);
+                        setNumDays(dataManager.get_time_to_expiry_of_active_combo());
+                        setDaysLeft(dataManager.get_time_for_simulation_of_active_combo());
                         setSelectedCombo(e.target.value);
                     }}
                     style={{ flex: 1, padding: '8px' }}
