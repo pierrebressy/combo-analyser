@@ -26,8 +26,12 @@ export class OptionChainTableViewer extends React.Component {
               const call = calls.find(c => c.strike === strike) || {};
               const put = puts.find(p => p.strike === strike) || {};
 
-              const callPrice = call.ask_price ?? call.price ?? '-';
-              const putPrice = put.ask_price ?? put.price ?? '-';
+              //const callPrice = call.ask_price ?? call.price ?? '-';
+              //const putPrice = put.ask_price ?? put.price ?? '-';
+              const callAskPrice = call.ask ?? call.price ?? '-';
+              const putAskPrice = put.ask ?? put.price ?? '-';
+              const callBidPrice = call.bid ?? call.price ?? '-';
+              const putBidPrice = put.bid ?? put.price ?? '-';
 
               const callLeg = getLeg('call', strike, expiration);
               const putLeg = getLeg('put', strike, expiration);
@@ -55,11 +59,11 @@ export class OptionChainTableViewer extends React.Component {
               return (
                 <tr key={strike}>
                   <td>0</td>
-                  {renderCell(callLeg, 'bid', 'call', strike, callPrice)}
-                  {renderCell(callLeg, 'ask', 'call', strike, callPrice)}
+                  {renderCell(callLeg, 'bid', 'call', strike, callBidPrice)}
+                  {renderCell(callLeg, 'ask', 'call', strike, callAskPrice)}
                   <td className="strike-col">{strike}</td>
-                  {renderCell(putLeg, 'bid', 'put', strike, putPrice)}
-                  {renderCell(putLeg, 'ask', 'put', strike, putPrice)}
+                  {renderCell(putLeg, 'bid', 'put', strike, putBidPrice)}
+                  {renderCell(putLeg, 'ask', 'put', strike, putAskPrice)}
                   <td>0</td>
                 </tr>
               );

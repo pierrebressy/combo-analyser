@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect, use } from 'react';
 import { load_local_option_chain } from '../utils/network.js';
-import { OptionChainViewer } from '../utils/option_chain_viewer.js'; 
+import { OptionChainViewer } from '../utils/option_chain_viewer.js';
 
 export default function ComboBuilder() {
   const containerRef = useRef(null);
@@ -12,13 +12,14 @@ export default function ComboBuilder() {
       .then(optionChainData => {
         //console.log('Option chain data:', optionChainData);
 
-        const generatedTabs = Object.keys(optionChainData).map(symbol => ({
-          id: `tab-${symbol}`,
-          label: `📁 ${symbol}`,
-          content: (
-            <OptionChainViewer symbol={symbol} data={optionChainData[symbol]} />
-          )
-        }));
+        const generatedTabs = Object.keys(optionChainData).sort()
+          .map(symbol => ({
+            id: `tab-${symbol}`,
+            label: `📁 ${symbol}`,
+            content: (
+              <OptionChainViewer symbol={symbol} data={optionChainData[symbol]} />
+            )
+          }));
 
         setTabs(generatedTabs);
         setActiveTab(generatedTabs[0]?.id); // Set the first tab as active
